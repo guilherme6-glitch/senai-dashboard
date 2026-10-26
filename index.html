@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SENAI | Central de Rastreabilidade</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+
+  <!-- Header Dark SENAI -->
+  <header class="bg-slate-900 text-white p-4 border-b-4 border-red-600 shadow-lg">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <span class="bg-red-600 font-extrabold px-3 py-1 rounded text-xl tracking-wider">SENAI</span>
+        <h1 class="text-xl font-bold">Central de Rastreabilidade <span class="text-slate-400 font-normal text-sm">| Mundo SENAI</span></h1>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span class="inline-block w-3 h-3 bg-green-500 rounded-full animate-ping"></span>
+        <span class="text-xs font-mono text-green-400 font-semibold">TEMPO REAL ATIVO</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-6 space-y-6">
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500 border-y border-r border-slate-200">
+        <p class="text-xs font-semibold text-slate-500 uppercase">Total de Ferramentas</p>
+        <p id="kpi-total" class="text-3xl font-extrabold text-slate-800 mt-1">0</p>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-500 border-y border-r border-slate-200">
+        <p class="text-xs font-semibold text-slate-500 uppercase">Emprestadas</p>
+        <p id="kpi-emprestadas" class="text-3xl font-extrabold text-red-600 mt-1">0</p>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-500 border-y border-r border-slate-200">
+        <p class="text-xs font-semibold text-slate-500 uppercase">Disponíveis</p>
+        <p id="kpi-disponiveis" class="text-3xl font-extrabold text-green-600 mt-1">0</p>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-orange-500 border-y border-r border-slate-200">
+        <p class="text-xs font-semibold text-slate-500 uppercase">% Em Uso</p>
+        <p id="kpi-uso" class="text-3xl font-extrabold text-orange-500 mt-1">0%</p>
+      </div>
+    </div>
+
+    <!-- Tabela de Ferramentas e Status Atual -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="p-4 border-b bg-slate-50 flex justify-between items-center">
+        <h2 class="font-bold text-slate-700">Status do Inventário em Tempo Real</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-100 text-slate-600 text-xs uppercase font-bold border-b">
+            <tr>
+              <th class="p-3">ID</th>
+              <th class="p-3">Ferramenta</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Com Quem Está?</th>
+              <th class="p-3">Local Atual</th>
+              <th class="p-3">Desde</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-ferramentas" class="divide-y divide-slate-100">
+            <tr><td colspan="6" class="p-4 text-center text-slate-400">Carregando dados...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tabela de Últimas Movimentações -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="p-4 border-b bg-slate-50">
+        <h2 class="font-bold text-slate-700">Últimas Movimentações Registradas</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-100 text-slate-600 text-xs uppercase font-bold border-b">
+            <tr>
+              <th class="p-3">Data/Hora</th>
+              <th class="p-3">Funcionário</th>
+              <th class="p-3">Ferramenta</th>
+              <th class="p-3">Local</th>
+              <th class="p-3">Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-historico" class="divide-y divide-slate-100">
+            <tr><td colspan="5" class="p-4 text-center text-slate-400">Carregando histórico...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Configurações do Supabase (Substitua pelos seus dados)
+    const SUPABASE_URL = "https://gfxctmjgcbgxsrquugrt.supabase.co/rest/v1/";
+    const SUPABASE_KEY = "sb_publishable_wPwhZsmoK_qpJjSi5TrZuQ_kD0b1KJr";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function carregarDados() {
+      // 1. Buscar Ferramentas
+      const { data: ferramentas } = await supabaseClient.from('ferramentas').select('*');
+      renderFerramentas(ferramentas || []);
+
+      // 2. Buscar Histórico
+      const { data: historico } = await supabaseClient.from('historico').select('*').order('created_at', { ascending: false }).limit(10);
+      renderHistorico(historico || []);
+    }
+
+    function renderFerramentas(lista) {
+      const tbody = document.getElementById('tabela-ferramentas');
+      const total = lista.length;
+      const emprestadas = lista.filter(f => f.status === 'Emprestado').length;
+      const disponiveis = total - emprestadas;
+      const pctUso = total > 0 ? Math.round((emprestadas / total) * 100) : 0;
+
+      // Atualiza KPIs
+      document.getElementById('kpi-total').innerText = total;
+      document.getElementById('kpi-emprestadas').innerText = emprestadas;
+      document.getElementById('kpi-disponiveis').innerText = disponiveis;
+      document.getElementById('kpi-uso').innerText = `${pctUso}%`;
+
+      if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhuma ferramenta cadastrada.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = lista.map(f => {
+        const badgeColor = f.status === 'Emprestado' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700';
+        const dataFormatada = f.desde ? new Date(f.desde).toLocaleString('pt-BR') : '-';
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-mono font-bold text-slate-600">${f.id}</td>
+            <td class="p-3 font-semibold">${f.nome}</td>
+            <td class="p-3"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${badgeColor}">${f.status}</span></td>
+            <td class="p-3">${f.com_quem_esta || '-'}</td>
+            <td class="p-3">${f.local_atual || '-'}</td>
+            <td class="p-3 text-xs text-slate-500">${dataFormatada}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderHistorico(lista) {
+      const tbody = document.getElementById('tabela-historico');
+      if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhuma movimentação até o momento.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = lista.map(h => {
+        const acaoColor = h.acao === 'Retirada' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700';
+        const dataFormatada = new Date(h.created_at).toLocaleString('pt-BR');
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 text-xs text-slate-500 font-mono">${dataFormatada}</td>
+            <td class="p-3 font-semibold">${h.nome_funcionario}</td>
+            <td class="p-3">${h.nome_ferramenta}</td>
+            <td class="p-3">${h.local_uso}</td>
+            <td class="p-3"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${acaoColor}">${h.acao}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Escuta de Alterações em Tempo Real (Realtime)
+    supabaseClient
+      .channel('mudancas-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ferramentas' }, () => carregarDados())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'historico' }, () => carregarDados())
+      .subscribe();
+
+    // Carregamento inicial
+    carregarDados();
+  </script>
+</body>
+</html>
