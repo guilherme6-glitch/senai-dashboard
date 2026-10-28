@@ -14,6 +14,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Chart.js para Gráficos Interativos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     .active-tab {
       background-color: #1e3a8a;
@@ -24,7 +27,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
 
-  <!-- ==================== TELA DE LOGIN ==================== -->
+  <!-- ==================== 1. TELA DE LOGIN ==================== -->
   <div id="screen-login" class="fixed inset-0 bg-slate-900 bg-opacity-95 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-200">
       <div class="text-center mb-8">
@@ -32,14 +35,14 @@
           SENAI
         </div>
         <h2 class="text-xl font-bold text-slate-800">Painel de Controlo</h2>
-        <p class="text-sm text-slate-500 mt-1">Inicie sessão para aceder ao sistema de inventário</p>
+        <p class="text-sm text-slate-500 mt-1">Gestão Inteligente de Ferramentas e Almoxarifado</p>
       </div>
 
-      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-5">
+      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-5" autocomplete="off">
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">E-mail</label>
           <div class="relative">
-            <input type="email" id="login-email" required placeholder="seu.email@senai.br" 
+            <input type="email" id="login-email" required placeholder="seu.email@senai.br" autocomplete="off"
               class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none pl-10 text-sm">
             <i data-lucide="mail" class="w-5 h-5 text-slate-400 absolute left-3 top-3.5"></i>
           </div>
@@ -48,7 +51,7 @@
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Palavra-passe</label>
           <div class="relative">
-            <input type="password" id="login-password" required placeholder="••••••••" 
+            <input type="password" id="login-password" required placeholder="••••••••" autocomplete="new-password"
               class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none pl-10 text-sm">
             <i data-lucide="lock" class="w-5 h-5 text-slate-400 absolute left-3 top-3.5"></i>
           </div>
@@ -65,7 +68,7 @@
     </div>
   </div>
 
-  <!-- ==================== ESTRUTURA PRINCIPAL DO DASHBOARD ==================== -->
+  <!-- ==================== 2. ESTRUTURA PRINCIPAL DO DASHBOARD ==================== -->
   <div id="app-layout" class="hidden min-h-screen flex flex-col md:flex-row">
 
     <!-- SIDEBAR / MENU LATERAL -->
@@ -159,7 +162,7 @@
           </div>
         </div>
 
-        <button onclick="handleLogout()" title="Sair do Sistema" class="text-slate-400 hover:text-red-400 transition p-1">
+        <button onclick="handleLogout()" title="Sair do Sistema" class="text-slate-400 hover:text-red-400 transition p-1.5 rounded-lg hover:bg-slate-800">
           <i data-lucide="log-out" class="w-5 h-5"></i>
         </button>
       </div>
@@ -168,127 +171,193 @@
     <!-- ÁREA DE CONTEÚDO PRINCIPAL -->
     <main class="flex-1 p-6 overflow-y-auto">
 
-      <!-- 1. VISÃO GERAL -->
+      <!-- ==================== TELA 02: VISÃO GERAL (COMPLETA) ==================== -->
       <section id="view-visao-geral" class="tab-content space-y-6">
-        <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold text-slate-800">Visão Geral do Almoxarifado</h2>
-          <span class="text-xs font-medium bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-            Atualizado ao Vivo
-          </span>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold text-slate-800">Visão Geral do Almoxarifado</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Resumo executivo do inventário e movimentações em tempo real</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-medium bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-emerald-200">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Sincronizado ao Vivo
+            </span>
+            <button onclick="loadVisaoGeralData()" title="Atualizar Dados" class="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 shadow-sm">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            </button>
+          </div>
         </div>
 
-        <!-- KPIs -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <!-- Cards de KPIs -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <!-- Total -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
-              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total de Ferramentas</p>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Cadastrado</p>
               <h3 id="kpi-total" class="text-3xl font-black text-slate-900 mt-1">0</h3>
             </div>
-            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="wrench" class="w-6 h-6"></i></div>
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
+              <i data-lucide="wrench" class="w-6 h-6"></i>
+            </div>
           </div>
 
+          <!-- Emprestadas -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Emprestadas Agora</p>
               <h3 id="kpi-emprestadas" class="text-3xl font-black text-amber-600 mt-1">0</h3>
             </div>
-            <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="arrow-up-right" class="w-6 h-6"></i></div>
+            <div class="p-3 bg-amber-50 text-amber-600 rounded-xl border border-amber-100">
+              <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
+            </div>
           </div>
 
+          <!-- Disponíveis -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Disponíveis no Banco</p>
               <h3 id="kpi-disponiveis" class="text-3xl font-black text-emerald-600 mt-1">0</h3>
             </div>
-            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i data-lucide="check-circle-2" class="w-6 h-6"></i></div>
+            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
+              <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+            </div>
+          </div>
+
+          <!-- Manutenção -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Em Manutenção</p>
+              <h3 id="kpi-manutencao" class="text-3xl font-black text-rose-600 mt-1">0</h3>
+            </div>
+            <div class="p-3 bg-rose-50 text-rose-600 rounded-xl border border-rose-100">
+              <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção de Gráficos Analíticos -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Gráfico Rosca: Distribuição de Status -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-blue-600"></i>
+              Status do Inventário
+            </h3>
+            <div class="relative flex items-center justify-center h-52">
+              <canvas id="chart-status"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico Barras: Empréstimos por Local/Setor -->
+          <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+              <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-600"></i>
+              Localização Atual dos Itens Emprestados
+            </h3>
+            <div class="relative h-52">
+              <canvas id="chart-locais"></canvas>
+            </div>
           </div>
         </div>
 
         <!-- Tabela Ferramentas Emprestadas -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div class="p-5 border-b border-slate-100 flex items-center justify-between">
-            <h3 class="font-bold text-slate-800 text-base">Ferramentas Emprestadas Atualmente</h3>
+          <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i>
+              <h3 class="font-bold text-slate-800 text-base">Ferramentas Fora do Almoxarifado</h3>
+            </div>
+            <!-- Campo de Busca Rápida -->
+            <div class="relative w-full sm:w-64">
+              <input type="text" id="search-emprestadas" oninput="filterEmprestadasTable()" placeholder="Buscar item ou pessoa..."
+                class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-2"></i>
+            </div>
           </div>
+
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-sm">
-              <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[11px] font-bold">
+              <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[11px] font-bold tracking-wider">
                 <tr>
-                  <th class="p-4">ID / Ferramenta</th>
-                  <th class="p-4">Funcionário</th>
-                  <th class="p-4">Local Atual</th>
-                  <th class="p-4">Desde</th>
+                  <th class="p-4">Código / Ferramenta</th>
+                  <th class="p-4">Responsável</th>
+                  <th class="p-4">Local de Uso</th>
+                  <th class="p-4">Data / Hora Retirada</th>
+                  <th class="p-4 text-center">Status</th>
                 </tr>
               </thead>
               <tbody id="table-emprestadas-body" class="divide-y divide-slate-100">
-                <tr><td colspan="4" class="p-4 text-center text-slate-400">Carregando dados...</td></tr>
+                <tr>
+                  <td colspan="5" class="p-6 text-center text-slate-400">Carregando dados do servidor...</td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <!-- 2. RASTREABILIDADE -->
+      <!-- TELA 03: RASTREABILIDADE (RESERVADA) -->
       <section id="view-rastreabilidade" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Rastreabilidade em Tempo Real</h2>
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Filtre a localização exata por setor, funcionário ou pertencimento.</p>
+          <p class="text-slate-600 text-sm">Em breve: Filtro rápido por local físico, pertencimento e responsável.</p>
         </div>
       </section>
 
-      <!-- 3. INDICADORES & BI -->
+      <!-- TELA 04: INDICADORES & BI (RESERVADA) -->
       <section id="view-indicadores" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Indicadores & Inteligência de Dados</h2>
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Gráficos, séries temporais e Top 5 de utilização.</p>
+          <p class="text-slate-600 text-sm">Em breve: Filtros combinados por período, Top 5 mais usadas e série temporal.</p>
         </div>
       </section>
 
-      <!-- 4. HISTÓRICO GLOBAL -->
+      <!-- TELA 05: HISTÓRICO GLOBAL (RESERVADA) -->
       <section id="view-historico" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Histórico Completo de Movimentações</h2>
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Registro sequencial detalhado de retiradas e devoluções.</p>
+          <p class="text-slate-600 text-sm">Em breve: Audit log completo com exportação em relatórios.</p>
         </div>
       </section>
 
-      <!-- 5. DOSSIÊ DO FUNCIONÁRIO (ADMIN/MASTER) -->
+      <!-- TELA 06: DOSSIÊ FUNCIONÁRIO (RESERVADO) -->
       <section id="view-funcionarios" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Dossiê do Funcionário</h2>
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Consulta de perfil, fotos e histórico individual do colaborador.</p>
+          <p class="text-slate-600 text-sm">Em breve: Ficha individual com foto e ferramentas atualmente sob posse.</p>
         </div>
       </section>
 
-      <!-- 6. FICHA DA FERRAMENTA (ADMIN/MASTER) -->
+      <!-- TELA 07: FICHA FERRAMENTA (RESERVADA) -->
       <section id="view-ferramentas" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Ficha da Ferramenta</h2>
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Raio-X completo do equipamento e seu histórico de empréstimos.</p>
+          <p class="text-slate-600 text-sm">Em breve: Raio-X com foto, localização de origem e ciclo de vida do item.</p>
         </div>
       </section>
 
-      <!-- 7. DETALHES DO LOCAL (ADMIN/MASTER) -->
+      <!-- TELA 08: DETALHES DO LOCAL (RESERVADO) -->
       <section id="view-locais" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Detalhes do Local</h2>
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Gestão de inventário e movimentações específicas por setor.</p>
+          <p class="text-slate-600 text-sm">Em breve: Ferramentas pertencentes e movimentações por setor.</p>
         </div>
       </section>
 
-      <!-- 8. GESTÃO & CADASTROS (ADMIN/MASTER) -->
+      <!-- TELA 09: GESTÃO & CADASTROS (RESERVADO) -->
       <section id="view-gestao" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Gestão & Cadastros de Permissões</h2>
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Cadastre ferramentas, novos funcionários e ajuste níveis de credencial.</p>
+          <p class="text-slate-600 text-sm">Em breve: Cadastro de itens, novos colaboradores e alteração de RBAC.</p>
         </div>
       </section>
 
-      <!-- 9. CENTRAL DE IMPRESSÃO (ADMIN/MASTER) -->
+      <!-- TELA 10: CENTRAL DE IMPRESSÃO (RESERVADO) -->
       <section id="view-impressao" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Central de Impressão</h2>
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Gerador de crachás para funcionários e etiquetas com QR Code.</p>
+          <p class="text-slate-600 text-sm">Em breve: Gerador de crachás e etiquetas de QR Code prontas para imprimir.</p>
         </div>
       </section>
 
@@ -300,19 +369,23 @@
     // 1. CONFIGURAÇÃO DO SUPABASE CLIENT
     const SUPABASE_URL = "https://gfxctmjgcbgxsrquugrt.supabase.co"; // Substitua pela sua URL
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmeGN0bWpnY2JneHNycXV1Z3J0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjI4NzgsImV4cCI6MjEwODU5ODg3OH0.gvwfxHzgVF72epEMMTdBdRvovmgbtMHquYCFyFa2Li0";            // Substitua pela sua Key
-    
+
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Estado Global do Utilizador
+    // Variáveis Globais de Estado
     let currentUserProfile = null;
+    let cacheEmprestadas = [];
+    let chartStatusInstance = null;
+    let chartLocaisInstance = null;
 
     // Inicialização da Aplicação
     window.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
       await checkAuthSession();
+      setupRealtimeSubscriptions();
     });
 
-    // 2. VERIFICAÇÃO DE SESSÃO DO UTILIZADOR
+    // 2. VERIFICAÇÃO DE SESSÃO DO USUÁRIO
     async function checkAuthSession() {
       const { data: { session } } = await supabaseClient.auth.getSession();
 
@@ -321,7 +394,7 @@
         return;
       }
 
-      // Busca perfil na tabela 'funcionarios'
+      // Busca o perfil na tabela 'funcionarios'
       const { data: perfil, error } = await supabaseClient
         .from('funcionarios')
         .select('*')
@@ -343,7 +416,7 @@
     // 3. LOGIN VIA SUPABASE AUTH
     async function handleLogin(event) {
       event.preventDefault();
-      const email = document.getElementById('login-email').value;
+      const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
       const errDiv = document.getElementById('login-error');
       const btn = document.getElementById('btn-login');
@@ -367,18 +440,28 @@
       }
     }
 
-    // 4. LOGOUT
+    // 4. LOGOUT E LIMPEZA TOTAL DE DADOS DA TELA DE LOGIN
     async function handleLogout() {
       await supabaseClient.auth.signOut();
       currentUserProfile = null;
       showLoginScreen(true);
     }
 
-    // Exibe ou Esconde a Tela de Login
+    // Controle de Exibição da Tela de Login e Limpeza dos Formulários
     function showLoginScreen(show) {
       const login = document.getElementById('screen-login');
       const app = document.getElementById('app-layout');
+      const formLogin = document.getElementById('form-login');
+      const errDiv = document.getElementById('login-error');
+
       if (show) {
+        // Zera todos os inputs e mensagens de erro ao desconectar
+        if (formLogin) formLogin.reset();
+        if (errDiv) {
+          errDiv.innerText = '';
+          errDiv.classList.add('hidden');
+        }
+
         login.classList.remove('hidden');
         app.classList.add('hidden');
       } else {
@@ -387,11 +470,10 @@
       }
     }
 
-    // 5. ADAPTAÇÃO DA INTERFACE POR NÍVEL DE PERMISSÃO
+    // 5. ADAPTAÇÃO DA INTERFACE POR PERMISSÃO (RBAC)
     function setupDashboardView() {
       if (!currentUserProfile) return;
 
-      // Preenche dados do utilizador na sidebar
       document.getElementById('user-name').innerText = currentUserProfile.nome;
       document.getElementById('user-badge').innerText = currentUserProfile.nivel_acesso;
       document.getElementById('user-avatar').innerText = currentUserProfile.nome.charAt(0).toUpperCase();
@@ -399,67 +481,183 @@
       const navAdminGroup = document.getElementById('nav-group-admin');
       const level = currentUserProfile.nivel_acesso;
 
-      // Exibe links de gestão apenas para Master e Administrador
+      // Exibe opções restritas para Master e Administrador
       if (level === 'master' || level === 'administrador') {
         navAdminGroup.classList.remove('hidden');
       } else {
         navAdminGroup.classList.add('hidden');
       }
 
-      // Abre por padrão a aba Visão Geral
       switchTab('visao-geral');
-      loadVisaoGeralData();
     }
 
     // 6. NAVEGAÇÃO ENTRE ABAS (SPA)
     function switchTab(tabName) {
-      // Esconde todo o conteúdo
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-
-      // Remove destaque dos botões
       document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-tab'));
 
-      // Mostra a aba selecionada
       const targetView = document.getElementById(`view-${tabName}`);
       const targetBtn = document.getElementById(`btn-tab-${tabName}`);
 
       if (targetView) targetView.classList.remove('hidden');
       if (targetBtn) targetBtn.classList.add('active-tab');
+
+      // Se alternou para Visão Geral, recarrega os dados
+      if (tabName === 'visao-geral') {
+        loadVisaoGeralData();
+      }
     }
 
-    // 7. CARREGAMENTO DE DADOS NA VISÃO GERAL
+    // 7. CARREGAMENTO E RENDERIZAÇÃO DA VISÃO GERAL
     async function loadVisaoGeralData() {
       try {
         const { data: ferramentas, error } = await supabaseClient.from('ferramentas').select('*');
         if (error) throw error;
 
+        // Cálculos dos KPIs
         const total = ferramentas.length;
         const emprestadas = ferramentas.filter(f => f.status === 'Emprestado');
         const disponiveis = ferramentas.filter(f => f.status === 'Disponível');
+        const manutencao = ferramentas.filter(f => f.status === 'Manutenção');
 
         document.getElementById('kpi-total').innerText = total;
         document.getElementById('kpi-emprestadas').innerText = emprestadas.length;
         document.getElementById('kpi-disponiveis').innerText = disponiveis.length;
+        document.getElementById('kpi-manutencao').innerText = manutencao.length;
 
-        // Tabela de Ferramentas Emprestadas
-        const tbody = document.getElementById('table-emprestadas-body');
-        if (emprestadas.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhuma ferramenta emprestada no momento.</td></tr>';
-          return;
-        }
+        // Guarda em cache local para filtragem em tempo real
+        cacheEmprestadas = emprestadas;
+        renderEmprestadasTable(cacheEmprestadas);
 
-        tbody.innerHTML = emprestadas.map(f => `
-          <tr class="hover:bg-slate-50 transition">
-            <td class="p-4 font-semibold text-slate-800">${f.id} - ${f.nome}</td>
-            <td class="p-4 text-slate-600">${f.com_quem_esta || '---'}</td>
-            <td class="p-4 text-slate-600">${f.local_atual || '---'}</td>
-            <td class="p-4 text-xs text-slate-500">${f.desde ? new Date(f.desde).toLocaleString('pt-BR') : '---'}</td>
-          </tr>
-        `).join('');
+        // Atualiza Gráficos
+        renderCharts(disponiveis.length, emprestadas.length, manutencao.length, emprestadas);
 
       } catch (err) {
-        console.error("Erro ao carregar dados:", err.message);
+        console.error("Erro ao carregar Visão Geral:", err.message);
       }
+    }
+
+    // Renderiza a Tabela de Ferramentas Emprestadas
+    function renderEmprestadasTable(lista) {
+      const tbody = document.getElementById('table-emprestadas-body');
+
+      if (!lista || lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">Nenhuma ferramenta emprestada no momento.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = lista.map(f => `
+        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+          <td class="p-4 font-bold text-slate-800">
+            <span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-xs mr-2 border border-blue-100">${f.id}</span>
+            ${f.nome}
+          </td>
+          <td class="p-4 text-slate-700 font-medium">${f.com_quem_esta || '---'}</td>
+          <td class="p-4 text-slate-600">
+            <span class="inline-flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-md text-xs">
+              <i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i>
+              ${f.local_atual || '---'}
+            </span>
+          </td>
+          <td class="p-4 text-xs text-slate-500 font-mono">
+            ${f.desde ? new Date(f.desde).toLocaleString('pt-BR') : '---'}
+          </td>
+          <td class="p-4 text-center">
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+              Emprestado
+            </span>
+          </td>
+        </tr>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    // Filtro Rápido na Tabela de Emprestadas
+    function filterEmprestadasTable() {
+      const term = document.getElementById('search-emprestadas').value.toLowerCase();
+      const filtradas = cacheEmprestadas.filter(f => 
+        f.id.toLowerCase().includes(term) ||
+        f.nome.toLowerCase().includes(term) ||
+        (f.com_quem_esta && f.com_quem_esta.toLowerCase().includes(term)) ||
+        (f.local_atual && f.local_atual.toLowerCase().includes(term))
+      );
+      renderEmprestadasTable(filtradas);
+    }
+
+    // 8. RENDERIZAÇÃO DOS GRÁFICOS (CHART.JS)
+    function renderCharts(disponiveis, emprestadas, manutencao, listaEmprestadas) {
+      // 1. Gráfico de Rosca (Status)
+      const ctxStatus = document.getElementById('chart-status').getContext('2d');
+      if (chartStatusInstance) chartStatusInstance.destroy();
+
+      chartStatusInstance = new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+          labels: ['Disponíveis', 'Emprestadas', 'Manutenção'],
+          datasets: [{
+            data: [disponiveis, emprestadas, manutencao],
+            backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+          }
+        }
+      });
+
+      // 2. Gráfico de Barras (Itens Emprestados por Local)
+      const contagemLocais = {};
+      listaEmprestadas.forEach(item => {
+        const loc = item.local_atual || 'Não especificado';
+        contagemLocais[loc] = (contagemLocais[loc] || 0) + 1;
+      });
+
+      const labelsLocais = Object.keys(contagemLocais);
+      const dataLocais = Object.values(contagemLocais);
+
+      const ctxLocais = document.getElementById('chart-locais').getContext('2d');
+      if (chartLocaisInstance) chartLocaisInstance.destroy();
+
+      chartLocaisInstance = new Chart(ctxLocais, {
+        type: 'bar',
+        data: {
+          labels: labelsLocais.length ? labelsLocais : ['Nenhum empréstimo'],
+          datasets: [{
+            label: 'Ferramentas Emprestadas',
+            data: dataLocais.length ? dataLocais : [0],
+            backgroundColor: '#3b82f6',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+          }
+        }
+      });
+    }
+
+    // 9. SINCRONIZAÇÃO EM TEMPO REAL (SUPABASE REALTIME)
+    function setupRealtimeSubscriptions() {
+      supabaseClient
+        .channel('db-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'ferramentas' }, () => {
+          // Atualiza a Visão Geral se estiver ativa
+          const visaoGeralVisible = !document.getElementById('view-visao-geral').classList.contains('hidden');
+          if (visaoGeralVisible) {
+            loadVisaoGeralData();
+          }
+        })
+        .subscribe();
     }
   </script>
 </body>
