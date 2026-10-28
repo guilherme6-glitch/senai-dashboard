@@ -3,178 +3,464 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SENAI | Central de Rastreabilidade</title>
+  <title>SENAI - Dashboard de Gestão de Ferramentas</title>
+  
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Supabase JS Client v2 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    .active-tab {
+      background-color: #1e3a8a;
+      color: #ffffff !important;
+      border-left: 4px solid #3b82f6;
+    }
+  </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
 
-  <!-- Header Dark SENAI -->
-  <header class="bg-slate-900 text-white p-4 border-b-4 border-red-600 shadow-lg">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <div class="flex items-center space-x-3">
-        <span class="bg-red-600 font-extrabold px-3 py-1 rounded text-xl tracking-wider">SENAI</span>
-        <h1 class="text-xl font-bold">Central de Rastreabilidade <span class="text-slate-400 font-normal text-sm">| Mundo SENAI</span></h1>
+  <!-- ==================== TELA DE LOGIN ==================== -->
+  <div id="screen-login" class="fixed inset-0 bg-slate-900 bg-opacity-95 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-200">
+      <div class="text-center mb-8">
+        <div class="bg-blue-900 text-white font-black text-2xl py-3 px-6 rounded-xl inline-block shadow-md tracking-wider mb-3">
+          SENAI
+        </div>
+        <h2 class="text-xl font-bold text-slate-800">Painel de Controlo</h2>
+        <p class="text-sm text-slate-500 mt-1">Inicie sessão para aceder ao sistema de inventário</p>
       </div>
-      <div class="flex items-center space-x-2">
-        <span class="inline-block w-3 h-3 bg-green-500 rounded-full animate-ping"></span>
-        <span class="text-xs font-mono text-green-400 font-semibold">TEMPO REAL ATIVO</span>
-      </div>
+
+      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-5">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">E-mail</label>
+          <div class="relative">
+            <input type="email" id="login-email" required placeholder="seu.email@senai.br" 
+              class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none pl-10 text-sm">
+            <i data-lucide="mail" class="w-5 h-5 text-slate-400 absolute left-3 top-3.5"></i>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Palavra-passe</label>
+          <div class="relative">
+            <input type="password" id="login-password" required placeholder="••••••••" 
+              class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none pl-10 text-sm">
+            <i data-lucide="lock" class="w-5 h-5 text-slate-400 absolute left-3 top-3.5"></i>
+          </div>
+        </div>
+
+        <div id="login-error" class="hidden p-3 rounded-lg bg-red-100 border border-red-200 text-red-700 text-xs font-semibold"></div>
+
+        <button type="submit" id="btn-login"
+          class="w-full py-3.5 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl transition duration-200 shadow-lg flex items-center justify-center gap-2">
+          <span>Entrar no Sistema</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </form>
     </div>
-  </header>
+  </div>
 
-  <main class="max-w-7xl mx-auto p-6 space-y-6">
+  <!-- ==================== ESTRUTURA PRINCIPAL DO DASHBOARD ==================== -->
+  <div id="app-layout" class="hidden min-h-screen flex flex-col md:flex-row">
 
-    <!-- KPI Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500 border-y border-r border-slate-200">
-        <p class="text-xs font-semibold text-slate-500 uppercase">Total de Ferramentas</p>
-        <p id="kpi-total" class="text-3xl font-extrabold text-slate-800 mt-1">0</p>
+    <!-- SIDEBAR / MENU LATERAL -->
+    <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 shadow-xl">
+      <!-- Topo Sidebar -->
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="bg-blue-600 text-white font-black px-3 py-1 rounded text-lg tracking-wider">SENAI</span>
+          <div>
+            <h1 class="text-sm font-bold text-white leading-tight">Gestão de Ferramentas</h1>
+            <span class="text-[10px] text-blue-400 uppercase tracking-widest font-semibold">Dashboard</span>
+          </div>
+        </div>
       </div>
-      <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-500 border-y border-r border-slate-200">
-        <p class="text-xs font-semibold text-slate-500 uppercase">Emprestadas</p>
-        <p id="kpi-emprestadas" class="text-3xl font-extrabold text-red-600 mt-1">0</p>
-      </div>
-      <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-500 border-y border-r border-slate-200">
-        <p class="text-xs font-semibold text-slate-500 uppercase">Disponíveis</p>
-        <p id="kpi-disponiveis" class="text-3xl font-extrabold text-green-600 mt-1">0</p>
-      </div>
-      <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-orange-500 border-y border-r border-slate-200">
-        <p class="text-xs font-semibold text-slate-500 uppercase">% Em Uso</p>
-        <p id="kpi-uso" class="text-3xl font-extrabold text-orange-500 mt-1">0%</p>
-      </div>
-    </div>
 
-    <!-- Tabela de Ferramentas e Status Atual -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <div class="p-4 border-b bg-slate-50 flex justify-between items-center">
-        <h2 class="font-bold text-slate-700">Status do Inventário em Tempo Real</h2>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
-          <thead class="bg-slate-100 text-slate-600 text-xs uppercase font-bold border-b">
-            <tr>
-              <th class="p-3">ID</th>
-              <th class="p-3">Ferramenta</th>
-              <th class="p-3">Status</th>
-              <th class="p-3">Com Quem Está?</th>
-              <th class="p-3">Local Atual</th>
-              <th class="p-3">Desde</th>
-            </tr>
-          </thead>
-          <tbody id="tabela-ferramentas" class="divide-y divide-slate-100">
-            <tr><td colspan="6" class="p-4 text-center text-slate-400">Carregando dados...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <!-- Links de Navegação -->
+      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+        <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Consultas & Analytics</p>
+        
+        <button onclick="switchTab('visao-geral')" id="btn-tab-visao-geral"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-left">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          <span>Visão Geral</span>
+        </button>
 
-    <!-- Tabela de Últimas Movimentações -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <div class="p-4 border-b bg-slate-50">
-        <h2 class="font-bold text-slate-700">Últimas Movimentações Registradas</h2>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
-          <thead class="bg-slate-100 text-slate-600 text-xs uppercase font-bold border-b">
-            <tr>
-              <th class="p-3">Data/Hora</th>
-              <th class="p-3">Funcionário</th>
-              <th class="p-3">Ferramenta</th>
-              <th class="p-3">Local</th>
-              <th class="p-3">Ação</th>
-            </tr>
-          </thead>
-          <tbody id="tabela-historico" class="divide-y divide-slate-100">
-            <tr><td colspan="5" class="p-4 text-center text-slate-400">Carregando histórico...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+        <button onclick="switchTab('rastreabilidade')" id="btn-tab-rastreabilidade"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-left">
+          <i data-lucide="map-pin" class="w-4 h-4"></i>
+          <span>Rastreabilidade</span>
+        </button>
 
-  </main>
+        <button onclick="switchTab('indicadores')" id="btn-tab-indicadores"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-left">
+          <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+          <span>Indicadores & BI</span>
+        </button>
 
+        <button onclick="switchTab('historico')" id="btn-tab-historico"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-left">
+          <i data-lucide="history" class="w-4 h-4"></i>
+          <span>Histórico Global</span>
+        </button>
+
+        <!-- Seção Gestão (Visível apenas para Master e Administrador) -->
+        <div id="nav-group-admin" class="hidden pt-4 mt-4 border-t border-slate-800 space-y-1">
+          <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Gestão Especializada</p>
+
+          <button onclick="switchTab('funcionarios')" id="btn-tab-funcionarios"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-left">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span>Dossiê Funcionário</span>
+          </button>
+
+          <button onclick="switchTab('ferramentas')" id="btn-tab-ferramentas"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-left">
+            <i data-lucide="wrench" class="w-4 h-4"></i>
+            <span>Ficha Ferramenta</span>
+          </button>
+
+          <button onclick="switchTab('locais')" id="btn-tab-locais"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-left">
+            <i data-lucide="building-2" class="w-4 h-4"></i>
+            <span>Detalhes do Local</span>
+          </button>
+
+          <button onclick="switchTab('gestao')" id="btn-tab-gestao"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-left">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+            <span>Gestão & Cadastros</span>
+          </button>
+
+          <button onclick="switchTab('impressao')" id="btn-tab-impressao"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-left">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>Central de Impressão</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Rodapé Sidebar / Perfil -->
+      <div class="p-4 border-t border-slate-800 bg-slate-950 flex items-center justify-between">
+        <div class="flex items-center gap-3 overflow-hidden">
+          <div id="user-avatar" class="w-9 h-9 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-sm">
+            U
+          </div>
+          <div class="truncate">
+            <p id="user-name" class="text-xs font-semibold text-white truncate">Carregando...</p>
+            <span id="user-badge" class="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+              ---
+            </span>
+          </div>
+        </div>
+
+        <button onclick="handleLogout()" title="Sair do Sistema" class="text-slate-400 hover:text-red-400 transition p-1">
+          <i data-lucide="log-out" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ÁREA DE CONTEÚDO PRINCIPAL -->
+    <main class="flex-1 p-6 overflow-y-auto">
+
+      <!-- 1. VISÃO GERAL -->
+      <section id="view-visao-geral" class="tab-content space-y-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-slate-800">Visão Geral do Almoxarifado</h2>
+          <span class="text-xs font-medium bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            Atualizado ao Vivo
+          </span>
+        </div>
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total de Ferramentas</p>
+              <h3 id="kpi-total" class="text-3xl font-black text-slate-900 mt-1">0</h3>
+            </div>
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="wrench" class="w-6 h-6"></i></div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Emprestadas Agora</p>
+              <h3 id="kpi-emprestadas" class="text-3xl font-black text-amber-600 mt-1">0</h3>
+            </div>
+            <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="arrow-up-right" class="w-6 h-6"></i></div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Disponíveis no Banco</p>
+              <h3 id="kpi-disponiveis" class="text-3xl font-black text-emerald-600 mt-1">0</h3>
+            </div>
+            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i data-lucide="check-circle-2" class="w-6 h-6"></i></div>
+          </div>
+        </div>
+
+        <!-- Tabela Ferramentas Emprestadas -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="font-bold text-slate-800 text-base">Ferramentas Emprestadas Atualmente</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[11px] font-bold">
+                <tr>
+                  <th class="p-4">ID / Ferramenta</th>
+                  <th class="p-4">Funcionário</th>
+                  <th class="p-4">Local Atual</th>
+                  <th class="p-4">Desde</th>
+                </tr>
+              </thead>
+              <tbody id="table-emprestadas-body" class="divide-y divide-slate-100">
+                <tr><td colspan="4" class="p-4 text-center text-slate-400">Carregando dados...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. RASTREABILIDADE -->
+      <section id="view-rastreabilidade" class="tab-content hidden space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800">Rastreabilidade em Tempo Real</h2>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-slate-600 text-sm">Filtre a localização exata por setor, funcionário ou pertencimento.</p>
+        </div>
+      </section>
+
+      <!-- 3. INDICADORES & BI -->
+      <section id="view-indicadores" class="tab-content hidden space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800">Indicadores & Inteligência de Dados</h2>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-slate-600 text-sm">Gráficos, séries temporais e Top 5 de utilização.</p>
+        </div>
+      </section>
+
+      <!-- 4. HISTÓRICO GLOBAL -->
+      <section id="view-historico" class="tab-content hidden space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800">Histórico Completo de Movimentações</h2>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-slate-600 text-sm">Registro sequencial detalhado de retiradas e devoluções.</p>
+        </div>
+      </section>
+
+      <!-- 5. DOSSIÊ DO FUNCIONÁRIO (ADMIN/MASTER) -->
+      <section id="view-funcionarios" class="tab-content hidden space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800">Dossiê do Funcionário</h2>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-slate-600 text-sm">Consulta de perfil, fotos e histórico individual do colaborador.</p>
+        </div>
+      </section>
+
+      <!-- 6. FICHA DA FERRAMENTA (ADMIN/MASTER) -->
+      <section id="view-ferramentas" class="tab-content hidden space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800">Ficha da Ferramenta</h2>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-slate-600 text-sm">Raio-X completo do equipamento e seu histórico de empréstimos.</p>
+        </div>
+      </section>
+
+      <!-- 7. DETALHES DO LOCAL (ADMIN/MASTER) -->
+      <section id="view-locais" class="tab-content hidden space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800">Detalhes do Local</h2>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-slate-600 text-sm">Gestão de inventário e movimentações específicas por setor.</p>
+        </div>
+      </section>
+
+      <!-- 8. GESTÃO & CADASTROS (ADMIN/MASTER) -->
+      <section id="view-gestao" class="tab-content hidden space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800">Gestão & Cadastros de Permissões</h2>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-slate-600 text-sm">Cadastre ferramentas, novos funcionários e ajuste níveis de credencial.</p>
+        </div>
+      </section>
+
+      <!-- 9. CENTRAL DE IMPRESSÃO (ADMIN/MASTER) -->
+      <section id="view-impressao" class="tab-content hidden space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800">Central de Impressão</h2>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-slate-600 text-sm">Gerador de crachás para funcionários e etiquetas com QR Code.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== LÓGICA JAVASCRIPT ==================== -->
   <script>
-    // Configurações do Supabase
-const SUPABASE_URL = "https://gfxctmjgcbgsrrquugrt.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmeGN0bWpnY2JneHNycXV1Z3J0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjI4NzgsImV4cCI6MjEwODU5ODg3OH0.gvwfxHzgVF72epEMMTdBdRvovmgbtMHquYCFyFa2Li0";
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // 1. CONFIGURAÇÃO DO SUPABASE CLIENT
+    const SUPABASE_URL = "https://gfxctmjgcbgxsrquugrt.supabase.co"; // Substitua pela sua URL
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmeGN0bWpnY2JneHNycXV1Z3J0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjI4NzgsImV4cCI6MjEwODU5ODg3OH0.gvwfxHzgVF72epEMMTdBdRvovmgbtMHquYCFyFa2Li0";            // Substitua pela sua Key
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function carregarDados() {
-      // 1. Buscar Ferramentas
-      const { data: ferramentas } = await supabaseClient.from('ferramentas').select('*');
-      renderFerramentas(ferramentas || []);
+    // Estado Global do Utilizador
+    let currentUserProfile = null;
 
-      // 2. Buscar Histórico
-      const { data: historico } = await supabaseClient.from('historico').select('*').order('created_at', { ascending: false }).limit(10);
-      renderHistorico(historico || []);
-    }
+    // Inicialização da Aplicação
+    window.addEventListener('DOMContentLoaded', async () => {
+      lucide.createIcons();
+      await checkAuthSession();
+    });
 
-    function renderFerramentas(lista) {
-      const tbody = document.getElementById('tabela-ferramentas');
-      const total = lista.length;
-      const emprestadas = lista.filter(f => f.status === 'Emprestado').length;
-      const disponiveis = total - emprestadas;
-      const pctUso = total > 0 ? Math.round((emprestadas / total) * 100) : 0;
+    // 2. VERIFICAÇÃO DE SESSÃO DO UTILIZADOR
+    async function checkAuthSession() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
 
-      // Atualiza KPIs
-      document.getElementById('kpi-total').innerText = total;
-      document.getElementById('kpi-emprestadas').innerText = emprestadas;
-      document.getElementById('kpi-disponiveis').innerText = disponiveis;
-      document.getElementById('kpi-uso').innerText = `${pctUso}%`;
-
-      if (lista.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhuma ferramenta cadastrada.</td></tr>`;
+      if (!session) {
+        showLoginScreen(true);
         return;
       }
 
-      tbody.innerHTML = lista.map(f => {
-        const badgeColor = f.status === 'Emprestado' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700';
-        const dataFormatada = f.desde ? new Date(f.desde).toLocaleString('pt-BR') : '-';
-        return `
-          <tr class="hover:bg-slate-50">
-            <td class="p-3 font-mono font-bold text-slate-600">${f.id}</td>
-            <td class="p-3 font-semibold">${f.nome}</td>
-            <td class="p-3"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${badgeColor}">${f.status}</span></td>
-            <td class="p-3">${f.com_quem_esta || '-'}</td>
-            <td class="p-3">${f.local_atual || '-'}</td>
-            <td class="p-3 text-xs text-slate-500">${dataFormatada}</td>
-          </tr>
-        `;
-      }).join('');
-    }
+      // Busca perfil na tabela 'funcionarios'
+      const { data: perfil, error } = await supabaseClient
+        .from('funcionarios')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
 
-    function renderHistorico(lista) {
-      const tbody = document.getElementById('tabela-historico');
-      if (lista.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhuma movimentação até o momento.</td></tr>`;
+      if (error || !perfil) {
+        alert("Perfil de funcionário não encontrado ou inativo.");
+        await supabaseClient.auth.signOut();
+        showLoginScreen(true);
         return;
       }
 
-      tbody.innerHTML = lista.map(h => {
-        const acaoColor = h.acao === 'Retirada' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700';
-        const dataFormatada = new Date(h.created_at).toLocaleString('pt-BR');
-        return `
-          <tr class="hover:bg-slate-50">
-            <td class="p-3 text-xs text-slate-500 font-mono">${dataFormatada}</td>
-            <td class="p-3 font-semibold">${h.nome_funcionario}</td>
-            <td class="p-3">${h.nome_ferramenta}</td>
-            <td class="p-3">${h.local_uso}</td>
-            <td class="p-3"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${acaoColor}">${h.acao}</span></td>
-          </tr>
-        `;
-      }).join('');
+      currentUserProfile = perfil;
+      showLoginScreen(false);
+      setupDashboardView();
     }
 
-    // Escuta de Alterações em Tempo Real (Realtime)
-    supabaseClient
-      .channel('mudancas-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'ferramentas' }, () => carregarDados())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'historico' }, () => carregarDados())
-      .subscribe();
+    // 3. LOGIN VIA SUPABASE AUTH
+    async function handleLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const errDiv = document.getElementById('login-error');
+      const btn = document.getElementById('btn-login');
 
-    // Carregamento inicial
-    carregarDados();
+      errDiv.classList.add('hidden');
+      btn.disabled = true;
+      btn.innerHTML = '<span>Autenticando...</span>';
+
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+
+        await checkAuthSession();
+      } catch (err) {
+        errDiv.innerText = "Erro ao iniciar sessão: " + err.message;
+        errDiv.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Entrar no Sistema</span><i data-lucide="arrow-right" class="w-4 h-4"></i>';
+        lucide.createIcons();
+      }
+    }
+
+    // 4. LOGOUT
+    async function handleLogout() {
+      await supabaseClient.auth.signOut();
+      currentUserProfile = null;
+      showLoginScreen(true);
+    }
+
+    // Exibe ou Esconde a Tela de Login
+    function showLoginScreen(show) {
+      const login = document.getElementById('screen-login');
+      const app = document.getElementById('app-layout');
+      if (show) {
+        login.classList.remove('hidden');
+        app.classList.add('hidden');
+      } else {
+        login.classList.add('hidden');
+        app.classList.remove('hidden');
+      }
+    }
+
+    // 5. ADAPTAÇÃO DA INTERFACE POR NÍVEL DE PERMISSÃO
+    function setupDashboardView() {
+      if (!currentUserProfile) return;
+
+      // Preenche dados do utilizador na sidebar
+      document.getElementById('user-name').innerText = currentUserProfile.nome;
+      document.getElementById('user-badge').innerText = currentUserProfile.nivel_acesso;
+      document.getElementById('user-avatar').innerText = currentUserProfile.nome.charAt(0).toUpperCase();
+
+      const navAdminGroup = document.getElementById('nav-group-admin');
+      const level = currentUserProfile.nivel_acesso;
+
+      // Exibe links de gestão apenas para Master e Administrador
+      if (level === 'master' || level === 'administrador') {
+        navAdminGroup.classList.remove('hidden');
+      } else {
+        navAdminGroup.classList.add('hidden');
+      }
+
+      // Abre por padrão a aba Visão Geral
+      switchTab('visao-geral');
+      loadVisaoGeralData();
+    }
+
+    // 6. NAVEGAÇÃO ENTRE ABAS (SPA)
+    function switchTab(tabName) {
+      // Esconde todo o conteúdo
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+
+      // Remove destaque dos botões
+      document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-tab'));
+
+      // Mostra a aba selecionada
+      const targetView = document.getElementById(`view-${tabName}`);
+      const targetBtn = document.getElementById(`btn-tab-${tabName}`);
+
+      if (targetView) targetView.classList.remove('hidden');
+      if (targetBtn) targetBtn.classList.add('active-tab');
+    }
+
+    // 7. CARREGAMENTO DE DADOS NA VISÃO GERAL
+    async function loadVisaoGeralData() {
+      try {
+        const { data: ferramentas, error } = await supabaseClient.from('ferramentas').select('*');
+        if (error) throw error;
+
+        const total = ferramentas.length;
+        const emprestadas = ferramentas.filter(f => f.status === 'Emprestado');
+        const disponiveis = ferramentas.filter(f => f.status === 'Disponível');
+
+        document.getElementById('kpi-total').innerText = total;
+        document.getElementById('kpi-emprestadas').innerText = emprestadas.length;
+        document.getElementById('kpi-disponiveis').innerText = disponiveis.length;
+
+        // Tabela de Ferramentas Emprestadas
+        const tbody = document.getElementById('table-emprestadas-body');
+        if (emprestadas.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhuma ferramenta emprestada no momento.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = emprestadas.map(f => `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-4 font-semibold text-slate-800">${f.id} - ${f.nome}</td>
+            <td class="p-4 text-slate-600">${f.com_quem_esta || '---'}</td>
+            <td class="p-4 text-slate-600">${f.local_atual || '---'}</td>
+            <td class="p-4 text-xs text-slate-500">${f.desde ? new Date(f.desde).toLocaleString('pt-BR') : '---'}</td>
+          </tr>
+        `).join('');
+
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err.message);
+      }
+    }
   </script>
 </body>
 </html>
