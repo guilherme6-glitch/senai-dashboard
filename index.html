@@ -73,7 +73,6 @@
 
     <!-- SIDEBAR / MENU LATERAL -->
     <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 shadow-xl">
-      <!-- Topo Sidebar -->
       <div class="p-5 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <span class="bg-blue-600 text-white font-black px-3 py-1 rounded text-lg tracking-wider">SENAI</span>
@@ -84,7 +83,6 @@
         </div>
       </div>
 
-      <!-- Links de Navegação -->
       <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
         <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Consultas & Analytics</p>
         
@@ -171,7 +169,7 @@
     <!-- ÁREA DE CONTEÚDO PRINCIPAL -->
     <main class="flex-1 p-6 overflow-y-auto">
 
-      <!-- ==================== TELA 02: VISÃO GERAL (COMPLETA) ==================== -->
+      <!-- ==================== TELA 01: VISÃO GERAL ==================== -->
       <section id="view-visao-geral" class="tab-content space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -191,7 +189,6 @@
 
         <!-- Cards de KPIs -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <!-- Total -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Cadastrado</p>
@@ -202,7 +199,6 @@
             </div>
           </div>
 
-          <!-- Emprestadas -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Emprestadas Agora</p>
@@ -213,7 +209,6 @@
             </div>
           </div>
 
-          <!-- Disponíveis -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Disponíveis no Banco</p>
@@ -224,7 +219,6 @@
             </div>
           </div>
 
-          <!-- Manutenção -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Em Manutenção</p>
@@ -238,7 +232,6 @@
 
         <!-- Seção de Gráficos Analíticos -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Gráfico Rosca: Distribuição de Status -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
               <i data-lucide="pie-chart" class="w-4 h-4 text-blue-600"></i>
@@ -249,7 +242,6 @@
             </div>
           </div>
 
-          <!-- Gráfico Barras: Empréstimos por Local/Setor -->
           <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
               <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-600"></i>
@@ -268,7 +260,6 @@
               <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i>
               <h3 class="font-bold text-slate-800 text-base">Ferramentas Fora do Almoxarifado</h3>
             </div>
-            <!-- Campo de Busca Rápida -->
             <div class="relative w-full sm:w-64">
               <input type="text" id="search-emprestadas" oninput="filterEmprestadasTable()" placeholder="Buscar item ou pessoa..."
                 class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
@@ -297,68 +288,161 @@
         </div>
       </section>
 
-      <!-- TELA 03: RASTREABILIDADE (RESERVADA) -->
+      <!-- ==================== TELA 02: RASTREABILIDADE ==================== -->
       <section id="view-rastreabilidade" class="tab-content hidden space-y-6">
-        <h2 class="text-2xl font-bold text-slate-800">Rastreabilidade em Tempo Real</h2>
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Em breve: Filtro rápido por local físico, pertencimento e responsável.</p>
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800">Rastreabilidade em Tempo Real</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Localização física, responsável e histórico individualizador de todos os ativos</p>
+        </div>
+
+        <!-- Barra de Filtros Multifuncional -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Buscar por Nome / Código</label>
+            <div class="relative">
+              <input type="text" id="filter-rastreio-texto" oninput="filterRastreabilidadeData()" placeholder="Ex: Multímetro ou MST-01"
+                class="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5"></i>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local / Setor</label>
+            <select id="filter-rastreio-local" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todos os Locais</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Responsável / Usuário</label>
+            <select id="filter-rastreio-resp" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todos os Responsáveis</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status do Equipamento</label>
+            <select id="filter-rastreio-status" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todos os Status</option>
+              <option value="Emprestado">Emprestado</option>
+              <option value="Disponível">Disponível (No Banco)</option>
+              <option value="Manutenção">Em Manutenção</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Lista / Cards de Rastreabilidade -->
+        <div id="grid-rastreabilidade" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <p class="text-slate-400 text-sm col-span-full text-center py-8">Carregando mapa de rastreabilidade...</p>
         </div>
       </section>
 
-      <!-- TELA 04: INDICADORES & BI (RESERVADA) -->
+      <!-- ==================== TELA 03: INDICADORES & BI ==================== -->
       <section id="view-indicadores" class="tab-content hidden space-y-6">
-        <h2 class="text-2xl font-bold text-slate-800">Indicadores & Inteligência de Dados</h2>
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Em breve: Filtros combinados por período, Top 5 mais usadas e série temporal.</p>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold text-slate-800">Indicadores & Inteligência de Dados (BI)</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Análise estratégica de uso do inventário e gargalos operacionais</p>
+          </div>
+          <!-- Seletor de Período -->
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-bold text-slate-600 uppercase">Período:</label>
+            <select id="select-bi-periodo" onchange="loadIndicadoresData()" class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white font-medium">
+              <option value="30">Últimos 30 dias</option>
+              <option value="7">Últimos 7 dias</option>
+              <option value="all">Todo o Histórico</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- KPIs de Desempenho BI -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500 uppercase">Total de Movimentações</p>
+            <h3 id="bi-kpi-movimentacoes" class="text-2xl font-black text-slate-900 mt-1">0</h3>
+            <span class="text-[10px] text-slate-400">Registros de entrada e saída</span>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500 uppercase">Item Mais Solicitado</p>
+            <h3 id="bi-kpi-mais-usado" class="text-lg font-bold text-blue-700 truncate mt-1">---</h3>
+            <span id="bi-kpi-mais-usado-qtd" class="text-[10px] text-slate-400">0 empréstimos</span>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500 uppercase">Setor Mais Ativo</p>
+            <h3 id="bi-kpi-setor-ativo" class="text-lg font-bold text-indigo-700 truncate mt-1">---</h3>
+            <span id="bi-kpi-setor-ativo-qtd" class="text-[10px] text-slate-400">0 solicitações</span>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500 uppercase">Taxa de Ocupação</p>
+            <h3 id="bi-kpi-taxa-ocupacao" class="text-2xl font-black text-amber-600 mt-1">0%</h3>
+            <span class="text-[10px] text-slate-400">Do total de itens em uso</span>
+          </div>
+        </div>
+
+        <!-- Gráficos Analíticos BI -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Top 5 Ferramentas mais Utilizadas -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+              <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
+              Top 5 Ferramentas Mais Requisitadas
+            </h3>
+            <div class="relative h-64">
+              <canvas id="chart-bi-top5"></canvas>
+            </div>
+          </div>
+
+          <!-- Taxa de Uso por Setor -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+              <i data-lucide="building" class="w-4 h-4 text-indigo-600"></i>
+              Volume de Retiradas por Setor/Local
+            </h3>
+            <div class="relative h-64">
+              <canvas id="chart-bi-setores"></canvas>
+            </div>
+          </div>
+
+          <!-- Série Temporal de Movimentações -->
+          <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+              <i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i>
+              Evolução Diária de Movimentações
+            </h3>
+            <div class="relative h-64">
+              <canvas id="chart-bi-tempo"></canvas>
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- TELA 05: HISTÓRICO GLOBAL (RESERVADA) -->
+      <!-- DEMAIS TELAS RESERVADAS (ETAPAS 3 E 4) -->
       <section id="view-historico" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Histórico Completo de Movimentações</h2>
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Em breve: Audit log completo com exportação em relatórios.</p>
-        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"><p class="text-slate-600 text-sm">Em breve (Etapa 3).</p></div>
       </section>
-
-      <!-- TELA 06: DOSSIÊ FUNCIONÁRIO (RESERVADO) -->
       <section id="view-funcionarios" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Dossiê do Funcionário</h2>
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Em breve: Ficha individual com foto e ferramentas atualmente sob posse.</p>
-        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"><p class="text-slate-600 text-sm">Em breve (Etapa 3).</p></div>
       </section>
-
-      <!-- TELA 07: FICHA FERRAMENTA (RESERVADA) -->
       <section id="view-ferramentas" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Ficha da Ferramenta</h2>
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Em breve: Raio-X com foto, localização de origem e ciclo de vida do item.</p>
-        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"><p class="text-slate-600 text-sm">Em breve (Etapa 3).</p></div>
       </section>
-
-      <!-- TELA 08: DETALHES DO LOCAL (RESERVADO) -->
       <section id="view-locais" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Detalhes do Local</h2>
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Em breve: Ferramentas pertencentes e movimentações por setor.</p>
-        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"><p class="text-slate-600 text-sm">Em breve (Etapa 3).</p></div>
       </section>
-
-      <!-- TELA 09: GESTÃO & CADASTROS (RESERVADO) -->
       <section id="view-gestao" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Gestão & Cadastros de Permissões</h2>
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Em breve: Cadastro de itens, novos colaboradores e alteração de RBAC.</p>
-        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"><p class="text-slate-600 text-sm">Em breve (Etapa 4).</p></div>
       </section>
-
-      <!-- TELA 10: CENTRAL DE IMPRESSÃO (RESERVADO) -->
       <section id="view-impressao" class="tab-content hidden space-y-6">
         <h2 class="text-2xl font-bold text-slate-800">Central de Impressão</h2>
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-slate-600 text-sm">Em breve: Gerador de crachás e etiquetas de QR Code prontas para imprimir.</p>
-        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"><p class="text-slate-600 text-sm">Em breve (Etapa 4).</p></div>
       </section>
 
     </main>
@@ -366,26 +450,30 @@
 
   <!-- ==================== LÓGICA JAVASCRIPT ==================== -->
   <script>
-    // 1. CONFIGURAÇÃO DO SUPABASE CLIENT
+    // Configuração Supabase
     const SUPABASE_URL = "https://gfxctmjgcbgxsrquugrt.supabase.co"; // Substitua pela sua URL
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmeGN0bWpnY2JneHNycXV1Z3J0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjI4NzgsImV4cCI6MjEwODU5ODg3OH0.gvwfxHzgVF72epEMMTdBdRvovmgbtMHquYCFyFa2Li0";            // Substitua pela sua Key
-
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Variáveis Globais de Estado
+    // Estados da Aplicação
     let currentUserProfile = null;
     let cacheEmprestadas = [];
+    let cacheRastreabilidade = [];
+
+    // Instâncias de Gráficos Chart.js
     let chartStatusInstance = null;
     let chartLocaisInstance = null;
+    let chartBiTop5Instance = null;
+    let chartBiSetoresInstance = null;
+    let chartBiTempoInstance = null;
 
-    // Inicialização da Aplicação
     window.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
       await checkAuthSession();
       setupRealtimeSubscriptions();
     });
 
-    // 2. VERIFICAÇÃO DE SESSÃO DO USUÁRIO
+    // 1. SESSÃO E AUTH
     async function checkAuthSession() {
       const { data: { session } } = await supabaseClient.auth.getSession();
 
@@ -394,7 +482,6 @@
         return;
       }
 
-      // Busca o perfil na tabela 'funcionarios'
       const { data: perfil, error } = await supabaseClient
         .from('funcionarios')
         .select('*')
@@ -402,7 +489,7 @@
         .single();
 
       if (error || !perfil) {
-        alert("Perfil de funcionário não encontrado ou inativo.");
+        alert("Perfil não encontrado.");
         await supabaseClient.auth.signOut();
         showLoginScreen(true);
         return;
@@ -413,7 +500,6 @@
       setupDashboardView();
     }
 
-    // 3. LOGIN VIA SUPABASE AUTH
     async function handleLogin(event) {
       event.preventDefault();
       const email = document.getElementById('login-email').value.trim();
@@ -440,14 +526,12 @@
       }
     }
 
-    // 4. LOGOUT E LIMPEZA TOTAL DE DADOS DA TELA DE LOGIN
     async function handleLogout() {
       await supabaseClient.auth.signOut();
       currentUserProfile = null;
       showLoginScreen(true);
     }
 
-    // Controle de Exibição da Tela de Login e Limpeza dos Formulários
     function showLoginScreen(show) {
       const login = document.getElementById('screen-login');
       const app = document.getElementById('app-layout');
@@ -455,13 +539,8 @@
       const errDiv = document.getElementById('login-error');
 
       if (show) {
-        // Zera todos os inputs e mensagens de erro ao desconectar
         if (formLogin) formLogin.reset();
-        if (errDiv) {
-          errDiv.innerText = '';
-          errDiv.classList.add('hidden');
-        }
-
+        if (errDiv) { errDiv.innerText = ''; errDiv.classList.add('hidden'); }
         login.classList.remove('hidden');
         app.classList.add('hidden');
       } else {
@@ -470,7 +549,6 @@
       }
     }
 
-    // 5. ADAPTAÇÃO DA INTERFACE POR PERMISSÃO (RBAC)
     function setupDashboardView() {
       if (!currentUserProfile) return;
 
@@ -481,7 +559,6 @@
       const navAdminGroup = document.getElementById('nav-group-admin');
       const level = currentUserProfile.nivel_acesso;
 
-      // Exibe opções restritas para Master e Administrador
       if (level === 'master' || level === 'administrador') {
         navAdminGroup.classList.remove('hidden');
       } else {
@@ -491,7 +568,7 @@
       switchTab('visao-geral');
     }
 
-    // 6. NAVEGAÇÃO ENTRE ABAS (SPA)
+    // 2. NAVEGAÇÃO ENTRE ABAS (SPA)
     function switchTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-tab'));
@@ -502,19 +579,17 @@
       if (targetView) targetView.classList.remove('hidden');
       if (targetBtn) targetBtn.classList.add('active-tab');
 
-      // Se alternou para Visão Geral, recarrega os dados
-      if (tabName === 'visao-geral') {
-        loadVisaoGeralData();
-      }
+      if (tabName === 'visao-geral') loadVisaoGeralData();
+      if (tabName === 'rastreabilidade') loadRastreabilidadeData();
+      if (tabName === 'indicadores') loadIndicadoresData();
     }
 
-    // 7. CARREGAMENTO E RENDERIZAÇÃO DA VISÃO GERAL
+    // 3. TELA VISÃO GERAL
     async function loadVisaoGeralData() {
       try {
         const { data: ferramentas, error } = await supabaseClient.from('ferramentas').select('*');
         if (error) throw error;
 
-        // Cálculos dos KPIs
         const total = ferramentas.length;
         const emprestadas = ferramentas.filter(f => f.status === 'Emprestado');
         const disponiveis = ferramentas.filter(f => f.status === 'Disponível');
@@ -525,24 +600,19 @@
         document.getElementById('kpi-disponiveis').innerText = disponiveis.length;
         document.getElementById('kpi-manutencao').innerText = manutencao.length;
 
-        // Guarda em cache local para filtragem em tempo real
         cacheEmprestadas = emprestadas;
         renderEmprestadasTable(cacheEmprestadas);
-
-        // Atualiza Gráficos
-        renderCharts(disponiveis.length, emprestadas.length, manutencao.length, emprestadas);
+        renderChartsVisaoGeral(disponiveis.length, emprestadas.length, manutencao.length, emprestadas);
 
       } catch (err) {
-        console.error("Erro ao carregar Visão Geral:", err.message);
+        console.error("Erro Visão Geral:", err.message);
       }
     }
 
-    // Renderiza a Tabela de Ferramentas Emprestadas
     function renderEmprestadasTable(lista) {
       const tbody = document.getElementById('table-emprestadas-body');
-
       if (!lista || lista.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">Nenhuma ferramenta emprestada no momento.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400">Nenhuma ferramenta emprestada no momento.</td></tr>';
         return;
       }
 
@@ -563,9 +633,7 @@
             ${f.desde ? new Date(f.desde).toLocaleString('pt-BR') : '---'}
           </td>
           <td class="p-4 text-center">
-            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
-              Emprestado
-            </span>
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Emprestado</span>
           </td>
         </tr>
       `).join('');
@@ -573,7 +641,6 @@
       lucide.createIcons();
     }
 
-    // Filtro Rápido na Tabela de Emprestadas
     function filterEmprestadasTable() {
       const term = document.getElementById('search-emprestadas').value.toLowerCase();
       const filtradas = cacheEmprestadas.filter(f => 
@@ -585,77 +652,292 @@
       renderEmprestadasTable(filtradas);
     }
 
-    // 8. RENDERIZAÇÃO DOS GRÁFICOS (CHART.JS)
-    function renderCharts(disponiveis, emprestadas, manutencao, listaEmprestadas) {
-      // 1. Gráfico de Rosca (Status)
+    function renderChartsVisaoGeral(disponiveis, emprestadas, manutencao, listaEmprestadas) {
       const ctxStatus = document.getElementById('chart-status').getContext('2d');
       if (chartStatusInstance) chartStatusInstance.destroy();
-
       chartStatusInstance = new Chart(ctxStatus, {
         type: 'doughnut',
         data: {
           labels: ['Disponíveis', 'Emprestadas', 'Manutenção'],
-          datasets: [{
-            data: [disponiveis, emprestadas, manutencao],
-            backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
-            borderWidth: 2,
-            borderColor: '#ffffff'
-          }]
+          datasets: [{ data: [disponiveis, emprestadas, manutencao], backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'] }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
-          }
-        }
+        options: { responsive: true, maintainAspectRatio: false }
       });
 
-      // 2. Gráfico de Barras (Itens Emprestados por Local)
       const contagemLocais = {};
       listaEmprestadas.forEach(item => {
         const loc = item.local_atual || 'Não especificado';
         contagemLocais[loc] = (contagemLocais[loc] || 0) + 1;
       });
 
-      const labelsLocais = Object.keys(contagemLocais);
-      const dataLocais = Object.values(contagemLocais);
-
       const ctxLocais = document.getElementById('chart-locais').getContext('2d');
       if (chartLocaisInstance) chartLocaisInstance.destroy();
-
       chartLocaisInstance = new Chart(ctxLocais, {
         type: 'bar',
         data: {
-          labels: labelsLocais.length ? labelsLocais : ['Nenhum empréstimo'],
+          labels: Object.keys(contagemLocais).length ? Object.keys(contagemLocais) : ['Nenhum'],
+          datasets: [{ label: 'Itens', data: Object.values(contagemLocais).length ? Object.values(contagemLocais) : [0], backgroundColor: '#3b82f6', borderRadius: 6 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+      });
+    }
+
+    // 4. TELA DE RASTREABILIDADE (ETAPA 2)
+    async function loadRastreabilidadeData() {
+      try {
+        const [resFerramentas, resLocais, resFuncs] = await Promise.all([
+          supabaseClient.from('ferramentas').select('*').order('nome'),
+          supabaseClient.from('locais').select('nome').order('nome'),
+          supabaseClient.from('funcionarios').select('nome').order('nome')
+        ]);
+
+        if (resFerramentas.error) throw resFerramentas.error;
+
+        cacheRastreabilidade = resFerramentas.data || [];
+
+        // Preenche Dropdowns de Filtro
+        const selectLocal = document.getElementById('filter-rastreio-local');
+        const selectResp = document.getElementById('filter-rastreio-resp');
+
+        selectLocal.innerHTML = '<option value="">Todos os Locais</option>';
+        (resLocais.data || []).forEach(l => {
+          selectLocal.innerHTML += `<option value="${l.nome}">${l.nome}</option>`;
+        });
+
+        selectResp.innerHTML = '<option value="">Todos os Responsáveis</option>';
+        (resFuncs.data || []).forEach(f => {
+          selectResp.innerHTML += `<option value="${f.nome}">${f.nome}</option>`;
+        });
+
+        filterRastreabilidadeData();
+      } catch (err) {
+        console.error("Erro Rastreabilidade:", err.message);
+      }
+    }
+
+    function filterRastreabilidadeData() {
+      const txt = document.getElementById('filter-rastreio-texto').value.toLowerCase();
+      const local = document.getElementById('filter-rastreio-local').value;
+      const resp = document.getElementById('filter-rastreio-resp').value;
+      const status = document.getElementById('filter-rastreio-status').value;
+
+      const filtrados = cacheRastreabilidade.filter(item => {
+        const matchTxt = item.id.toLowerCase().includes(txt) || item.nome.toLowerCase().includes(txt);
+        const matchLocal = !local || item.local_atual === local;
+        const matchResp = !resp || item.com_quem_esta === resp;
+        const matchStatus = !status || item.status === status;
+
+        return matchTxt && matchLocal && matchResp && matchStatus;
+      });
+
+      renderRastreabilidadeGrid(filtrados);
+    }
+
+    function renderRastreabilidadeGrid(items) {
+      const grid = document.getElementById('grid-rastreabilidade');
+
+      if (!items || items.length === 0) {
+        grid.innerHTML = '<p class="text-slate-400 text-sm col-span-full text-center py-8">Nenhum equipamento encontrado com os filtros selecionados.</p>';
+        return;
+      }
+
+      grid.innerHTML = items.map(item => {
+        let statusBadge = '';
+        if (item.status === 'Emprestado') {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">Emprestado</span>';
+        } else if (item.status === 'Disponível') {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Disponível</span>';
+        } else {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">Manutenção</span>';
+        }
+
+        return `
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${item.id}</span>
+                <h4 class="font-bold text-slate-800 text-base mt-1.5 leading-snug">${item.nome}</h4>
+              </div>
+              ${statusBadge}
+            </div>
+
+            <div class="space-y-2 text-xs border-t border-slate-100 pt-3">
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="font-medium text-slate-400">Responsável Atual:</span>
+                <span class="font-bold text-slate-700">${item.com_quem_esta || '--- (No Almoxarifado)'}</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="font-medium text-slate-400">Local de Uso:</span>
+                <span class="font-bold text-slate-700">${item.local_atual || 'Banco de Ferramentas'}</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="font-medium text-slate-400">Desde:</span>
+                <span class="font-mono text-slate-500">${item.desde ? new Date(item.desde).toLocaleString('pt-BR') : '---'}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // 5. TELA DE INDICADORES & BI (ETAPA 2)
+    async function loadIndicadoresData() {
+      try {
+        const periodo = document.getElementById('select-bi-periodo').value;
+        
+        let queryHist = supabaseClient.from('historico').select('*');
+        if (periodo !== 'all') {
+          const dataCorte = new Date();
+          dataCorte.setDate(dataCorte.getDate() - parseInt(periodo));
+          queryHist = queryHist.gte('created_at', dataCorte.toISOString());
+        }
+
+        const [resHist, resFerramentas] = await Promise.all([
+          queryHist,
+          supabaseClient.from('ferramentas').select('status')
+        ]);
+
+        if (resHist.error) throw resHist.error;
+
+        const historico = resHist.data || [];
+        const ferramentas = resFerramentas.data || [];
+
+        // 1. KPI Total Movimentações
+        document.getElementById('bi-kpi-movimentacoes').innerText = historico.length;
+
+        // 2. Contagem de Ferramentas Mais Usadas e Setores Mais Ativos
+        const contagemFerramentas = {};
+        const contagemSetores = {};
+        const datasMap = {};
+
+        historico.forEach(h => {
+          // Contagem Ferramentas
+          const fer = h.nome_ferramenta || h.id_ferramenta;
+          contagemFerramentas[fer] = (contagemFerramentas[fer] || 0) + 1;
+
+          // Contagem Setores
+          const sec = h.local_uso || 'Não especificado';
+          contagemSetores[sec] = (contagemSetores[sec] || 0) + 1;
+
+          // Contagem por Data
+          if (h.created_at) {
+            const dataIso = h.created_at.split('T')[0];
+            datasMap[dataIso] = (datasMap[dataIso] || 0) + 1;
+          }
+        });
+
+        // Preenche KPI Ferramenta Mais Solicitada
+        const sortedFer = Object.entries(contagemFerramentas).sort((a,b) => b[1] - a[1]);
+        if (sortedFer.length > 0) {
+          document.getElementById('bi-kpi-mais-usado').innerText = sortedFer[0][0];
+          document.getElementById('bi-kpi-mais-usado-qtd').innerText = `${sortedFer[0][1]} solicitações`;
+        } else {
+          document.getElementById('bi-kpi-mais-usado').innerText = '---';
+          document.getElementById('bi-kpi-mais-usado-qtd').innerText = '0 solicitações';
+        }
+
+        // Preenche KPI Setor Mais Ativo
+        const sortedSet = Object.entries(contagemSetores).sort((a,b) => b[1] - a[1]);
+        if (sortedSet.length > 0) {
+          document.getElementById('bi-kpi-setor-ativo').innerText = sortedSet[0][0];
+          document.getElementById('bi-kpi-setor-ativo-qtd').innerText = `${sortedSet[0][1]} solicitações`;
+        } else {
+          document.getElementById('bi-kpi-setor-ativo').innerText = '---';
+          document.getElementById('bi-kpi-setor-ativo-qtd').innerText = '0 solicitações';
+        }
+
+        // KPI Taxa de Ocupação
+        const emp = ferramentas.filter(f => f.status === 'Emprestado').length;
+        const taxa = ferramentas.length ? Math.round((emp / ferramentas.length) * 100) : 0;
+        document.getElementById('bi-kpi-taxa-ocupacao').innerText = `${taxa}%`;
+
+        // Renderiza Gráficos BI
+        renderChartsBI(sortedFer.slice(0, 5), contagemSetores, datasMap);
+
+      } catch (err) {
+        console.error("Erro Indicadores BI:", err.message);
+      }
+    }
+
+    function renderChartsBI(top5Ferramentas, contagemSetores, datasMap) {
+      // 1. Chart Top 5 Ferramentas
+      const ctxTop5 = document.getElementById('chart-bi-top5').getContext('2d');
+      if (chartBiTop5Instance) chartBiTop5Instance.destroy();
+
+      chartBiTop5Instance = new Chart(ctxTop5, {
+        type: 'bar',
+        data: {
+          labels: top5Ferramentas.map(i => i[0]),
           datasets: [{
-            label: 'Ferramentas Emprestadas',
-            data: dataLocais.length ? dataLocais : [0],
-            backgroundColor: '#3b82f6',
+            label: 'Empréstimos',
+            data: top5Ferramentas.map(i => i[1]),
+            backgroundColor: '#f59e0b',
             borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      // 2. Chart Setores
+      const ctxSetores = document.getElementById('chart-bi-setores').getContext('2d');
+      if (chartBiSetoresInstance) chartBiSetoresInstance.destroy();
+
+      chartBiSetoresInstance = new Chart(ctxSetores, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(contagemSetores),
+          datasets: [{
+            data: Object.values(contagemSetores),
+            backgroundColor: ['#6366f1', '#3b82f6', '#10b981', '#ec4899', '#8b5cf6', '#f97316']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      // 3. Chart Evolução Temporal
+      const datasOrdenadas = Object.keys(datasMap).sort();
+      const ctxTempo = document.getElementById('chart-bi-tempo').getContext('2d');
+      if (chartBiTempoInstance) chartBiTempoInstance.destroy();
+
+      chartBiTempoInstance = new Chart(ctxTempo, {
+        type: 'line',
+        data: {
+          labels: datasOrdenadas.map(d => d.split('-').reverse().slice(0, 2).join('/')),
+          datasets: [{
+            label: 'Movimentações',
+            data: datasOrdenadas.map(d => datasMap[d]),
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.3
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, ticks: { precision: 0 } }
-          }
+          scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
         }
       });
     }
 
-    // 9. SINCRONIZAÇÃO EM TEMPO REAL (SUPABASE REALTIME)
+    // 6. REALTIME SUBSCRIPTION
     function setupRealtimeSubscriptions() {
       supabaseClient
-        .channel('db-changes')
+        .channel('dashboard-realtime')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'ferramentas' }, () => {
-          // Atualiza a Visão Geral se estiver ativa
-          const visaoGeralVisible = !document.getElementById('view-visao-geral').classList.contains('hidden');
-          if (visaoGeralVisible) {
-            loadVisaoGeralData();
-          }
+          if (!document.getElementById('view-visao-geral').classList.contains('hidden')) loadVisaoGeralData();
+          if (!document.getElementById('view-rastreabilidade').classList.contains('hidden')) loadRastreabilidadeData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'historico' }, () => {
+          if (!document.getElementById('view-indicadores').classList.contains('hidden')) loadIndicadoresData();
         })
         .subscribe();
     }
