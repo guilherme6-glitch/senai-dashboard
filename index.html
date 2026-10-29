@@ -252,7 +252,6 @@
                 Localização Atual dos Itens Emprestados
               </h3>
 
-              <!-- Navegação / Paginação do Gráfico -->
               <div id="chart-locais-nav" class="hidden flex items-center gap-2">
                 <button onclick="mudarPaginaGraficoLocais(-1)" title="Página Anterior" class="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs">
                   <i data-lucide="chevron-left" class="w-4 h-4"></i>
@@ -270,14 +269,13 @@
           </div>
         </div>
 
-        <!-- Tabela Ferramentas Emprestadas (Nome Atualizado e Scroll Interno) -->
+        <!-- Tabela Ferramentas Emprestadas -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-2">
               <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i>
               <h3 class="font-bold text-slate-800 text-base">Ferramentas Emprestadas</h3>
             </div>
-            <!-- Campo de Busca Rápida -->
             <div class="relative w-full sm:w-64">
               <input type="text" id="search-emprestadas" oninput="filterEmprestadasTable()" placeholder="Buscar item ou pessoa..."
                 class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
@@ -285,7 +283,6 @@
             </div>
           </div>
 
-          <!-- Container com Rolagem Interna sem Estender a Tela -->
           <div class="max-h-[350px] overflow-y-auto">
             <table class="w-full text-left border-collapse text-sm">
               <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10 shadow-sm">
@@ -310,12 +307,13 @@
       <section id="view-rastreabilidade" class="tab-content hidden space-y-6">
         <div>
           <h2 class="text-2xl font-bold text-slate-800">Rastreabilidade em Tempo Real</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Localização física, responsável e histórico individualizador de todos os ativos</p>
+          <p class="text-xs text-slate-500 mt-0.5">Localização física, responsável e verificação de pertencimento do ativo</p>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Filtros Combinados (Inclui Origem e Destino Separados) -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Buscar por Nome / Código</label>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Buscar Nome / Código</label>
             <div class="relative">
               <input type="text" id="filter-rastreio-texto" oninput="filterRastreabilidadeData()" placeholder="Ex: Multímetro ou MST-01"
                 class="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
@@ -324,9 +322,16 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local / Setor</label>
-            <select id="filter-rastreio-local" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
-              <option value="">Todos os Locais</option>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local Pertencente (Origem)</label>
+            <select id="filter-rastreio-origem" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todas as Origens</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local Atual (Onde Está)</label>
+            <select id="filter-rastreio-atual" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todos os Locais Atuais</option>
             </select>
           </div>
 
@@ -348,6 +353,7 @@
           </div>
         </div>
 
+        <!-- Grid de Cards da Rastreabilidade -->
         <div id="grid-rastreabilidade" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-h-[500px] overflow-y-auto pr-1">
           <p class="text-slate-400 text-sm col-span-full text-center py-8">Carregando mapa de rastreabilidade...</p>
         </div>
@@ -447,7 +453,6 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmeGN0bWpnY2JneHNycXV1Z3J0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjI4NzgsImV4cCI6MjEwODU5ODg3OH0.gvwfxHzgVF72epEMMTdBdRvovmgbtMHquYCFyFa2Li0";            // Substitua pela sua Key
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Registra o Plugin do Chart.js para DataLabels se disponível
     if (typeof ChartDataLabels !== 'undefined') {
       Chart.register(ChartDataLabels);
     }
@@ -605,7 +610,6 @@
         cacheEmprestadas = emprestadas;
         renderEmprestadasTable(cacheEmprestadas);
 
-        // Prepara dados dos locais
         dadosLocaisGlobal = {};
         emprestadas.forEach(item => {
           const loc = item.local_atual || 'Não especificado';
@@ -621,7 +625,6 @@
       }
     }
 
-    // Renderiza a Tabela sem a coluna Status
     function renderEmprestadasTable(lista) {
       const tbody = document.getElementById('table-emprestadas-body');
       if (!lista || lista.length === 0) {
@@ -662,8 +665,6 @@
       renderEmprestadasTable(filtradas);
     }
 
-    // 4. GRÁFICOS DA VISÃO GERAL
-    // Gráfico de Rosca com porcentagens no donut
     function renderChartStatus(disponiveis, emprestadas, manutencao) {
       const ctxStatus = document.getElementById('chart-status').getContext('2d');
       if (chartStatusInstance) chartStatusInstance.destroy();
@@ -692,8 +693,7 @@
                 let dataArr = ctx.chart.data.datasets[0].data;
                 dataArr.forEach(data => { sum += data; });
                 if (sum === 0 || value === 0) return '';
-                let percentage = ((value * 100) / sum).toFixed(0) + "%";
-                return percentage;
+                return ((value * 100) / sum).toFixed(0) + "%";
               }
             }
           }
@@ -701,7 +701,6 @@
       });
     }
 
-    // Gráfico de Barras Colorido e Paginado (Máx 10 por página)
     function renderChartLocaisPaginado() {
       const entries = Object.entries(dadosLocaisGlobal);
       const totalPaginas = Math.ceil(entries.length / ITENS_POR_PAGINA_GRAFICO) || 1;
@@ -715,7 +714,6 @@
       const labels = paginaEntries.map(e => e[0]);
       const data = paginaEntries.map(e => e[1]);
 
-      // Atualiza Navegação Visual
       const navEl = document.getElementById('chart-locais-nav');
       if (entries.length > ITENS_POR_PAGINA_GRAFICO) {
         navEl.classList.remove('hidden');
@@ -724,7 +722,6 @@
         navEl.classList.add('hidden');
       }
 
-      // Paleta Multicor de Alta Visibilidade
       const palette = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#6366f1', '#14b8a6', '#f97316', '#a855f7'];
       const bgColors = labels.map((_, i) => palette[i % palette.length]);
 
@@ -761,7 +758,7 @@
       renderChartLocaisPaginado();
     }
 
-    // 5. TELA DE RASTREABILIDADE
+    // 4. TELA DE RASTREABILIDADE (COM PERTENCIMENTO)
     async function loadRastreabilidadeData() {
       try {
         const [resFerramentas, resLocais, resFuncs] = await Promise.all([
@@ -774,12 +771,16 @@
 
         cacheRastreabilidade = resFerramentas.data || [];
 
-        const selectLocal = document.getElementById('filter-rastreio-local');
+        const selectOrigem = document.getElementById('filter-rastreio-origem');
+        const selectAtual = document.getElementById('filter-rastreio-atual');
         const selectResp = document.getElementById('filter-rastreio-resp');
 
-        selectLocal.innerHTML = '<option value="">Todos os Locais</option>';
+        selectOrigem.innerHTML = '<option value="">Todas as Origens</option>';
+        selectAtual.innerHTML = '<option value="">Todos os Locais Atuais</option>';
+
         (resLocais.data || []).forEach(l => {
-          selectLocal.innerHTML += `<option value="${l.nome}">${l.nome}</option>`;
+          selectOrigem.innerHTML += `<option value="${l.nome}">${l.nome}</option>`;
+          selectAtual.innerHTML += `<option value="${l.nome}">${l.nome}</option>`;
         });
 
         selectResp.innerHTML = '<option value="">Todos os Responsáveis</option>';
@@ -795,17 +796,22 @@
 
     function filterRastreabilidadeData() {
       const txt = document.getElementById('filter-rastreio-texto').value.toLowerCase();
-      const local = document.getElementById('filter-rastreio-local').value;
+      const origem = document.getElementById('filter-rastreio-origem').value;
+      const atual = document.getElementById('filter-rastreio-atual').value;
       const resp = document.getElementById('filter-rastreio-resp').value;
       const status = document.getElementById('filter-rastreio-status').value;
 
       const filtrados = cacheRastreabilidade.filter(item => {
+        const localOrigemItem = item.local_origem || item.local_pertencente || item.local_home || item.local_origem_nome || 'Não definido';
+        const localAtualItem = item.local_atual || 'Banco de Ferramentas';
+
         const matchTxt = item.id.toLowerCase().includes(txt) || item.nome.toLowerCase().includes(txt);
-        const matchLocal = !local || item.local_atual === local;
+        const matchOrigem = !origem || localOrigemItem === origem;
+        const matchAtual = !atual || localAtualItem === atual;
         const matchResp = !resp || item.com_quem_esta === resp;
         const matchStatus = !status || item.status === status;
 
-        return matchTxt && matchLocal && matchResp && matchStatus;
+        return matchTxt && matchOrigem && matchAtual && matchResp && matchStatus;
       });
 
       renderRastreabilidadeGrid(filtrados);
@@ -820,9 +826,13 @@
       }
 
       grid.innerHTML = items.map(item => {
+        const localOrigemItem = item.local_origem || item.local_pertencente || item.local_home || item.local_origem_nome || 'Não Definido';
+        const localAtualItem = item.local_atual || 'Banco de Ferramentas';
+        const estaFora = item.status === 'Emprestado' && localOrigemItem !== 'Não Definido' && localOrigemItem !== localAtualItem;
+
         let statusBadge = '';
         if (item.status === 'Emprestado') {
-          statusBadge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">Emprestado</span>';
+          statusBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">${estaFora ? '⚠️ Fora da Origem' : 'Emprestado'}</span>`;
         } else if (item.status === 'Disponível') {
           statusBadge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Disponível</span>';
         } else {
@@ -830,7 +840,7 @@
         }
 
         return `
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition">
             <div class="flex items-start justify-between gap-2">
               <div>
                 <span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${item.id}</span>
@@ -841,15 +851,22 @@
 
             <div class="space-y-2 text-xs border-t border-slate-100 pt-3">
               <div class="flex items-center justify-between text-slate-600">
-                <span class="font-medium text-slate-400">Responsável Atual:</span>
+                <span class="font-medium text-slate-400 flex items-center gap-1"><i data-lucide="home" class="w-3.5 h-3.5 text-blue-500"></i> Local Pertencente:</span>
+                <span class="font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${localOrigemItem}</span>
+              </div>
+
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="font-medium text-slate-400 flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-500"></i> Onde Está Agora:</span>
+                <span class="font-bold ${estaFora ? 'text-amber-700 bg-amber-50 border border-amber-200' : 'text-slate-700'} px-2 py-0.5 rounded">${localAtualItem}</span>
+              </div>
+
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="font-medium text-slate-400 flex items-center gap-1"><i data-lucide="user" class="w-3.5 h-3.5 text-slate-400"></i> Responsável:</span>
                 <span class="font-bold text-slate-700">${item.com_quem_esta || '--- (No Almoxarifado)'}</span>
               </div>
+
               <div class="flex items-center justify-between text-slate-600">
-                <span class="font-medium text-slate-400">Local de Uso:</span>
-                <span class="font-bold text-slate-700">${item.local_atual || 'Banco de Ferramentas'}</span>
-              </div>
-              <div class="flex items-center justify-between text-slate-600">
-                <span class="font-medium text-slate-400">Desde:</span>
+                <span class="font-medium text-slate-400 flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i> Desde:</span>
                 <span class="font-mono text-slate-500">${item.desde ? new Date(item.desde).toLocaleString('pt-BR') : '---'}</span>
               </div>
             </div>
@@ -860,7 +877,7 @@
       lucide.createIcons();
     }
 
-    // 6. TELA DE INDICADORES & BI
+    // 5. TELA DE INDICADORES & BI
     async function loadIndicadoresData() {
       try {
         const periodo = document.getElementById('select-bi-periodo').value;
@@ -1008,7 +1025,7 @@
       });
     }
 
-    // 7. REALTIME SUBSCRIPTION
+    // 6. REALTIME SUBSCRIPTION
     function setupRealtimeSubscriptions() {
       supabaseClient
         .channel('dashboard-realtime')
