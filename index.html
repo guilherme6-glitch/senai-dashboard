@@ -167,7 +167,7 @@
       </div>
     </aside>
 
-    <!-- ÁREA DE CONTEÚDO PRINCIPAL (COM CONTROLE DE SCROLL INTERNO) -->
+    <!-- ÁREA DE CONTEÚDO PRINCIPAL -->
     <main class="flex-1 h-full overflow-y-auto p-6 space-y-6">
 
       <!-- ==================== TELA 01: VISÃO GERAL ==================== -->
@@ -233,7 +233,6 @@
 
         <!-- Seção de Gráficos Analíticos -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Gráfico Rosca com Porcentagens Visíveis -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
               <i data-lucide="pie-chart" class="w-4 h-4 text-blue-600"></i>
@@ -244,7 +243,6 @@
             </div>
           </div>
 
-          <!-- Gráfico Barras Colorido e Paginado por Locais -->
           <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
               <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
@@ -310,7 +308,7 @@
           <p class="text-xs text-slate-500 mt-0.5">Localização física, responsável e verificação de pertencimento do ativo</p>
         </div>
 
-        <!-- Filtros Combinados (Inclui Origem e Destino Separados) -->
+        <!-- Filtros Combinados -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Buscar Nome / Código</label>
@@ -473,6 +471,22 @@
     let chartBiTop5Instance = null;
     let chartBiSetoresInstance = null;
     let chartBiTempoInstance = null;
+
+    // HELPER PARA EXTRAÇÃO ROBUSTA DO LOCAL PERTENCENTE/ORIGEM
+    function getLocalOrigem(item) {
+      if (!item) return 'Não Definido';
+      
+      const valor = item.local_origem || 
+                    item.local_pertencente || 
+                    item.local_nome || 
+                    item.local_base || 
+                    item.origem || 
+                    item.pertencimento || 
+                    item.local_departamento || 
+                    (item.local && item.local !== item.local_atual ? item.local : null);
+
+      return (valor && typeof valor === 'string' && valor.trim() !== '') ? valor.trim() : 'Não Definido';
+    }
 
     window.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
@@ -758,7 +772,7 @@
       renderChartLocaisPaginado();
     }
 
-    // 4. TELA DE RASTREABILIDADE (COM PERTENCIMENTO)
+    // 4. TELA DE RASTREABILIDADE (COM MAPEAMENTO INTELIGENTE DE ORIGEM)
     async function loadRastreabilidadeData() {
       try {
         const [resFerramentas, resLocais, resFuncs] = await Promise.all([
@@ -775,17 +789,26 @@
         const selectAtual = document.getElementById('filter-rastreio-atual');
         const selectResp = document.getElementById('filter-rastreio-resp');
 
-        selectOrigem.innerHTML = '<option value="">Todas as Origens</option>';
-        selectAtual.innerHTML = '<option value="">Todos os Locais Atuais</option>';
+        // Extrai todas as origens cadastradas e adiciona os locais base da tabela 'locais'
+        const listaLocaisBase = (resLocais.data || []).map(l => l.nome).filter(Boolean);
+        const origensPresentes = cacheRastreabilidade.map(item => getLocalOrigem(item)).filter(o => o !== 'Não Definido');
 
-        (resLocais.data || []).forEach(l => {
-          selectOrigem.innerHTML += `<option value="${l.nome}">${l.nome}</option>`;
-          selectAtual.innerHTML += `<option value="${l.nome}">${l.nome}</option>`;
+        const conjuntoOrigens = Array.from(new Set([...listaLocaisBase, ...origensPresentes])).sort();
+        const conjuntoLocaisAtuais = Array.from(new Set([...listaLocaisBase, ...cacheRastreabilidade.map(i => i.local_atual).filter(Boolean)])).sort();
+
+        selectOrigem.innerHTML = '<option value="">Todas as Origens</option>';
+        conjuntoOrigens.forEach(loc => {
+          selectOrigem.innerHTML += `<option value="${loc}">${loc}</option>`;
+        });
+
+        selectAtual.innerHTML = '<option value="">Todos os Locais Atuais</option>';
+        conjuntoLocaisAtuais.forEach(loc => {
+          selectAtual.innerHTML += `<option value="${loc}">${loc}</option>`;
         });
 
         selectResp.innerHTML = '<option value="">Todos os Responsáveis</option>';
-        (resFuncs.data || []).forEach(f => {
-          selectResp.innerHTML += `<option value="${f.nome}">${f.nome}</option>`;
+        (resFuncs.data || []).map(f => f.nome).filter(Boolean).sort().forEach(nome => {
+          selectResp.innerHTML += `<option value="${nome}">${nome}</option>`;
         });
 
         filterRastreabilidadeData();
@@ -796,19 +819,20 @@
 
     function filterRastreabilidadeData() {
       const txt = document.getElementById('filter-rastreio-texto').value.toLowerCase();
-      const origem = document.getElementById('filter-rastreio-origem').value;
-      const atual = document.getElementById('filter-rastreio-atual').value;
-      const resp = document.getElementById('filter-rastreio-resp').value;
+      const origem = document.getElementById('filter-rastreio-origem').value.toLowerCase();
+      const atual = document.getElementById('filter-rastreio-atual').value.toLowerCase();
+      const resp = document.getElementById('filter-rastreio-resp').value.toLowerCase();
       const status = document.getElementById('filter-rastreio-status').value;
 
       const filtrados = cacheRastreabilidade.filter(item => {
-        const localOrigemItem = item.local_origem || item.local_pertencente || item.local_home || item.local_origem_nome || 'Não definido';
+        const localOrigemItem = getLocalOrigem(item);
         const localAtualItem = item.local_atual || 'Banco de Ferramentas';
+        const respItem = item.com_quem_esta || '';
 
         const matchTxt = item.id.toLowerCase().includes(txt) || item.nome.toLowerCase().includes(txt);
-        const matchOrigem = !origem || localOrigemItem === origem;
-        const matchAtual = !atual || localAtualItem === atual;
-        const matchResp = !resp || item.com_quem_esta === resp;
+        const matchOrigem = !origem || localOrigemItem.toLowerCase() === origem;
+        const matchAtual = !atual || localAtualItem.toLowerCase() === atual;
+        const matchResp = !resp || respItem.toLowerCase() === resp;
         const matchStatus = !status || item.status === status;
 
         return matchTxt && matchOrigem && matchAtual && matchResp && matchStatus;
@@ -826,9 +850,9 @@
       }
 
       grid.innerHTML = items.map(item => {
-        const localOrigemItem = item.local_origem || item.local_pertencente || item.local_home || item.local_origem_nome || 'Não Definido';
+        const localOrigemItem = getLocalOrigem(item);
         const localAtualItem = item.local_atual || 'Banco de Ferramentas';
-        const estaFora = item.status === 'Emprestado' && localOrigemItem !== 'Não Definido' && localOrigemItem !== localAtualItem;
+        const estaFora = item.status === 'Emprestado' && localOrigemItem !== 'Não Definido' && localOrigemItem.toLowerCase() !== localAtualItem.toLowerCase();
 
         let statusBadge = '';
         if (item.status === 'Emprestado') {
