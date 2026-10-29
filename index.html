@@ -472,37 +472,27 @@
     let chartBiSetoresInstance = null;
     let chartBiTempoInstance = null;
 
-    // EXTRAÇÃO ROBUSTA DO LOCAL PERTENCENTE/ORIGEM
+    // EXTRAÇÃO DE LOCAL PADRÃO / PERTENCENTE
     function getLocalOrigem(item) {
-      if (!item) return 'Almoxarifado Central';
+      if (!item) return 'Não Especificado';
 
-      // 1. Busca em todas as colunas de origem possíveis do banco de dados
-      const valorColuna = item.local_origem || 
+      // 1. Busca a coluna exata 'local_padrao' ou variações no banco
+      const valorColuna = item.local_padrao || 
+                          item.local_padrao || 
+                          item.local_origem || 
                           item.local_pertencente || 
-                          item.local || 
-                          item.local_base || 
-                          item.local_nome || 
-                          item.setor || 
-                          item.origem || 
-                          item.pertencimento || 
-                          item.departamento || 
-                          item.lab;
+                          item.local;
 
       if (valorColuna && typeof valorColuna === 'string' && valorColuna.trim() !== '' && valorColuna !== 'Não Definido') {
         return valorColuna.trim();
       }
 
-      // 2. Se o item estiver Disponível (no banco), o local_atual é a sua origem/base física
+      // 2. Se a ferramenta está disponível no almoxarifado/base e não tem local_padrao, usa o local_atual
       if (item.status === 'Disponível' && item.local_atual && item.local_atual.trim() !== '') {
         return item.local_atual.trim();
       }
 
-      // 3. Fallback inteligente quando não há coluna de origem separada cadastrada
-      if (item.local_atual && item.local_atual.trim() !== '') {
-        return item.local_atual.trim();
-      }
-
-      return 'Almoxarifado Central';
+      return 'Não Especificado';
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
@@ -807,7 +797,7 @@
         const selectResp = document.getElementById('filter-rastreio-resp');
 
         const listaLocaisBase = (resLocais.data || []).map(l => l.nome).filter(Boolean);
-        const origensPresentes = cacheRastreabilidade.map(item => getLocalOrigem(item));
+        const origensPresentes = cacheRastreabilidade.map(item => getLocalOrigem(item)).filter(o => o !== 'Não Especificado');
 
         const conjuntoOrigens = Array.from(new Set([...listaLocaisBase, ...origensPresentes])).sort();
         const conjuntoLocaisAtuais = Array.from(new Set([...listaLocaisBase, ...cacheRastreabilidade.map(i => i.local_atual).filter(Boolean)])).sort();
@@ -868,7 +858,7 @@
       grid.innerHTML = items.map(item => {
         const localOrigemItem = getLocalOrigem(item);
         const localAtualItem = item.local_atual || 'Banco de Ferramentas';
-        const estaFora = item.status === 'Emprestado' && localOrigemItem.toLowerCase() !== localAtualItem.toLowerCase();
+        const estaFora = item.status === 'Emprestado' && localOrigemItem !== 'Não Especificado' && localOrigemItem.toLowerCase() !== localAtualItem.toLowerCase();
 
         let statusBadge = '';
         if (item.status === 'Emprestado') {
