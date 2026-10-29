@@ -359,27 +359,29 @@
 
       <!-- ==================== TELA 03: INDICADORES & BI ==================== -->
       <section id="view-indicadores" class="tab-content hidden space-y-6">
-        <div>
-          <h2 class="text-2xl font-bold text-slate-800">Indicadores & Inteligência de Dados (BI)</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Análise estratégica avançada do uso do acervo, gargalos e padrões de acesso</p>
-        </div>
-
-        <!-- Painel Multi-Filtros do BI -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        
+        <!-- Cabeçalho do BI com Filtro de Intervalo de Datas no Canto Superior Direito -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Período de Análise</label>
-            <select id="select-bi-periodo" onchange="filterIndicadoresData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white font-medium">
-              <option value="30" selected>Últimos 30 dias</option>
-              <option value="1">Hoje</option>
-              <option value="7">Últimos 7 dias</option>
-              <option value="15">Últimos 15 dias</option>
-              <option value="90">Últimos 90 dias</option>
-              <option value="month">Este Mês</option>
-              <option value="year">Este Ano</option>
-              <option value="all">Todo o Histórico</option>
-            </select>
+            <h2 class="text-2xl font-bold text-slate-800">Indicadores & Inteligência de Dados (BI)</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Análise estratégica avançada do uso do acervo, gargalos e padrões de acesso</p>
           </div>
 
+          <!-- Filtro de Período por Data no Topo Direito -->
+          <div class="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 text-xs flex-wrap">
+            <span class="font-bold text-slate-600 uppercase flex items-center gap-1.5 mr-1">
+              <i data-lucide="calendar" class="w-4 h-4 text-blue-600"></i> Período:
+            </span>
+            <input type="date" id="filter-bi-data-inicio" onchange="filterIndicadoresData()"
+              class="px-2.5 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium text-slate-700">
+            <span class="text-slate-400 font-semibold">até</span>
+            <input type="date" id="filter-bi-data-fim" onchange="filterIndicadoresData()"
+              class="px-2.5 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium text-slate-700">
+          </div>
+        </div>
+
+        <!-- Painel Multi-Filtros do BI (4 Colunas) -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ferramenta</label>
             <select id="filter-bi-ferramenta" onchange="filterIndicadoresData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
@@ -454,9 +456,9 @@
           <div class="flex items-center justify-between mb-4">
             <h3 id="bi-tempo-title" class="font-bold text-slate-800 text-sm flex items-center gap-2">
               <i data-lucide="trending-up" class="w-4 h-4 text-blue-600"></i>
-              Volume Diário de Movimentações
+              Volume de Movimentações no Período
             </h3>
-            <span id="bi-tempo-subtitle" class="text-[11px] text-slate-400">Quantidade real de ações por dia no período</span>
+            <span id="bi-tempo-subtitle" class="text-[11px] text-slate-400">Evolução temporal das movimentações</span>
           </div>
           <div class="relative h-64">
             <canvas id="chart-bi-tempo"></canvas>
@@ -930,7 +932,7 @@
       lucide.createIcons();
     }
 
-    // 5. TELA DE INDICADORES & BI (SUPORTE A VISUALIZAÇÃO HOJE POR HORAS)
+    // 5. TELA DE INDICADORES & BI (INTERVALO DE DATAS EXATAS - INÍCIO E FIM)
     async function loadIndicadoresData() {
       try {
         const [resHist, resFerramentas, resLocais, resFuncs] = await Promise.all([
@@ -943,6 +945,9 @@
         if (resHist.error) throw resHist.error;
 
         cacheHistoricoGlobal = resHist.data || [];
+
+        // Inicialização dos campos de Data (Padrão: Últimos 30 dias até hoje)
+        initBIDateInputs();
 
         // Preenche Seletor de Ferramentas
         const selectFer = document.getElementById('filter-bi-ferramenta');
@@ -971,30 +976,38 @@
       }
     }
 
+    function initBIDateInputs() {
+      const dtInicioEl = document.getElementById('filter-bi-data-inicio');
+      const dtFimEl = document.getElementById('filter-bi-data-fim');
+
+      if (!dtFimEl.value) {
+        const hoje = new Date();
+        dtFimEl.value = hoje.toISOString().split('T')[0];
+      }
+      if (!dtInicioEl.value) {
+        const trintaDiasAtras = new Date();
+        trintaDiasAtras.setDate(trintaDiasAtras.getDate() - 29);
+        dtInicioEl.value = trintaDiasAtras.toISOString().split('T')[0];
+      }
+    }
+
     function filterIndicadoresData() {
-      const periodo = document.getElementById('select-bi-periodo').value;
+      initBIDateInputs();
+
+      const dtInicioVal = document.getElementById('filter-bi-data-inicio').value;
+      const dtFimVal = document.getElementById('filter-bi-data-fim').value;
+
+      const dtInicio = dtInicioVal ? new Date(dtInicioVal + 'T00:00:00') : null;
+      const dtFim = dtFimVal ? new Date(dtFimVal + 'T23:59:59') : null;
+
       const ferFiltro = document.getElementById('filter-bi-ferramenta').value.toLowerCase();
       const locFiltro = document.getElementById('filter-bi-local').value.toLowerCase();
       const funcFiltro = document.getElementById('filter-bi-funcionario').value.toLowerCase();
       const acaoFiltro = document.getElementById('filter-bi-acao').value;
 
-      let dataCorte = null;
-      const agora = new Date();
-
-      if (periodo === '1') {
-        dataCorte = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
-      } else if (periodo === 'month') {
-        dataCorte = new Date(agora.getFullYear(), agora.getMonth(), 1);
-      } else if (periodo === 'year') {
-        dataCorte = new Date(agora.getFullYear(), 0, 1);
-      } else if (periodo !== 'all') {
-        dataCorte = new Date();
-        dataCorte.setDate(dataCorte.getDate() - parseInt(periodo));
-      }
-
       const filtrados = cacheHistoricoGlobal.filter(h => {
         const dtItem = new Date(h.created_at);
-        const matchData = !dataCorte || dtItem >= dataCorte;
+        const matchData = (!dtInicio || dtItem >= dtInicio) && (!dtFim || dtItem <= dtFim);
 
         const nomeFer = (h.nome_ferramenta || h.id_ferramenta || '').toLowerCase();
         const matchFer = !ferFiltro || nomeFer.includes(ferFiltro);
@@ -1010,10 +1023,10 @@
         return matchData && matchFer && matchLoc && matchFunc && matchAcao;
       });
 
-      processAndRenderBI(filtrados, periodo);
+      processAndRenderBI(filtrados, dtInicioVal, dtFimVal);
     }
 
-    function processAndRenderBI(historico, periodo) {
+    function processAndRenderBI(historico, dtInicioVal, dtFimVal) {
       const contagemFerramentas = {};
       const contagemLocais = {};
       const contagemFuncs = {};
@@ -1029,11 +1042,12 @@
         contagemFuncs[func] = (contagemFuncs[func] || 0) + 1;
       });
 
-      const isHourly = (periodo === '1');
+      // Verifica se o filtro é de 1 único dia (Mesma data de início e fim)
+      const isHourly = (dtInicioVal && dtFimVal && dtInicioVal === dtFimVal);
       const volumeMap = {};
 
       if (isHourly) {
-        // Gera as 24 horas do dia (00:00 às 23:00) zeradas
+        // Exibição por Hora (00:00 até 23:00)
         for (let i = 0; i < 24; i++) {
           const hrKey = String(i).padStart(2, '0') + ':00';
           volumeMap[hrKey] = 0;
@@ -1051,31 +1065,11 @@
           }
         });
       } else {
-        // Visão diária para períodos maiores
-        const agora = new Date();
-        let startDate = new Date();
-        let endDate = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+        // Exibição Dia a Dia
+        let curr = dtInicioVal ? new Date(dtInicioVal + 'T00:00:00') : new Date();
+        const end = dtFimVal ? new Date(dtFimVal + 'T00:00:00') : new Date();
 
-        if (periodo === 'month') {
-          startDate = new Date(agora.getFullYear(), agora.getMonth(), 1);
-        } else if (periodo === 'year') {
-          startDate = new Date(agora.getFullYear(), 0, 1);
-        } else if (periodo !== 'all') {
-          const numDays = parseInt(periodo) || 7;
-          startDate = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
-          startDate.setDate(startDate.getDate() - (numDays - 1));
-        } else {
-          if (historico.length > 0) {
-            const timestamps = historico.map(h => new Date(h.created_at).getTime()).filter(t => !isNaN(t));
-            startDate = new Date(Math.min(...timestamps));
-            startDate.setHours(0, 0, 0, 0);
-          } else {
-            startDate = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() - 30);
-          }
-        }
-
-        let curr = new Date(startDate);
-        while (curr <= endDate) {
+        while (curr <= end) {
           const y = curr.getFullYear();
           const m = String(curr.getMonth() + 1).padStart(2, '0');
           const d = String(curr.getDate()).padStart(2, '0');
@@ -1093,8 +1087,6 @@
               const key = `${y}-${m}-${d}`;
               if (volumeMap.hasOwnProperty(key)) {
                 volumeMap[key]++;
-              } else {
-                volumeMap[key] = (volumeMap[key] || 0) + 1;
               }
             }
           }
@@ -1106,7 +1098,7 @@
       const sortedFunc = Object.entries(contagemFuncs).sort((a,b) => b[1] - a[1]);
 
       renderRankingsBI(sortedFer.slice(0, 5), sortedLoc.slice(0, 5), sortedFunc.slice(0, 5));
-      renderTimeSerieBI(volumeMap, isHourly);
+      renderTimeSerieBI(volumeMap, isHourly, dtInicioVal, dtFimVal);
     }
 
     function renderRankingsBI(topFerramentas, topLocais, topFuncs) {
@@ -1162,7 +1154,7 @@
       });
     }
 
-    function renderTimeSerieBI(volumeMap, isHourly) {
+    function renderTimeSerieBI(volumeMap, isHourly, dtInicioVal, dtFimVal) {
       const keys = Object.keys(volumeMap).sort();
       const labels = isHourly 
         ? keys 
@@ -1172,11 +1164,16 @@
       const subEl = document.getElementById('bi-tempo-subtitle');
 
       if (titleEl) {
-        titleEl.innerHTML = `<i data-lucide="trending-up" class="w-4 h-4 text-blue-600"></i> ${isHourly ? 'Volume de Movimentações por Hora (Hoje)' : 'Volume Diário de Movimentações'}`;
+        titleEl.innerHTML = `<i data-lucide="trending-up" class="w-4 h-4 text-blue-600"></i> ${isHourly ? 'Volume por Hora no Dia' : 'Volume Diário de Movimentações'}`;
         lucide.createIcons();
       }
+
       if (subEl) {
-        subEl.innerText = isHourly ? 'Quantidade real de ações por hora no dia de hoje' : 'Quantidade real de ações por dia no período';
+        const dtIniFmt = dtInicioVal ? dtInicioVal.split('-').reverse().join('/') : '';
+        const dtFimFmt = dtFimVal ? dtFimVal.split('-').reverse().join('/') : '';
+        subEl.innerText = isHourly 
+          ? `Visualização horária para o dia ${dtIniFmt}`
+          : `De ${dtIniFmt} até ${dtFimFmt}`;
       }
 
       const ctxTempo = document.getElementById('chart-bi-tempo').getContext('2d');
@@ -1187,7 +1184,7 @@
         data: {
           labels: labels,
           datasets: [{
-            label: isHourly ? 'Volume por Hora' : 'Volume de Ações no Dia',
+            label: isHourly ? 'Volume por Hora' : 'Volume no Dia',
             data: keys.map(k => volumeMap[k]),
             borderColor: '#3b82f6',
             backgroundColor: 'rgba(59, 130, 246, 0.12)',
