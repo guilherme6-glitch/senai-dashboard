@@ -302,14 +302,14 @@
       </section>
 
       <!-- ==================== TELA 02: RASTREABILIDADE ==================== -->
-      <section id="view-rastreabilidade" class="tab-content hidden space-y-6">
+      <section id="view-rastreabilidade" class="tab-content hidden space-y-5 flex flex-col h-full">
         <div>
           <h2 class="text-2xl font-bold text-slate-800">Rastreabilidade em Tempo Real</h2>
           <p class="text-xs text-slate-500 mt-0.5">Localização física, responsável e verificação de pertencimento do ativo</p>
         </div>
 
         <!-- Filtros Combinados -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 flex-shrink-0">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Buscar Nome / Código</label>
             <div class="relative">
@@ -351,8 +351,8 @@
           </div>
         </div>
 
-        <!-- Grid de Cards da Rastreabilidade -->
-        <div id="grid-rastreabilidade" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-h-[500px] overflow-y-auto pr-1">
+        <!-- Grid de Cards da Rastreabilidade (Aproveitando a Altura Máxima da Tela) -->
+        <div id="grid-rastreabilidade" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 flex-1 overflow-y-auto pr-1 pb-6 max-h-[calc(100vh-270px)]">
           <p class="text-slate-400 text-sm col-span-full text-center py-8">Carregando mapa de rastreabilidade...</p>
         </div>
       </section>
@@ -472,20 +472,37 @@
     let chartBiSetoresInstance = null;
     let chartBiTempoInstance = null;
 
-    // HELPER PARA EXTRAÇÃO ROBUSTA DO LOCAL PERTENCENTE/ORIGEM
+    // EXTRAÇÃO ROBUSTA DO LOCAL PERTENCENTE/ORIGEM
     function getLocalOrigem(item) {
-      if (!item) return 'Não Definido';
-      
-      const valor = item.local_origem || 
-                    item.local_pertencente || 
-                    item.local_nome || 
-                    item.local_base || 
-                    item.origem || 
-                    item.pertencimento || 
-                    item.local_departamento || 
-                    (item.local && item.local !== item.local_atual ? item.local : null);
+      if (!item) return 'Almoxarifado Central';
 
-      return (valor && typeof valor === 'string' && valor.trim() !== '') ? valor.trim() : 'Não Definido';
+      // 1. Busca em todas as colunas de origem possíveis do banco de dados
+      const valorColuna = item.local_origem || 
+                          item.local_pertencente || 
+                          item.local || 
+                          item.local_base || 
+                          item.local_nome || 
+                          item.setor || 
+                          item.origem || 
+                          item.pertencimento || 
+                          item.departamento || 
+                          item.lab;
+
+      if (valorColuna && typeof valorColuna === 'string' && valorColuna.trim() !== '' && valorColuna !== 'Não Definido') {
+        return valorColuna.trim();
+      }
+
+      // 2. Se o item estiver Disponível (no banco), o local_atual é a sua origem/base física
+      if (item.status === 'Disponível' && item.local_atual && item.local_atual.trim() !== '') {
+        return item.local_atual.trim();
+      }
+
+      // 3. Fallback inteligente quando não há coluna de origem separada cadastrada
+      if (item.local_atual && item.local_atual.trim() !== '') {
+        return item.local_atual.trim();
+      }
+
+      return 'Almoxarifado Central';
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
@@ -772,7 +789,7 @@
       renderChartLocaisPaginado();
     }
 
-    // 4. TELA DE RASTREABILIDADE (COM MAPEAMENTO INTELIGENTE DE ORIGEM)
+    // 4. TELA DE RASTREABILIDADE
     async function loadRastreabilidadeData() {
       try {
         const [resFerramentas, resLocais, resFuncs] = await Promise.all([
@@ -789,9 +806,8 @@
         const selectAtual = document.getElementById('filter-rastreio-atual');
         const selectResp = document.getElementById('filter-rastreio-resp');
 
-        // Extrai todas as origens cadastradas e adiciona os locais base da tabela 'locais'
         const listaLocaisBase = (resLocais.data || []).map(l => l.nome).filter(Boolean);
-        const origensPresentes = cacheRastreabilidade.map(item => getLocalOrigem(item)).filter(o => o !== 'Não Definido');
+        const origensPresentes = cacheRastreabilidade.map(item => getLocalOrigem(item));
 
         const conjuntoOrigens = Array.from(new Set([...listaLocaisBase, ...origensPresentes])).sort();
         const conjuntoLocaisAtuais = Array.from(new Set([...listaLocaisBase, ...cacheRastreabilidade.map(i => i.local_atual).filter(Boolean)])).sort();
@@ -852,7 +868,7 @@
       grid.innerHTML = items.map(item => {
         const localOrigemItem = getLocalOrigem(item);
         const localAtualItem = item.local_atual || 'Banco de Ferramentas';
-        const estaFora = item.status === 'Emprestado' && localOrigemItem !== 'Não Definido' && localOrigemItem.toLowerCase() !== localAtualItem.toLowerCase();
+        const estaFora = item.status === 'Emprestado' && localOrigemItem.toLowerCase() !== localAtualItem.toLowerCase();
 
         let statusBadge = '';
         if (item.status === 'Emprestado') {
