@@ -351,84 +351,142 @@
           </div>
         </div>
 
-        <!-- Grid de Cards da Rastreabilidade (Ajustado com items-start para não esticar) -->
+        <!-- Grid de Cards da Rastreabilidade -->
         <div id="grid-rastreabilidade" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 flex-1 overflow-y-auto pr-1 pb-6 items-start max-h-[calc(100vh-270px)]">
           <p class="text-slate-400 text-sm col-span-full text-center py-8">Carregando mapa de rastreabilidade...</p>
         </div>
       </section>
 
-      <!-- ==================== TELA 03: INDICADORES & BI ==================== -->
+      <!-- ==================== TELA 03: INDICADORES & BI (ATUALIZADA) ==================== -->
       <section id="view-indicadores" class="tab-content hidden space-y-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800">Indicadores & Inteligência de Dados (BI)</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Análise estratégica avançada do uso do acervo, gargalos e padrões de acesso</p>
+        </div>
+
+        <!-- Painel Multi-Filtros do BI -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
-            <h2 class="text-2xl font-bold text-slate-800">Indicadores & Inteligência de Dados (BI)</h2>
-            <p class="text-xs text-slate-500 mt-0.5">Análise estratégica de uso do inventário e gargalos operacionais</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <label class="text-xs font-bold text-slate-600 uppercase">Período:</label>
-            <select id="select-bi-periodo" onchange="loadIndicadoresData()" class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white font-medium">
-              <option value="30">Últimos 30 dias</option>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Período de Análise</label>
+            <select id="select-bi-periodo" onchange="filterIndicadoresData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white font-medium">
+              <option value="30" selected>Últimos 30 dias</option>
+              <option value="1">Hoje</option>
               <option value="7">Últimos 7 dias</option>
+              <option value="15">Últimos 15 dias</option>
+              <option value="90">Últimos 90 dias</option>
+              <option value="month">Este Mês</option>
+              <option value="year">Este Ano</option>
               <option value="all">Todo o Histórico</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ferramenta</label>
+            <select id="filter-bi-ferramenta" onchange="filterIndicadoresData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todas as Ferramentas</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local / Setor</label>
+            <select id="filter-bi-local" onchange="filterIndicadoresData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todos os Locais</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Funcionário</label>
+            <select id="filter-bi-funcionario" onchange="filterIndicadoresData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todos os Funcionários</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Tipo de Ação</label>
+            <select id="filter-bi-acao" onchange="filterIndicadoresData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todas as Ações</option>
+              <option value="Retirada">Apenas Retiradas</option>
+              <option value="Devolução">Apenas Devoluções</option>
             </select>
           </div>
         </div>
 
+        <!-- KPIs Estratégicos -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <p class="text-xs font-semibold text-slate-500 uppercase">Total de Movimentações</p>
             <h3 id="bi-kpi-movimentacoes" class="text-2xl font-black text-slate-900 mt-1">0</h3>
-            <span class="text-[10px] text-slate-400">Registros de entrada e saída</span>
+            <span class="text-[10px] text-slate-400">Registros no período filtrado</span>
           </div>
 
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <p class="text-xs font-semibold text-slate-500 uppercase">Item Mais Solicitado</p>
-            <h3 id="bi-kpi-mais-usado" class="text-lg font-bold text-blue-700 truncate mt-1">---</h3>
-            <span id="bi-kpi-mais-usado-qtd" class="text-[10px] text-slate-400">0 empréstimos</span>
+            <h3 id="bi-kpi-mais-usado" class="text-base font-bold text-blue-700 truncate mt-1">---</h3>
+            <span id="bi-kpi-mais-usado-qtd" class="text-[10px] text-slate-400">0 solicitações</span>
           </div>
 
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <p class="text-xs font-semibold text-slate-500 uppercase">Setor Mais Ativo</p>
-            <h3 id="bi-kpi-setor-ativo" class="text-lg font-bold text-indigo-700 truncate mt-1">---</h3>
+            <h3 id="bi-kpi-setor-ativo" class="text-base font-bold text-indigo-700 truncate mt-1">---</h3>
             <span id="bi-kpi-setor-ativo-qtd" class="text-[10px] text-slate-400">0 solicitações</span>
           </div>
 
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <p class="text-xs font-semibold text-slate-500 uppercase">Taxa de Ocupação</p>
-            <h3 id="bi-kpi-taxa-ocupacao" class="text-2xl font-black text-amber-600 mt-1">0%</h3>
-            <span class="text-[10px] text-slate-400">Do total de itens em uso</span>
+            <p class="text-xs font-semibold text-slate-500 uppercase">Mais Ativo (Pessoa)</p>
+            <h3 id="bi-kpi-func-ativo" class="text-base font-bold text-emerald-700 truncate mt-1">---</h3>
+            <span id="bi-kpi-func-ativo-qtd" class="text-[10px] text-slate-400">0 movimentações</span>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <!-- Grade de Ranking Comparativo (Três Gráficos Paralelos) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- 1. Top Ferramentas -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
               <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
-              Top 5 Ferramentas Mais Requisitadas
+              Top 5 Ferramentas
             </h3>
-            <div class="relative h-64">
-              <canvas id="chart-bi-top5"></canvas>
+            <div class="relative h-60">
+              <canvas id="chart-bi-top-ferramentas"></canvas>
             </div>
           </div>
 
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <!-- 2. Top Locais -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
-              <i data-lucide="building" class="w-4 h-4 text-indigo-600"></i>
-              Volume de Retiradas por Setor/Local
+              <i data-lucide="building-2" class="w-4 h-4 text-indigo-600"></i>
+              Top 5 Locais / Setores
             </h3>
-            <div class="relative h-64">
-              <canvas id="chart-bi-setores"></canvas>
+            <div class="relative h-60">
+              <canvas id="chart-bi-top-locais"></canvas>
             </div>
           </div>
 
-          <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <!-- 3. Top Funcionários -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
-              <i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i>
-              Evolução Diária de Movimentações
+              <i data-lucide="users" class="w-4 h-4 text-emerald-600"></i>
+              Top 5 Funcionários
             </h3>
-            <div class="relative h-64">
-              <canvas id="chart-bi-tempo"></canvas>
+            <div class="relative h-60">
+              <canvas id="chart-bi-top-funcs"></canvas>
             </div>
+          </div>
+
+        </div>
+
+        <!-- Série Temporal Diária de Movimentações -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i data-lucide="trending-up" class="w-4 h-4 text-blue-600"></i>
+              Volume Diário de Movimentações
+            </h3>
+            <span class="text-[11px] text-slate-400">Quantidade de ações por dia (Sobe e desce conforme demanda)</span>
+          </div>
+          <div class="relative h-64">
+            <canvas id="chart-bi-tempo"></canvas>
           </div>
         </div>
       </section>
@@ -459,36 +517,31 @@
     let currentUserProfile = null;
     let cacheEmprestadas = [];
     let cacheRastreabilidade = [];
+    let cacheHistoricoGlobal = [];
 
     // Paginação do Gráfico de Locais
     let paginaAtualLocais = 0;
     const ITENS_POR_PAGINA_GRAFICO = 10;
     let dadosLocaisGlobal = {};
 
-    // Instâncias de Gráficos
+    // Instâncias de Gráficos BI
     let chartStatusInstance = null;
     let chartLocaisInstance = null;
-    let chartBiTop5Instance = null;
-    let chartBiSetoresInstance = null;
+    let chartBiTopFerramentasInstance = null;
+    let chartBiTopLocaisInstance = null;
+    let chartBiTopFuncsInstance = null;
     let chartBiTempoInstance = null;
 
-    // EXTRAÇÃO DE LOCAL PADRÃO / PERTENCENTE
+    // HELPER LOCAL PADRÃO
     function getLocalOrigem(item) {
       if (!item) return 'Não Especificado';
-
-      const valorColuna = item.local_padrao || 
-                          item.local_origem || 
-                          item.local_pertencente || 
-                          item.local;
-
+      const valorColuna = item.local_padrao || item.local_origem || item.local_pertencente || item.local;
       if (valorColuna && typeof valorColuna === 'string' && valorColuna.trim() !== '' && valorColuna !== 'Não Definido') {
         return valorColuna.trim();
       }
-
       if (item.status === 'Disponível' && item.local_atual && item.local_atual.trim() !== '') {
         return item.local_atual.trim();
       }
-
       return 'Não Especificado';
     }
 
@@ -904,129 +957,212 @@
       lucide.createIcons();
     }
 
-    // 5. TELA DE INDICADORES & BI
+    // 5. TELA DE INDICADORES & BI (REFORMULADA COM FILTROS E RANKINGS)
     async function loadIndicadoresData() {
       try {
-        const periodo = document.getElementById('select-bi-periodo').value;
-        
-        let queryHist = supabaseClient.from('historico').select('*');
-        if (periodo !== 'all') {
-          const dataCorte = new Date();
-          dataCorte.setDate(dataCorte.getDate() - parseInt(periodo));
-          queryHist = queryHist.gte('created_at', dataCorte.toISOString());
-        }
-
-        const [resHist, resFerramentas] = await Promise.all([
-          queryHist,
-          supabaseClient.from('ferramentas').select('status')
+        const [resHist, resFerramentas, resLocais, resFuncs] = await Promise.all([
+          supabaseClient.from('historico').select('*').order('created_at', { ascending: true }),
+          supabaseClient.from('ferramentas').select('id, nome'),
+          supabaseClient.from('locais').select('nome'),
+          supabaseClient.from('funcionarios').select('nome')
         ]);
 
         if (resHist.error) throw resHist.error;
 
-        const historico = resHist.data || [];
-        const ferramentas = resFerramentas.data || [];
+        cacheHistoricoGlobal = resHist.data || [];
 
-        document.getElementById('bi-kpi-movimentacoes').innerText = historico.length;
-
-        const contagemFerramentas = {};
-        const contagemSetores = {};
-        const datasMap = {};
-
-        historico.forEach(h => {
-          const fer = h.nome_ferramenta || h.id_ferramenta;
-          contagemFerramentas[fer] = (contagemFerramentas[fer] || 0) + 1;
-
-          const sec = h.local_uso || 'Não especificado';
-          contagemSetores[sec] = (contagemSetores[sec] || 0) + 1;
-
-          if (h.created_at) {
-            const dataIso = h.created_at.split('T')[0];
-            datasMap[dataIso] = (datasMap[dataIso] || 0) + 1;
-          }
+        // Preenche Seletor de Ferramentas
+        const selectFer = document.getElementById('filter-bi-ferramenta');
+        selectFer.innerHTML = '<option value="">Todas as Ferramentas</option>';
+        (resFerramentas.data || []).forEach(f => {
+          selectFer.innerHTML += `<option value="${f.nome}">${f.nome} (${f.id})</option>`;
         });
 
-        const sortedFer = Object.entries(contagemFerramentas).sort((a,b) => b[1] - a[1]);
-        if (sortedFer.length > 0) {
-          document.getElementById('bi-kpi-mais-usado').innerText = sortedFer[0][0];
-          document.getElementById('bi-kpi-mais-usado-qtd').innerText = `${sortedFer[0][1]} solicitações`;
-        } else {
-          document.getElementById('bi-kpi-mais-usado').innerText = '---';
-          document.getElementById('bi-kpi-mais-usado-qtd').innerText = '0 solicitações';
-        }
+        // Preenche Seletor de Locais
+        const selectLoc = document.getElementById('filter-bi-local');
+        selectLoc.innerHTML = '<option value="">Todos os Locais</option>';
+        (resLocais.data || []).forEach(l => {
+          selectLoc.innerHTML += `<option value="${l.nome}">${l.nome}</option>`;
+        });
 
-        const sortedSet = Object.entries(contagemSetores).sort((a,b) => b[1] - a[1]);
-        if (sortedSet.length > 0) {
-          document.getElementById('bi-kpi-setor-ativo').innerText = sortedSet[0][0];
-          document.getElementById('bi-kpi-setor-ativo-qtd').innerText = `${sortedSet[0][1]} solicitações`;
-        } else {
-          document.getElementById('bi-kpi-setor-ativo').innerText = '---';
-          document.getElementById('bi-kpi-setor-ativo-qtd').innerText = '0 solicitações';
-        }
+        // Preenche Seletor de Funcionários
+        const selectFunc = document.getElementById('filter-bi-funcionario');
+        selectFunc.innerHTML = '<option value="">Todos os Funcionários</option>';
+        (resFuncs.data || []).forEach(f => {
+          selectFunc.innerHTML += `<option value="${f.nome}">${f.nome}</option>`;
+        });
 
-        const emp = ferramentas.filter(f => f.status === 'Emprestado').length;
-        const taxa = ferramentas.length ? Math.round((emp / ferramentas.length) * 100) : 0;
-        document.getElementById('bi-kpi-taxa-ocupacao').innerText = `${taxa}%`;
-
-        renderChartsBI(sortedFer.slice(0, 5), contagemSetores, datasMap);
-
+        filterIndicadoresData();
       } catch (err) {
         console.error("Erro Indicadores BI:", err.message);
       }
     }
 
-    function renderChartsBI(top5Ferramentas, contagemSetores, datasMap) {
-      const ctxTop5 = document.getElementById('chart-bi-top5').getContext('2d');
-      if (chartBiTop5Instance) chartBiTop5Instance.destroy();
+    function filterIndicadoresData() {
+      const periodo = document.getElementById('select-bi-periodo').value;
+      const ferFiltro = document.getElementById('filter-bi-ferramenta').value.toLowerCase();
+      const locFiltro = document.getElementById('filter-bi-local').value.toLowerCase();
+      const funcFiltro = document.getElementById('filter-bi-funcionario').value.toLowerCase();
+      const acaoFiltro = document.getElementById('filter-bi-acao').value;
 
-      chartBiTop5Instance = new Chart(ctxTop5, {
+      // Cálculo de Data de Corte conforme o período escolhido
+      let dataCorte = null;
+      const agora = new Date();
+
+      if (periodo === '1') {
+        dataCorte = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+      } else if (periodo === 'month') {
+        dataCorte = new Date(agora.getFullYear(), agora.getMonth(), 1);
+      } else if (periodo === 'year') {
+        dataCorte = new Date(agora.getFullYear(), 0, 1);
+      } else if (periodo !== 'all') {
+        dataCorte = new Date();
+        dataCorte.setDate(dataCorte.getDate() - parseInt(periodo));
+      }
+
+      // Aplica os Filtros Combinados
+      const filtrados = cacheHistoricoGlobal.filter(h => {
+        const dtItem = new Date(h.created_at);
+        const matchData = !dataCorte || dtItem >= dataCorte;
+
+        const nomeFer = (h.nome_ferramenta || h.id_ferramenta || '').toLowerCase();
+        const matchFer = !ferFiltro || nomeFer.includes(ferFiltro);
+
+        const localUso = (h.local_uso || '').toLowerCase();
+        const matchLoc = !locFiltro || localUso === locFiltro;
+
+        const nomeFunc = (h.nome_funcionario || '').toLowerCase();
+        const matchFunc = !funcFiltro || nomeFunc === funcFiltro;
+
+        const matchAcao = !acaoFiltro || h.acao === acaoFiltro;
+
+        return matchData && matchFer && matchLoc && matchFunc && matchAcao;
+      });
+
+      processAndRenderBI(filtrados);
+    }
+
+    function processAndRenderBI(historico) {
+      document.getElementById('bi-kpi-movimentacoes').innerText = historico.length;
+
+      const contagemFerramentas = {};
+      const contagemLocais = {};
+      const contagemFuncs = {};
+      const volumeDiarioMap = {};
+
+      historico.forEach(h => {
+        // Ferramentas
+        const fer = h.nome_ferramenta || h.id_ferramenta || 'Não especificada';
+        contagemFerramentas[fer] = (contagemFerramentas[fer] || 0) + 1;
+
+        // Locais
+        const loc = h.local_uso || 'Não especificado';
+        contagemLocais[loc] = (contagemLocais[loc] || 0) + 1;
+
+        // Funcionários
+        const func = h.nome_funcionario || 'Não especificado';
+        contagemFuncs[func] = (contagemFuncs[func] || 0) + 1;
+
+        // Agrupamento estritamente diário (Volume individual do dia)
+        if (h.created_at) {
+          const diaIso = h.created_at.split('T')[0];
+          volumeDiarioMap[diaIso] = (volumeDiarioMap[diaIso] || 0) + 1;
+        }
+      });
+
+      // Ordenações
+      const sortedFer = Object.entries(contagemFerramentas).sort((a,b) => b[1] - a[1]);
+      const sortedLoc = Object.entries(contagemLocais).sort((a,b) => b[1] - a[1]);
+      const sortedFunc = Object.entries(contagemFuncs).sort((a,b) => b[1] - a[1]);
+
+      // Atualiza KPIs Executivos
+      if (sortedFer.length > 0) {
+        document.getElementById('bi-kpi-mais-usado').innerText = sortedFer[0][0];
+        document.getElementById('bi-kpi-mais-usado-qtd').innerText = `${sortedFer[0][1]} solicitações`;
+      } else {
+        document.getElementById('bi-kpi-mais-usado').innerText = '---';
+        document.getElementById('bi-kpi-mais-usado-qtd').innerText = '0 solicitações';
+      }
+
+      if (sortedLoc.length > 0) {
+        document.getElementById('bi-kpi-setor-ativo').innerText = sortedLoc[0][0];
+        document.getElementById('bi-kpi-setor-ativo-qtd').innerText = `${sortedLoc[0][1]} solicitações`;
+      } else {
+        document.getElementById('bi-kpi-setor-ativo').innerText = '---';
+        document.getElementById('bi-kpi-setor-ativo-qtd').innerText = '0 solicitações';
+      }
+
+      if (sortedFunc.length > 0) {
+        document.getElementById('bi-kpi-func-ativo').innerText = sortedFunc[0][0];
+        document.getElementById('bi-kpi-func-ativo-qtd').innerText = `${sortedFunc[0][1]} movimentações`;
+      } else {
+        document.getElementById('bi-kpi-func-ativo').innerText = '---';
+        document.getElementById('bi-kpi-func-ativo-qtd').innerText = '0 movimentações';
+      }
+
+      // Renderização dos Gráficos
+      renderRankingsBI(sortedFer.slice(0, 5), sortedLoc.slice(0, 5), sortedFunc.slice(0, 5));
+      renderTimeSerieBI(volumeDiarioMap);
+    }
+
+    function renderRankingsBI(topFerramentas, topLocais, topFuncs) {
+      // 1. Top Ferramentas (Barra Horizontal Amber)
+      const ctxFer = document.getElementById('chart-bi-top-ferramentas').getContext('2d');
+      if (chartBiTopFerramentasInstance) chartBiTopFerramentasInstance.destroy();
+      chartBiTopFerramentasInstance = new Chart(ctxFer, {
         type: 'bar',
         data: {
-          labels: top5Ferramentas.map(i => i[0]),
-          datasets: [{
-            label: 'Empréstimos',
-            data: top5Ferramentas.map(i => i[1]),
-            backgroundColor: '#f59e0b',
-            borderRadius: 6
-          }]
+          labels: topFerramentas.map(i => i[0]),
+          datasets: [{ label: 'Movimentações', data: topFerramentas.map(i => i[1]), backgroundColor: '#f59e0b', borderRadius: 4 }]
         },
         options: {
           indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false }, datalabels: { display: false } }
+          plugins: { legend: { display: false }, datalabels: { display: false } },
+          scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
         }
       });
 
-      const ctxSetores = document.getElementById('chart-bi-setores').getContext('2d');
-      if (chartBiSetoresInstance) chartBiSetoresInstance.destroy();
-
-      chartBiSetoresInstance = new Chart(ctxSetores, {
-        type: 'doughnut',
+      // 2. Top Locais (Barra Horizontal Indigo)
+      const ctxLoc = document.getElementById('chart-bi-top-locais').getContext('2d');
+      if (chartBiTopLocaisInstance) chartBiTopLocaisInstance.destroy();
+      chartBiTopLocaisInstance = new Chart(ctxLoc, {
+        type: 'bar',
         data: {
-          labels: Object.keys(contagemSetores),
-          datasets: [{
-            data: Object.values(contagemSetores),
-            backgroundColor: ['#6366f1', '#3b82f6', '#10b981', '#ec4899', '#8b5cf6', '#f97316']
-          }]
+          labels: topLocais.map(i => i[0]),
+          datasets: [{ label: 'Movimentações', data: topLocais.map(i => i[1]), backgroundColor: '#6366f1', borderRadius: 4 }]
         },
         options: {
+          indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            datalabels: {
-              color: '#ffffff',
-              font: { weight: 'bold', size: 11 },
-              formatter: (val, ctx) => {
-                let sum = 0;
-                ctx.chart.data.datasets[0].data.forEach(d => sum += d);
-                return sum ? ((val * 100) / sum).toFixed(0) + '%' : '';
-              }
-            }
-          }
+          plugins: { legend: { display: false }, datalabels: { display: false } },
+          scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
         }
       });
 
-      const datasOrdenadas = Object.keys(datasMap).sort();
+      // 3. Top Funcionários (Barra Horizontal Emerald)
+      const ctxFunc = document.getElementById('chart-bi-top-funcs').getContext('2d');
+      if (chartBiTopFuncsInstance) chartBiTopFuncsInstance.destroy();
+      chartBiTopFuncsInstance = new Chart(ctxFunc, {
+        type: 'bar',
+        data: {
+          labels: topFuncs.map(i => i[0]),
+          datasets: [{ label: 'Movimentações', data: topFuncs.map(i => i[1]), backgroundColor: '#10b981', borderRadius: 4 }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, datalabels: { display: false } },
+          scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+      });
+    }
+
+    function renderTimeSerieBI(volumeDiarioMap) {
+      const datasOrdenadas = Object.keys(volumeDiarioMap).sort();
       const ctxTempo = document.getElementById('chart-bi-tempo').getContext('2d');
       if (chartBiTempoInstance) chartBiTempoInstance.destroy();
 
@@ -1035,12 +1171,15 @@
         data: {
           labels: datasOrdenadas.map(d => d.split('-').reverse().slice(0, 2).join('/')),
           datasets: [{
-            label: 'Movimentações',
-            data: datasOrdenadas.map(d => datasMap[d]),
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            label: 'Volume de Ações no Dia',
+            data: datasOrdenadas.map(d => volumeDiarioMap[d]),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.12)',
+            borderWidth: 2,
             fill: true,
-            tension: 0.3
+            tension: 0.2,
+            pointRadius: 4,
+            pointBackgroundColor: '#1e3a8a'
           }]
         },
         options: {
