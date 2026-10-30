@@ -1903,7 +1903,7 @@
         const matchFunc = !funcFiltro || nomeFunc === funcFiltro;
         const matchAcao = !acaoFiltro || h.acao === acaoFiltro;
 
-        return matchData && matchTxt && matchFer && matchLoc && matchFunc && matchAcao;
+        return matchData && matchTxt && matchFer && matchLoc && matchAcao;
       });
 
       renderHistoricoTable(filtrados);
@@ -2364,6 +2364,8 @@
       const localObj = cacheLocaisList.find(l => l.id === localId);
       if (!localObj) return;
 
+      const targetNome = (localObj.nome || '').toLowerCase().trim();
+
       // Card Superior - Informações do Local (Nome + Descrição + Dados)
       document.getElementById('local-detalhes-nome').innerText = localObj.nome || 'Não Informado';
       document.getElementById('local-detalhes-descricao').innerText = localObj.descricao || 'Nenhuma descrição detalhada cadastrada.';
@@ -2384,14 +2386,13 @@
         fotoPlaceholder.classList.remove('hidden');
       }
 
-      // 1. Busca Funcionários Vinculados a este local
-      const { data: funcsVinculados } = await supabaseClient
-        .from('funcionarios')
-        .select('*')
-        .or(`local.ilike.${localObj.nome},setor.ilike.${localObj.nome}`)
-        .order('nome');
+      // 1. Busca todos os Funcionários e filtra via JS para evitar erros no .or() do PostgREST
+      const { data: allFuncs } = await supabaseClient.from('funcionarios').select('*').order('nome');
+      const listaFuncs = (allFuncs || []).filter(f => {
+        const loc = (f.local || f.setor || f.oficina || '').toLowerCase().trim();
+        return loc === targetNome || loc.includes(targetNome) || targetNome.includes(loc);
+      });
 
-      const listaFuncs = funcsVinculados || [];
       document.getElementById('local-funcs-count').innerText = listaFuncs.length;
 
       const tbodyFuncs = document.getElementById('table-local-funcs-body');
@@ -2406,14 +2407,14 @@
         `).join('');
       }
 
-      // 2. Busca Ferramentas pertencentes a este local (Sem tag "Deslocada")
-      const { data: fersDoLocal } = await supabaseClient
-        .from('ferramentas')
-        .select('*')
-        .or(`local_origem.ilike.${localObj.nome},local_padrao.ilike.${localObj.nome},local_pertencente.ilike.${localObj.nome},local.ilike.${localObj.nome}`)
-        .order('nome');
+      // 2. Busca todas as Ferramentas e filtra pertencimento ao local via JS
+      const { data: allFers } = await supabaseClient.from('ferramentas').select('*').order('nome');
+      const listaFers = (allFers || []).filter(item => {
+        const locOrigem = getLocalOrigem(item).toLowerCase().trim();
+        const locAtual = (item.local_atual || '').toLowerCase().trim();
+        return locOrigem === targetNome || locAtual === targetNome || locOrigem.includes(targetNome);
+      });
 
-      const listaFers = fersDoLocal || [];
       document.getElementById('local-fers-count').innerText = listaFers.length;
 
       const tbodyFers = document.getElementById('table-local-fers-body');
@@ -2443,14 +2444,12 @@
         }).join('');
       }
 
-      // 3. Busca Histórico deste Local
-      const { data: histLocal } = await supabaseClient
-        .from('historico')
-        .select('*')
-        .ilike('local_uso', localObj.nome)
-        .order('created_at', { ascending: false });
-
-      cacheSelectedLocalHist = histLocal || [];
+      // 3. Busca o Histórico do Local e filtra via JS
+      const { data: allHist } = await supabaseClient.from('historico').select('*').order('created_at', { ascending: false });
+      cacheSelectedLocalHist = (allHist || []).filter(h => {
+        const locUso = (h.local_uso || '').toLowerCase().trim();
+        return locUso === targetNome || locUso.includes(targetNome);
+      });
 
       // Preenche seletores dos filtros do histórico
       const funcOpts = Array.from(new Set(cacheSelectedLocalHist.map(h => h.nome_funcionario).filter(Boolean))).sort();
