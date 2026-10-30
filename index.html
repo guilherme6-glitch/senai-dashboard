@@ -24,6 +24,11 @@
       color: #ffffff !important;
       border-left: 4px solid #3b82f6;
     }
+    .subtab-active {
+      border-bottom: 3px solid #dc2626;
+      color: #dc2626 !important;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans h-screen overflow-hidden">
@@ -135,8 +140,8 @@
 
           <button onclick="switchTab('gestao')" id="btn-tab-gestao"
             class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-left">
-            <i data-lucide="user-plus" class="w-4 h-4"></i>
-            <span>Gestão & Cadastros</span>
+            <i data-lucide="file-edit" class="w-4 h-4"></i>
+            <span>Cadastro e gerenciamento</span>
           </button>
 
           <button onclick="switchTab('impressao')" id="btn-tab-impressao"
@@ -1081,8 +1086,126 @@
 
       </section>
 
+      <!-- ==================== TELA 08: GESTÃO & CADASTROS ==================== -->
+      <section id="view-gestao" class="tab-content hidden space-y-6">
+        
+        <!-- Cabeçalho -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+          <div>
+            <div class="flex items-center gap-3">
+              <h2 class="text-2xl font-bold text-slate-800">Cadastro e gerenciamento</h2>
+              <span class="text-xs font-semibold text-red-700 bg-red-100 px-3 py-1 rounded-full border border-red-200">
+                Master e Administrador
+              </span>
+            </div>
+          </div>
+
+          <!-- Sub-abas de Navegação -->
+          <div class="flex items-center gap-6 text-sm font-semibold text-slate-500">
+            <button onclick="switchGestaoSubTab('funcionarios')" id="subtab-gestao-funcionarios" class="subtab-active pb-2 transition">
+              Funcionários
+            </button>
+            <button onclick="switchGestaoSubTab('ferramentas')" id="subtab-gestao-ferramentas" class="pb-2 transition hover:text-slate-800">
+              Ferramentas
+            </button>
+            <button onclick="switchGestaoSubTab('locais')" id="subtab-gestao-locais" class="pb-2 transition hover:text-slate-800">
+              Locais
+            </button>
+          </div>
+        </div>
+
+        <!-- Grade Principal: Tabela à Esquerda (2 colunas) vs Formulário à Direita (1 coluna) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          
+          <!-- Coluna Esquerda: Lista/Tabela com Busca e Botão + Novo -->
+          <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h3 id="gestao-list-title" class="font-bold text-slate-800 text-base">Funcionários cadastrados</h3>
+              
+              <div class="flex items-center gap-3 w-full sm:w-auto">
+                <div class="relative flex-1 sm:w-60">
+                  <input type="text" id="gestao-search" oninput="filterGestaoList()" placeholder="Buscar..."
+                    class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-slate-50">
+                  <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5"></i>
+                </div>
+
+                <button onclick="openGestaoFormNew()" id="gestao-btn-novo"
+                  class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm whitespace-nowrap">
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                  <span id="gestao-btn-novo-label">+ Novo funcionário</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Tabela de Itens -->
+            <div class="overflow-hidden border border-slate-200 rounded-xl">
+              <div class="max-h-[500px] overflow-y-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                  <thead id="gestao-table-head" class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10">
+                    <!-- Dinâmico via JS -->
+                  </thead>
+                  <tbody id="gestao-table-body" class="divide-y divide-slate-100">
+                    <tr>
+                      <td colspan="5" class="p-6 text-center text-slate-400">Carregando registros...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Coluna Direita: Formulário de Cadastro / Edição -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+            
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 id="gestao-form-title" class="font-bold text-slate-800 text-base">Editar funcionário</h3>
+              <span id="gestao-form-badge" class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">Edição</span>
+            </div>
+
+            <form id="form-gestao" onsubmit="saveGestaoItem(event)" class="space-y-4">
+              
+              <!-- Área de Foto -->
+              <div class="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+                <div class="w-24 h-24 rounded-full bg-white border border-slate-200 overflow-hidden flex items-center justify-center shadow-sm relative mb-2">
+                  <img id="gestao-img-preview" src="" class="w-full h-full object-cover hidden">
+                  <i id="gestao-img-icon" data-lucide="user" class="w-10 h-10 text-slate-300"></i>
+                </div>
+
+                <label class="cursor-pointer bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition">
+                  <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+                  <span>Alterar foto</span>
+                  <input type="file" id="gestao-input-foto" accept="image/*" onchange="previewGestaoImage(event)" class="hidden">
+                </label>
+              </div>
+
+              <!-- Inputs Dinâmicos (Preenchidos pelo JS de acordo com a sub-aba) -->
+              <div id="gestao-dynamic-inputs" class="space-y-3 text-xs">
+                <!-- Injetado dinamicamente via JS -->
+              </div>
+
+              <div id="gestao-form-error" class="hidden p-3 rounded-lg bg-red-100 border border-red-200 text-red-700 text-xs font-semibold"></div>
+
+              <!-- Botões de Ação -->
+              <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button type="button" onclick="cancelGestaoForm()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+                  Cancelar
+                </button>
+                <button type="submit" id="btn-gestao-salvar" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs transition shadow-sm">
+                  Salvar alterações
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      </section>
+
       <!-- DEMAIS TELAS RESERVADAS -->
-      <section id="view-gestao" class="tab-content hidden space-y-6"><h2 class="text-2xl font-bold text-slate-800">Gestão & Cadastros</h2></section>
       <section id="view-impressao" class="tab-content hidden space-y-6"><h2 class="text-2xl font-bold text-slate-800">Central de Impressão</h2></section>
 
     </main>
@@ -1110,6 +1233,11 @@
     let cacheSelectedFerHist = [];
     let cacheLocaisList = [];
     let cacheSelectedLocalHist = [];
+
+    // Estado da Tela de Gestão
+    let currentGestaoSubTab = 'funcionarios'; // 'funcionarios' | 'ferramentas' | 'locais'
+    let currentEditingItem = null; // null = novo, objeto = edição
+    let gestaoImageBase64 = null;
 
     // Paginação do Gráfico de Locais
     let paginaAtualLocais = 0;
@@ -1256,6 +1384,7 @@
       if (tabName === 'funcionarios') loadFuncionariosDossierData();
       if (tabName === 'ferramentas') loadFerramentasFichaData();
       if (tabName === 'locais') loadLocaisData();
+      if (tabName === 'gestao') loadGestaoData();
     }
 
     // 3. TELA VISÃO GERAL
@@ -2527,7 +2656,506 @@
       lucide.createIcons();
     }
 
-    // 10. REALTIME SUBSCRIPTION
+    // 10. TELA DE GESTÃO & CADASTROS
+    async function loadGestaoData() {
+      // Carrega dados base caso ainda não estejam em memória
+      if (cacheLocaisList.length === 0) {
+        const { data: locs } = await supabaseClient.from('locais').select('*').order('nome');
+        cacheLocaisList = locs || [];
+      }
+      if (cacheFuncionariosList.length === 0) {
+        const { data: funcs } = await supabaseClient.from('funcionarios').select('*').order('nome');
+        cacheFuncionariosList = funcs || [];
+      }
+      if (cacheFerramentasList.length === 0) {
+        const { data: fers } = await supabaseClient.from('ferramentas').select('*').order('nome');
+        cacheFerramentasList = fers || [];
+      }
+
+      switchGestaoSubTab(currentGestaoSubTab);
+    }
+
+    function switchGestaoSubTab(subTab) {
+      currentGestaoSubTab = subTab;
+
+      document.querySelectorAll('[id^="subtab-gestao-"]').forEach(btn => {
+        btn.classList.remove('subtab-active');
+        btn.classList.add('hover:text-slate-800');
+      });
+
+      const activeBtn = document.getElementById(`subtab-gestao-${subTab}`);
+      if (activeBtn) {
+        activeBtn.classList.add('subtab-active');
+      }
+
+      const listTitle = document.getElementById('gestao-list-title');
+      const btnNovoLabel = document.getElementById('gestao-btn-novo-label');
+
+      if (subTab === 'funcionarios') {
+        listTitle.innerText = "Funcionários cadastrados";
+        btnNovoLabel.innerText = "+ Novo funcionário";
+      } else if (subTab === 'ferramentas') {
+        listTitle.innerText = "Ferramentas cadastradas";
+        btnNovoLabel.innerText = "+ Nova ferramenta";
+      } else if (subTab === 'locais') {
+        listTitle.innerText = "Locais cadastrados";
+        btnNovoLabel.innerText = "+ Novo local";
+      }
+
+      filterGestaoList();
+      openGestaoFormNew();
+    }
+
+    function filterGestaoList() {
+      const term = (document.getElementById('gestao-search').value || '').toLowerCase();
+      const thead = document.getElementById('gestao-table-head');
+      const tbody = document.getElementById('gestao-table-body');
+
+      if (currentGestaoSubTab === 'funcionarios') {
+        thead.innerHTML = `
+          <tr>
+            <th class="p-3 bg-slate-100">Nome</th>
+            <th class="p-3 bg-slate-100">Matrícula</th>
+            <th class="p-3 bg-slate-100">Local</th>
+            <th class="p-3 bg-slate-100">Nível de acesso</th>
+            <th class="p-3 bg-slate-100 text-right">Ação</th>
+          </tr>
+        `;
+
+        const filtrados = cacheFuncionariosList.filter(f => 
+          (f.nome || '').toLowerCase().includes(term) ||
+          (f.matricula || f.id || '').toLowerCase().includes(term) ||
+          (f.local || '').toLowerCase().includes(term)
+        );
+
+        if (filtrados.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum funcionário encontrado.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = filtrados.map(f => {
+          const nivel = f.nivel_acesso || 'Usuário';
+          let nivelBadge = '<span class="text-slate-600 bg-slate-100 px-2 py-0.5 rounded text-xs font-semibold">Usuário</span>';
+          if (nivel.toLowerCase() === 'master') {
+            nivelBadge = '<span class="text-purple-800 bg-purple-100 px-2 py-0.5 rounded text-xs font-bold border border-purple-200">Master</span>';
+          } else if (nivel.toLowerCase() === 'administrador') {
+            nivelBadge = '<span class="text-blue-800 bg-blue-100 px-2 py-0.5 rounded text-xs font-bold border border-blue-200">Administrador</span>';
+          }
+
+          return `
+            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+              <td class="p-3 font-bold text-slate-800 flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center text-[10px] font-bold">
+                  ${f.foto_url ? `<img src="${f.foto_url}" class="w-full h-full object-cover">` : f.nome.charAt(0).toUpperCase()}
+                </div>
+                ${f.nome}
+              </td>
+              <td class="p-3 font-mono text-xs font-bold text-slate-600">${f.matricula || f.id_matricula || f.id || '---'}</td>
+              <td class="p-3 text-slate-600">${f.local || f.setor || '---'}</td>
+              <td class="p-3">${nivelBadge}</td>
+              <td class="p-3 text-right">
+                <button onclick="editGestaoItem('${f.id}')" title="Editar" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      } else if (currentGestaoSubTab === 'ferramentas') {
+        thead.innerHTML = `
+          <tr>
+            <th class="p-3 bg-slate-100">Código / Ferramenta</th>
+            <th class="p-3 bg-slate-100">Categoria</th>
+            <th class="p-3 bg-slate-100">Local Origem</th>
+            <th class="p-3 bg-slate-100">Status</th>
+            <th class="p-3 bg-slate-100 text-right">Ação</th>
+          </tr>
+        `;
+
+        const filtrados = cacheFerramentasList.filter(fer => 
+          (fer.nome || '').toLowerCase().includes(term) ||
+          (fer.id || '').toLowerCase().includes(term) ||
+          (fer.categoria || '').toLowerCase().includes(term)
+        );
+
+        if (filtrados.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhuma ferramenta encontrada.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = filtrados.map(fer => `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 font-bold text-slate-800">
+              <span class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs mr-1 border border-blue-100 font-mono">${fer.id}</span>
+              ${fer.nome}
+            </td>
+            <td class="p-3 text-slate-600">${fer.categoria || 'Geral'}</td>
+            <td class="p-3 text-slate-600">${getLocalOrigem(fer)}</td>
+            <td class="p-3 text-xs font-semibold">${fer.status || 'Disponível'}</td>
+            <td class="p-3 text-right">
+              <button onclick="editGestaoItem('${fer.id}')" title="Editar" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+
+      } else if (currentGestaoSubTab === 'locais') {
+        thead.innerHTML = `
+          <tr>
+            <th class="p-3 bg-slate-100">Código</th>
+            <th class="p-3 bg-slate-100">Nome do Local</th>
+            <th class="p-3 bg-slate-100">Tipo</th>
+            <th class="p-3 bg-slate-100">Responsável</th>
+            <th class="p-3 bg-slate-100 text-right">Ação</th>
+          </tr>
+        `;
+
+        const filtrados = cacheLocaisList.filter(loc => 
+          (loc.nome || '').toLowerCase().includes(term) ||
+          (loc.id || loc.codigo || '').toLowerCase().includes(term)
+        );
+
+        if (filtrados.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum local encontrado.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = filtrados.map(loc => `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 font-mono text-xs font-bold text-blue-600">${loc.id || loc.codigo || '---'}</td>
+            <td class="p-3 font-bold text-slate-800">${loc.nome}</td>
+            <td class="p-3 text-slate-600">${loc.tipo || 'Oficina'}</td>
+            <td class="p-3 text-slate-600">${loc.responsavel || '---'}</td>
+            <td class="p-3 text-right">
+              <button onclick="editGestaoItem('${loc.id}')" title="Editar" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      lucide.createIcons();
+    }
+
+    // Regra de Proteção de Perfil
+    function canEditTargetUser(targetUser) {
+      if (!targetUser) return true; // Cadastro de novo registro
+      const myRole = (currentUserProfile?.nivel_acesso || '').toLowerCase();
+      const targetRole = (targetUser.nivel_acesso || '').toLowerCase();
+
+      // Ninguém além do master pode modificar os dados do master
+      if (targetRole === 'master' && myRole !== 'master') {
+        return false;
+      }
+      return true;
+    }
+
+    function openGestaoFormNew() {
+      currentEditingItem = null;
+      gestaoImageBase64 = null;
+
+      document.getElementById('gestao-form-title').innerText = `Novo ${currentGestaoSubTab === 'funcionarios' ? 'funcionário' : currentGestaoSubTab === 'ferramentas' ? 'ferramenta' : 'local'}`;
+      document.getElementById('gestao-form-badge').innerText = 'Novo Cadastro';
+      document.getElementById('gestao-form-badge').className = 'text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100';
+
+      resetGestaoImagePreview(null);
+      renderGestaoDynamicInputs(null);
+      
+      const errDiv = document.getElementById('gestao-form-error');
+      errDiv.classList.add('hidden');
+      document.getElementById('btn-gestao-salvar').disabled = false;
+    }
+
+    function editGestaoItem(id) {
+      let item = null;
+      if (currentGestaoSubTab === 'funcionarios') item = cacheFuncionariosList.find(f => f.id === id);
+      if (currentGestaoSubTab === 'ferramentas') item = cacheFerramentasList.find(f => f.id === id);
+      if (currentGestaoSubTab === 'locais') item = cacheLocaisList.find(l => l.id === id);
+
+      if (!item) return;
+
+      const errDiv = document.getElementById('gestao-form-error');
+      const btnSalvar = document.getElementById('btn-gestao-salvar');
+
+      // Aplica validação de permissão de alteração do Master
+      if (currentGestaoSubTab === 'funcionarios' && !canEditTargetUser(item)) {
+        errDiv.innerText = "Acesso negado: Apenas um usuário Master pode alterar os dados de um Master.";
+        errDiv.classList.remove('hidden');
+        btnSalvar.disabled = true;
+      } else {
+        errDiv.classList.add('hidden');
+        btnSalvar.disabled = false;
+      }
+
+      currentEditingItem = item;
+      gestaoImageBase64 = item.foto_url || null;
+
+      document.getElementById('gestao-form-title').innerText = `Editar ${currentGestaoSubTab === 'funcionarios' ? 'funcionário' : currentGestaoSubTab === 'ferramentas' ? 'ferramenta' : 'local'}`;
+      document.getElementById('gestao-form-badge').innerText = 'Edição';
+      document.getElementById('gestao-form-badge').className = 'text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100';
+
+      resetGestaoImagePreview(item.foto_url);
+      renderGestaoDynamicInputs(item);
+    }
+
+    function renderGestaoDynamicInputs(item) {
+      const container = document.getElementById('gestao-dynamic-inputs');
+      const myRole = (currentUserProfile?.nivel_acesso || '').toLowerCase();
+
+      if (currentGestaoSubTab === 'funcionarios') {
+        const locaisOptions = cacheLocaisList.map(l => `<option value="${l.nome}" ${item && item.local === l.nome ? 'selected' : ''}>${l.nome}</option>`).join('');
+
+        container.innerHTML = `
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Nome completo</label>
+            <input type="text" id="g-func-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: João Silva" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">E-mail</label>
+            <input type="email" id="g-func-email" required value="${item ? item.email || '' : ''}" placeholder="joao@senai.br" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Matrícula</label>
+              <input type="text" id="g-func-matricula" required value="${item ? item.matricula || item.id || '' : ''}" placeholder="FUN-001" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Cargo</label>
+              <input type="text" id="g-func-cargo" value="${item ? item.cargo || '' : ''}" placeholder="Técnico" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            </div>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Local</label>
+            <select id="g-func-local" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Selecione o local...</option>
+              ${locaisOptions}
+            </select>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Nível de acesso</label>
+              <select id="g-func-nivel" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="Usuário" ${item && (item.nivel_acesso === 'Usuário' || item.nivel_acesso === 'usuario') ? 'selected' : ''}>Usuário</option>
+                <option value="Administrador" ${item && (item.nivel_acesso === 'Administrador' || item.nivel_acesso === 'administrador') ? 'selected' : ''}>Administrador</option>
+                <option value="Master" ${item && (item.nivel_acesso === 'Master' || item.nivel_acesso === 'master') ? 'selected' : ''} ${myRole !== 'master' ? 'disabled' : ''}>Master</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Situação</label>
+              <select id="g-func-situacao" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="Ativo" ${!item || item.situacao === 'Ativo' ? 'selected' : ''}>Ativo</option>
+                <option value="Inativo" ${item && item.situacao === 'Inativo' ? 'selected' : ''}>Inativo</option>
+              </select>
+            </div>
+          </div>
+        `;
+
+      } else if (currentGestaoSubTab === 'ferramentas') {
+        const locaisOptions = cacheLocaisList.map(l => `<option value="${l.nome}" ${item && getLocalOrigem(item) === l.nome ? 'selected' : ''}>${l.nome}</option>`).join('');
+
+        container.innerHTML = `
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Nome da ferramenta</label>
+            <input type="text" id="g-fer-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: Furadeira Bosch" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Patrimônio / Código</label>
+              <input type="text" id="g-fer-id" required ${item ? 'readonly' : ''} value="${item ? item.id || '' : ''}" placeholder="FER-001" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono ${item ? 'bg-slate-100' : ''}">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Categoria</label>
+              <input type="text" id="g-fer-categoria" value="${item ? item.categoria || '' : ''}" placeholder="Elétrica" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Marca</label>
+              <input type="text" id="g-fer-marca" value="${item ? item.marca || '' : ''}" placeholder="Bosch" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Modelo</label>
+              <input type="text" id="g-fer-modelo" value="${item ? item.modelo || '' : ''}" placeholder="GSB 18V" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            </div>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Local de origem (padrão)</label>
+            <select id="g-fer-origem" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Selecione o local de origem...</option>
+              ${locaisOptions}
+            </select>
+          </div>
+        `;
+
+      } else if (currentGestaoSubTab === 'locais') {
+        const funcsOptions = cacheFuncionariosList.map(f => `<option value="${f.nome}" ${item && item.responsavel === f.nome ? 'selected' : ''}>${f.nome}</option>`).join('');
+
+        container.innerHTML = `
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Nome do local</label>
+            <input type="text" id="g-loc-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: Oficina 1" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Código / ID</label>
+              <input type="text" id="g-loc-codigo" required ${item ? 'readonly' : ''} value="${item ? item.id || item.codigo || '' : ''}" placeholder="LOC-001" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono ${item ? 'bg-slate-100' : ''}">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Tipo</label>
+              <input type="text" id="g-loc-tipo" value="${item ? item.tipo || '' : ''}" placeholder="Oficina / Laboratório" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Responsável</label>
+              <select id="g-loc-responsavel" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Selecione o responsável...</option>
+                ${funcsOptions}
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Unidade</label>
+              <input type="text" id="g-loc-unidade" value="${item ? item.unidade || 'SENAI' : 'SENAI'}" placeholder="SENAI" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            </div>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Descrição detalhada</label>
+            <textarea id="g-loc-descricao" rows="2" placeholder="Descrição do local..." class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">${item ? item.descricao || '' : ''}</textarea>
+          </div>
+        `;
+      }
+    }
+
+    function previewGestaoImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        gestaoImageBase64 = e.target.result;
+        resetGestaoImagePreview(gestaoImageBase64);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resetGestaoImagePreview(url) {
+      const img = document.getElementById('gestao-img-preview');
+      const icon = document.getElementById('gestao-img-icon');
+
+      if (url) {
+        img.src = url;
+        img.classList.remove('hidden');
+        icon.classList.add('hidden');
+      } else {
+        img.classList.add('hidden');
+        icon.classList.remove('hidden');
+      }
+    }
+
+    function cancelGestaoForm() {
+      openGestaoFormNew();
+    }
+
+    async function saveGestaoItem(event) {
+      event.preventDefault();
+
+      const btnSalvar = document.getElementById('btn-gestao-salvar');
+      const errDiv = document.getElementById('gestao-form-error');
+      errDiv.classList.add('hidden');
+
+      btnSalvar.disabled = true;
+      btnSalvar.innerText = "Salvando...";
+
+      try {
+        if (currentGestaoSubTab === 'funcionarios') {
+          if (currentEditingItem && !canEditTargetUser(currentEditingItem)) {
+            throw new Error("Apenas usuários Master podem alterar registros de outro Master.");
+          }
+
+          const payload = {
+            nome: document.getElementById('g-func-nome').value.trim(),
+            email: document.getElementById('g-func-email').value.trim(),
+            matricula: document.getElementById('g-func-matricula').value.trim(),
+            cargo: document.getElementById('g-func-cargo').value.trim(),
+            local: document.getElementById('g-func-local').value,
+            nivel_acesso: document.getElementById('g-func-nivel').value,
+            situacao: document.getElementById('g-func-situacao').value,
+            foto_url: gestaoImageBase64
+          };
+
+          if (currentEditingItem) {
+            const { error } = await supabaseClient.from('funcionarios').update(payload).eq('id', currentEditingItem.id);
+            if (error) throw error;
+          } else {
+            const { error } = await supabaseClient.from('funcionarios').insert([payload]);
+            if (error) throw error;
+          }
+
+          const { data: funcs } = await supabaseClient.from('funcionarios').select('*').order('nome');
+          cacheFuncionariosList = funcs || [];
+
+        } else if (currentGestaoSubTab === 'ferramentas') {
+          const payload = {
+            id: document.getElementById('g-fer-id').value.trim(),
+            nome: document.getElementById('g-fer-nome').value.trim(),
+            categoria: document.getElementById('g-fer-categoria').value.trim(),
+            marca: document.getElementById('g-fer-marca').value.trim(),
+            modelo: document.getElementById('g-fer-modelo').value.trim(),
+            local_origem: document.getElementById('g-fer-origem').value,
+            foto_url: gestaoImageBase64
+          };
+
+          if (currentEditingItem) {
+            const { error } = await supabaseClient.from('ferramentas').update(payload).eq('id', currentEditingItem.id);
+            if (error) throw error;
+          } else {
+            payload.status = 'Disponível';
+            const { error } = await supabaseClient.from('ferramentas').insert([payload]);
+            if (error) throw error;
+          }
+
+          const { data: fers } = await supabaseClient.from('ferramentas').select('*').order('nome');
+          cacheFerramentasList = fers || [];
+
+        } else if (currentGestaoSubTab === 'locais') {
+          const payload = {
+            id: document.getElementById('g-loc-codigo').value.trim(),
+            nome: document.getElementById('g-loc-nome').value.trim(),
+            tipo: document.getElementById('g-loc-tipo').value.trim(),
+            responsavel: document.getElementById('g-loc-responsavel').value,
+            unidade: document.getElementById('g-loc-unidade').value.trim(),
+            descricao: document.getElementById('g-loc-descricao').value.trim(),
+            foto_url: gestaoImageBase64
+          };
+
+          if (currentEditingItem) {
+            const { error } = await supabaseClient.from('locais').update(payload).eq('id', currentEditingItem.id);
+            if (error) throw error;
+          } else {
+            const { error } = await supabaseClient.from('locais').insert([payload]);
+            if (error) throw error;
+          }
+
+          const { data: locs } = await supabaseClient.from('locais').select('*').order('nome');
+          cacheLocaisList = locs || [];
+        }
+
+        filterGestaoList();
+        openGestaoFormNew();
+
+      } catch (err) {
+        errDiv.innerText = "Erro ao salvar alterações: " + err.message;
+        errDiv.classList.remove('hidden');
+      } finally {
+        btnSalvar.disabled = false;
+        btnSalvar.innerText = "Salvar alterações";
+      }
+    }
+
+    // 11. REALTIME SUBSCRIPTION
     function setupRealtimeSubscriptions() {
       supabaseClient
         .channel('dashboard-realtime')
@@ -2537,6 +3165,7 @@
           if (!document.getElementById('view-funcionarios').classList.contains('hidden')) renderFuncionarioDossier();
           if (!document.getElementById('view-ferramentas').classList.contains('hidden')) renderFerramentaFicha();
           if (!document.getElementById('view-locais').classList.contains('hidden')) renderLocalDetails();
+          if (!document.getElementById('view-gestao').classList.contains('hidden')) loadGestaoData();
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'historico' }, () => {
           if (!document.getElementById('view-indicadores').classList.contains('hidden')) loadIndicadoresData();
@@ -2547,6 +3176,10 @@
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'locais' }, () => {
           if (!document.getElementById('view-locais').classList.contains('hidden')) loadLocaisData();
+          if (!document.getElementById('view-gestao').classList.contains('hidden')) loadGestaoData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'funcionarios' }, () => {
+          if (!document.getElementById('view-gestao').classList.contains('hidden')) loadGestaoData();
         })
         .subscribe();
     }
