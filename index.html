@@ -889,8 +889,199 @@
 
       </section>
 
+      <!-- ==================== TELA 07: DETALHES DO LOCAL ==================== -->
+      <section id="view-locais" class="tab-content hidden space-y-6">
+        
+        <!-- Cabeçalho de Locais com Seletor Superior -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <h2 class="text-2xl font-bold text-slate-800">Locais</h2>
+            <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-3 py-1 rounded-full flex items-center gap-1">
+              <i data-lucide="lock" class="w-3 h-3 text-slate-500"></i> Master e Administrador
+            </span>
+          </div>
+
+          <!-- Seletor do Local Ativo -->
+          <div class="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2">
+            <label class="text-xs font-bold text-slate-600 uppercase whitespace-nowrap">Local:</label>
+            <select id="select-detalhes-local" onchange="onSelectLocalDetailsChange()"
+              class="px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 min-w-[220px]">
+              <option value="">Carregando locais...</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Card Principal do Local (Nome + Descrição) -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center md:items-start gap-6">
+          
+          <!-- Foto do Local -->
+          <div class="w-48 h-36 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-inner">
+            <img id="local-detalhes-foto" src="" alt="Local" class="w-full h-full object-cover hidden">
+            <div id="local-detalhes-foto-placeholder" class="text-slate-400 flex flex-col items-center justify-center p-4 text-center">
+              <i data-lucide="building-2" class="w-12 h-12 mb-1"></i>
+              <span class="text-[10px] font-semibold uppercase">Imagem do Local</span>
+            </div>
+          </div>
+
+          <!-- Informações Cadastrais do Local -->
+          <div class="flex-1 space-y-3 w-full">
+            <div>
+              <h3 id="local-detalhes-nome" class="text-2xl font-black text-slate-900">---</h3>
+              <p id="local-detalhes-descricao" class="text-xs text-slate-500 mt-1">Nenhuma descrição cadastrada para este local.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-3 gap-x-6 text-xs text-slate-600 pt-3 border-t border-slate-100">
+              <div>
+                <span class="text-slate-400 font-medium block">Código / ID:</span>
+                <span id="local-detalhes-codigo" class="font-mono font-bold text-blue-600">---</span>
+              </div>
+
+              <div>
+                <span class="text-slate-400 font-medium block">Tipo:</span>
+                <span id="local-detalhes-tipo" class="font-medium text-slate-800">---</span>
+              </div>
+
+              <div>
+                <span class="text-slate-400 font-medium block">Responsável:</span>
+                <span id="local-detalhes-responsavel" class="font-bold text-slate-800">---</span>
+              </div>
+
+              <div>
+                <span class="text-slate-400 font-medium block">Unidade:</span>
+                <span id="local-detalhes-unidade" class="font-medium text-slate-800">---</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle Section: Funcionários Vinculados vs Ferramentas do Local (Grade 2 Colunas) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Tabela 1: Funcionários Vinculados -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i data-lucide="users" class="w-4 h-4 text-blue-600"></i> Funcionários vinculados
+              </h3>
+              <span id="local-funcs-count" class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">0</span>
+            </div>
+
+            <div class="max-h-[280px] overflow-y-auto flex-1">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10">
+                  <tr>
+                    <th class="p-3 bg-slate-100">Funcionário</th>
+                    <th class="p-3 bg-slate-100">Cargo</th>
+                  </tr>
+                </thead>
+                <tbody id="table-local-funcs-body" class="divide-y divide-slate-100">
+                  <tr>
+                    <td colspan="2" class="p-4 text-center text-slate-400">Carregando funcionários...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tabela 2: Ferramentas do Local -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i data-lucide="wrench" class="w-4 h-4 text-amber-500"></i> Ferramentas do local
+              </h3>
+              <span id="local-fers-count" class="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-100">0</span>
+            </div>
+
+            <div class="max-h-[280px] overflow-y-auto flex-1">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10">
+                  <tr>
+                    <th class="p-3 bg-slate-100">Ferramenta</th>
+                    <th class="p-3 bg-slate-100">Local atual</th>
+                    <th class="p-3 bg-slate-100">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="table-local-fers-body" class="divide-y divide-slate-100">
+                  <tr>
+                    <td colspan="3" class="p-4 text-center text-slate-400">Carregando ferramentas...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Histórico do Local com Filtros -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800 text-base">Histórico do local</h3>
+
+          <!-- Filtros -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Período (Início / Fim)</label>
+              <div class="flex items-center gap-1">
+                <input type="date" id="filter-local-hist-inicio" onchange="filterLocalHistory()"
+                  class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <span class="text-slate-400 text-xs">a</span>
+                <input type="date" id="filter-local-hist-fim" onchange="filterLocalHistory()"
+                  class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Funcionário</label>
+              <select id="filter-local-hist-funcionario" onchange="filterLocalHistory()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Todos</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ferramenta</label>
+              <select id="filter-local-hist-ferramenta" onchange="filterLocalHistory()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Todas</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ação</label>
+              <select id="filter-local-hist-acao" onchange="filterLocalHistory()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Todas</option>
+                <option value="Retirada">Retirada</option>
+                <option value="Devolução">Devolução</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tabela de Histórico do Local -->
+          <div class="overflow-hidden border border-slate-200 rounded-xl">
+            <div class="max-h-[350px] overflow-y-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10">
+                  <tr>
+                    <th class="p-3 bg-slate-100">Data e hora</th>
+                    <th class="p-3 bg-slate-100">Funcionário</th>
+                    <th class="p-3 bg-slate-100">Ferramenta</th>
+                    <th class="p-3 bg-slate-100">Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="table-local-hist-body" class="divide-y divide-slate-100">
+                  <tr>
+                    <td colspan="4" class="p-4 text-center text-slate-400">Carregando histórico do local...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-slate-500 pt-2">
+            <span id="local-hist-count-info">Mostrando 0 registros</span>
+          </div>
+        </div>
+
+      </section>
+
       <!-- DEMAIS TELAS RESERVADAS -->
-      <section id="view-locais" class="tab-content hidden space-y-6"><h2 class="text-2xl font-bold text-slate-800">Detalhes do Local</h2></section>
       <section id="view-gestao" class="tab-content hidden space-y-6"><h2 class="text-2xl font-bold text-slate-800">Gestão & Cadastros</h2></section>
       <section id="view-impressao" class="tab-content hidden space-y-6"><h2 class="text-2xl font-bold text-slate-800">Central de Impressão</h2></section>
 
@@ -917,6 +1108,8 @@
     let cacheSelectedFuncHist = [];
     let cacheFerramentasList = [];
     let cacheSelectedFerHist = [];
+    let cacheLocaisList = [];
+    let cacheSelectedLocalHist = [];
 
     // Paginação do Gráfico de Locais
     let paginaAtualLocais = 0;
@@ -1062,6 +1255,7 @@
       if (tabName === 'historico') loadHistoricoData();
       if (tabName === 'funcionarios') loadFuncionariosDossierData();
       if (tabName === 'ferramentas') loadFerramentasFichaData();
+      if (tabName === 'locais') loadLocaisData();
     }
 
     // 3. TELA VISÃO GERAL
@@ -2129,7 +2323,212 @@
       lucide.createIcons();
     }
 
-    // 9. REALTIME SUBSCRIPTION
+    // 9. TELA DE DETALHES DO LOCAL
+    async function loadLocaisData() {
+      try {
+        const { data: locais, error } = await supabaseClient.from('locais').select('*').order('nome');
+        if (error) throw error;
+
+        cacheLocaisList = locais || [];
+        const selectEl = document.getElementById('select-detalhes-local');
+
+        if (cacheLocaisList.length === 0) {
+          selectEl.innerHTML = '<option value="">Nenhum local cadastrado</option>';
+          return;
+        }
+
+        const currentVal = selectEl.value;
+        selectEl.innerHTML = cacheLocaisList.map(l => `<option value="${l.id}">${l.nome}</option>`).join('');
+
+        if (currentVal && cacheLocaisList.some(l => l.id === currentVal)) {
+          selectEl.value = currentVal;
+        } else {
+          selectEl.value = cacheLocaisList[0].id;
+        }
+
+        await renderLocalDetails();
+      } catch (err) {
+        console.error("Erro ao carregar locais:", err.message);
+      }
+    }
+
+    async function onSelectLocalDetailsChange() {
+      await renderLocalDetails();
+    }
+
+    async function renderLocalDetails() {
+      const selectEl = document.getElementById('select-detalhes-local');
+      const localId = selectEl.value;
+      if (!localId) return;
+
+      const localObj = cacheLocaisList.find(l => l.id === localId);
+      if (!localObj) return;
+
+      // Card Superior - Informações do Local (Nome + Descrição + Dados)
+      document.getElementById('local-detalhes-nome').innerText = localObj.nome || 'Não Informado';
+      document.getElementById('local-detalhes-descricao').innerText = localObj.descricao || 'Nenhuma descrição detalhada cadastrada.';
+      document.getElementById('local-detalhes-codigo').innerText = localObj.id || localObj.codigo || '---';
+      document.getElementById('local-detalhes-tipo').innerText = localObj.tipo || 'Setor / Oficina';
+      document.getElementById('local-detalhes-responsavel').innerText = localObj.responsavel || localObj.com_quem_esta || '---';
+      document.getElementById('local-detalhes-unidade').innerText = localObj.unidade || 'SENAI';
+
+      // Imagem do Local
+      const fotoImg = document.getElementById('local-detalhes-foto');
+      const fotoPlaceholder = document.getElementById('local-detalhes-foto-placeholder');
+      if (localObj.foto_url) {
+        fotoImg.src = localObj.foto_url;
+        fotoImg.classList.remove('hidden');
+        fotoPlaceholder.classList.add('hidden');
+      } else {
+        fotoImg.classList.add('hidden');
+        fotoPlaceholder.classList.remove('hidden');
+      }
+
+      // 1. Busca Funcionários Vinculados a este local
+      const { data: funcsVinculados } = await supabaseClient
+        .from('funcionarios')
+        .select('*')
+        .or(`local.ilike.${localObj.nome},setor.ilike.${localObj.nome}`)
+        .order('nome');
+
+      const listaFuncs = funcsVinculados || [];
+      document.getElementById('local-funcs-count').innerText = listaFuncs.length;
+
+      const tbodyFuncs = document.getElementById('table-local-funcs-body');
+      if (listaFuncs.length === 0) {
+        tbodyFuncs.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-slate-400">Nenhum funcionário vinculado a este local.</td></tr>';
+      } else {
+        tbodyFuncs.innerHTML = listaFuncs.map(f => `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 font-bold text-slate-800">${f.nome}</td>
+            <td class="p-3 text-slate-600 font-medium">${f.cargo || '---'}</td>
+          </tr>
+        `).join('');
+      }
+
+      // 2. Busca Ferramentas pertencentes a este local (Sem tag "Deslocada")
+      const { data: fersDoLocal } = await supabaseClient
+        .from('ferramentas')
+        .select('*')
+        .or(`local_origem.ilike.${localObj.nome},local_padrao.ilike.${localObj.nome},local_pertencente.ilike.${localObj.nome},local.ilike.${localObj.nome}`)
+        .order('nome');
+
+      const listaFers = fersDoLocal || [];
+      document.getElementById('local-fers-count').innerText = listaFers.length;
+
+      const tbodyFers = document.getElementById('table-local-fers-body');
+      if (listaFers.length === 0) {
+        tbodyFers.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">Nenhuma ferramenta pertencente a este local.</td></tr>';
+      } else {
+        tbodyFers.innerHTML = listaFers.map(item => {
+          let badgeStatus = '';
+          if (item.status === 'Emprestado') {
+            badgeStatus = '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">Emprestada</span>';
+          } else if (item.status === 'Disponível') {
+            badgeStatus = '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Disponível</span>';
+          } else {
+            badgeStatus = '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">Manutenção</span>';
+          }
+
+          return `
+            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+              <td class="p-3 font-bold text-slate-800">
+                <span class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-[11px] mr-1 border border-blue-100">${item.id}</span>
+                ${item.nome}
+              </td>
+              <td class="p-3 text-slate-600 font-medium">${item.local_atual || localObj.nome}</td>
+              <td class="p-3">${badgeStatus}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // 3. Busca Histórico deste Local
+      const { data: histLocal } = await supabaseClient
+        .from('historico')
+        .select('*')
+        .ilike('local_uso', localObj.nome)
+        .order('created_at', { ascending: false });
+
+      cacheSelectedLocalHist = histLocal || [];
+
+      // Preenche seletores dos filtros do histórico
+      const funcOpts = Array.from(new Set(cacheSelectedLocalHist.map(h => h.nome_funcionario).filter(Boolean))).sort();
+      const ferOpts = Array.from(new Set(cacheSelectedLocalHist.map(h => h.nome_ferramenta || h.id_ferramenta).filter(Boolean))).sort();
+
+      const selectFuncHist = document.getElementById('filter-local-hist-funcionario');
+      selectFuncHist.innerHTML = '<option value="">Todos</option>';
+      funcOpts.forEach(f => { selectFuncHist.innerHTML += `<option value="${f}">${f}</option>`; });
+
+      const selectFerHist = document.getElementById('filter-local-hist-ferramenta');
+      selectFerHist.innerHTML = '<option value="">Todas</option>';
+      ferOpts.forEach(f => { selectFerHist.innerHTML += `<option value="${f}">${f}</option>`; });
+
+      filterLocalHistory();
+    }
+
+    function filterLocalHistory() {
+      const dtInicioVal = document.getElementById('filter-local-hist-inicio').value;
+      const dtFimVal = document.getElementById('filter-local-hist-fim').value;
+
+      const dtInicio = dtInicioVal ? new Date(dtInicioVal + 'T00:00:00') : null;
+      const dtFim = dtFimVal ? new Date(dtFimVal + 'T23:59:59') : null;
+
+      const funcFiltro = document.getElementById('filter-local-hist-funcionario').value.toLowerCase();
+      const ferFiltro = document.getElementById('filter-local-hist-ferramenta').value.toLowerCase();
+      const acaoFiltro = document.getElementById('filter-local-hist-acao').value;
+
+      const filtrados = cacheSelectedLocalHist.filter(h => {
+        const dtItem = new Date(h.created_at);
+        const matchData = (!dtInicio || dtItem >= dtInicio) && (!dtFim || dtItem <= dtFim);
+
+        const nomeFunc = (h.nome_funcionario || '').toLowerCase();
+        const nomeFer = (h.nome_ferramenta || h.id_ferramenta || '').toLowerCase();
+
+        const matchFunc = !funcFiltro || nomeFunc === funcFiltro;
+        const matchFer = !ferFiltro || nomeFer === ferFiltro;
+        const matchAcao = !acaoFiltro || h.acao === acaoFiltro;
+
+        return matchData && matchFunc && matchFer && matchAcao;
+      });
+
+      const tbody = document.getElementById('table-local-hist-body');
+      const countInfo = document.getElementById('local-hist-count-info');
+
+      if (countInfo) {
+        countInfo.innerText = `Mostrando 1 a ${filtrados.length} de ${filtrados.length} registros`;
+      }
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhum registro encontrado no histórico do local.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtrados.map(h => {
+        const isRetirada = h.acao === 'Retirada';
+        const acaoBadge = isRetirada
+          ? '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">Retirada</span>'
+          : '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Devolução</span>';
+
+        return `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 text-xs text-slate-500 font-mono">
+              ${h.created_at ? new Date(h.created_at).toLocaleString('pt-BR') : '---'}
+            </td>
+            <td class="p-3 text-slate-700 font-medium">${h.nome_funcionario || '---'}</td>
+            <td class="p-3 font-bold text-slate-800">
+              <span class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs mr-1 border border-blue-100">${h.id_ferramenta || '---'}</span>
+              ${h.nome_ferramenta || '---'}
+            </td>
+            <td class="p-3">${acaoBadge}</td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // 10. REALTIME SUBSCRIPTION
     function setupRealtimeSubscriptions() {
       supabaseClient
         .channel('dashboard-realtime')
@@ -2138,12 +2537,17 @@
           if (!document.getElementById('view-rastreabilidade').classList.contains('hidden')) loadRastreabilidadeData();
           if (!document.getElementById('view-funcionarios').classList.contains('hidden')) renderFuncionarioDossier();
           if (!document.getElementById('view-ferramentas').classList.contains('hidden')) renderFerramentaFicha();
+          if (!document.getElementById('view-locais').classList.contains('hidden')) renderLocalDetails();
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'historico' }, () => {
           if (!document.getElementById('view-indicadores').classList.contains('hidden')) loadIndicadoresData();
           if (!document.getElementById('view-historico').classList.contains('hidden')) loadHistoricoData();
           if (!document.getElementById('view-funcionarios').classList.contains('hidden')) renderFuncionarioDossier();
           if (!document.getElementById('view-ferramentas').classList.contains('hidden')) renderFerramentaFicha();
+          if (!document.getElementById('view-locais').classList.contains('hidden')) renderLocalDetails();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'locais' }, () => {
+          if (!document.getElementById('view-locais').classList.contains('hidden')) loadLocaisData();
         })
         .subscribe();
     }
