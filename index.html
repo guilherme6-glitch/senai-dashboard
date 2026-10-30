@@ -2707,138 +2707,134 @@
     }
 
     function filterGestaoList() {
-      const term = (document.getElementById('gestao-search').value || '').toLowerCase();
-      const thead = document.getElementById('gestao-table-head');
-      const tbody = document.getElementById('gestao-table-body');
+  const term = (document.getElementById('gestao-search').value || '').toLowerCase();
+  const thead = document.getElementById('gestao-table-head');
+  const tbody = document.getElementById('gestao-table-body');
 
-      if (currentGestaoSubTab === 'funcionarios') {
-        thead.innerHTML = `
-          <tr>
-            <th class="p-3 bg-slate-100">Nome</th>
-            <th class="p-3 bg-slate-100">Matrícula</th>
-            <th class="p-3 bg-slate-100">Local</th>
-            <th class="p-3 bg-slate-100">Nível de acesso</th>
-            <th class="p-3 bg-slate-100 text-right">Ação</th>
-          </tr>
-        `;
+  if (currentGestaoSubTab === 'funcionarios') {
+    thead.innerHTML = `
+      <tr>
+        <th class="p-3 bg-slate-100">Nome</th>
+        <th class="p-3 bg-slate-100">Matrícula</th>
+        <th class="p-3 bg-slate-100">Local</th>
+        <th class="p-3 bg-slate-100">Nível de acesso</th>
+        <th class="p-3 bg-slate-100 text-right">Ação</th>
+      </tr>
+    `;
 
-        const filtrados = cacheFuncionariosList.filter(f => 
-          (f.nome || '').toLowerCase().includes(term) ||
-          (f.matricula || f.id || '').toLowerCase().includes(term) ||
-          (f.local || '').toLowerCase().includes(term)
-        );
+    const filtrados = cacheFuncionariosList.filter(f => 
+      (f.nome || '').toLowerCase().includes(term) ||
+      (f.matricula || '').toLowerCase().includes(term) ||
+      (f.local_nome || '').toLowerCase().includes(term)
+    );
 
-        if (filtrados.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum funcionário encontrado.</td></tr>';
-          return;
-        }
+    if (filtrados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum funcionário encontrado.</td></tr>';
+      return;
+    }
 
-        tbody.innerHTML = filtrados.map(f => {
-          const nivel = f.nivel_acesso || 'Usuário';
-          let nivelBadge = '<span class="text-slate-600 bg-slate-100 px-2 py-0.5 rounded text-xs font-semibold">Usuário</span>';
-          if (nivel.toLowerCase() === 'master') {
-            nivelBadge = '<span class="text-purple-800 bg-purple-100 px-2 py-0.5 rounded text-xs font-bold border border-purple-200">Master</span>';
-          } else if (nivel.toLowerCase() === 'administrador') {
-            nivelBadge = '<span class="text-blue-800 bg-blue-100 px-2 py-0.5 rounded text-xs font-bold border border-blue-200">Administrador</span>';
-          }
-
-          return `
-            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-              <td class="p-3 font-bold text-slate-800 flex items-center gap-2">
-                <div class="w-7 h-7 rounded-full bg-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center text-[10px] font-bold">
-                  ${f.foto_url ? `<img src="${f.foto_url}" class="w-full h-full object-cover">` : f.nome.charAt(0).toUpperCase()}
-                </div>
-                ${f.nome}
-              </td>
-              <td class="p-3 font-mono text-xs font-bold text-slate-600">${f.matricula || f.id_matricula || f.id || '---'}</td>
-              <td class="p-3 text-slate-600">${f.local || f.setor || '---'}</td>
-              <td class="p-3">${nivelBadge}</td>
-              <td class="p-3 text-right">
-                <button onclick="editGestaoItem('${f.id}')" title="Editar" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition">
-                  <i data-lucide="edit-3" class="w-4 h-4"></i>
-                </button>
-              </td>
-            </tr>
-          `;
-        }).join('');
-
-      } else if (currentGestaoSubTab === 'ferramentas') {
-        thead.innerHTML = `
-          <tr>
-            <th class="p-3 bg-slate-100">Código / Ferramenta</th>
-            <th class="p-3 bg-slate-100">Categoria</th>
-            <th class="p-3 bg-slate-100">Local Origem</th>
-            <th class="p-3 bg-slate-100">Status</th>
-            <th class="p-3 bg-slate-100 text-right">Ação</th>
-          </tr>
-        `;
-
-        const filtrados = cacheFerramentasList.filter(fer => 
-          (fer.nome || '').toLowerCase().includes(term) ||
-          (fer.id || '').toLowerCase().includes(term) ||
-          (fer.categoria || '').toLowerCase().includes(term)
-        );
-
-        if (filtrados.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhuma ferramenta encontrada.</td></tr>';
-          return;
-        }
-
-        tbody.innerHTML = filtrados.map(fer => `
-          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-            <td class="p-3 font-bold text-slate-800">
-              <span class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs mr-1 border border-blue-100 font-mono">${fer.id}</span>
-              ${fer.nome}
-            </td>
-            <td class="p-3 text-slate-600">${fer.categoria || 'Geral'}</td>
-            <td class="p-3 text-slate-600">${getLocalOrigem(fer)}</td>
-            <td class="p-3 text-xs font-semibold">${fer.status || 'Disponível'}</td>
-            <td class="p-3 text-right">
-              <button onclick="editGestaoItem('${fer.id}')" title="Editar" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition">
-                <i data-lucide="edit-3" class="w-4 h-4"></i>
-              </button>
-            </td>
-          </tr>
-        `).join('');
-
-      } else if (currentGestaoSubTab === 'locais') {
-        thead.innerHTML = `
-          <tr>
-            <th class="p-3 bg-slate-100">Código</th>
-            <th class="p-3 bg-slate-100">Nome do Local</th>
-            <th class="p-3 bg-slate-100">Tipo</th>
-            <th class="p-3 bg-slate-100">Responsável</th>
-            <th class="p-3 bg-slate-100 text-right">Ação</th>
-          </tr>
-        `;
-
-        const filtrados = cacheLocaisList.filter(loc => 
-          (loc.nome || '').toLowerCase().includes(term) ||
-          (loc.id || loc.codigo || '').toLowerCase().includes(term)
-        );
-
-        if (filtrados.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum local encontrado.</td></tr>';
-          return;
-        }
-
-        tbody.innerHTML = filtrados.map(loc => `
-          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-            <td class="p-3 font-mono text-xs font-bold text-blue-600">${loc.id || loc.codigo || '---'}</td>
-            <td class="p-3 font-bold text-slate-800">${loc.nome}</td>
-            <td class="p-3 text-slate-600">${loc.tipo || 'Oficina'}</td>
-            <td class="p-3 text-slate-600">${loc.responsavel || '---'}</td>
-            <td class="p-3 text-right">
-              <button onclick="editGestaoItem('${loc.id}')" title="Editar" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition">
-                <i data-lucide="edit-3" class="w-4 h-4"></i>
-              </button>
-            </td>
-          </tr>
-        `).join('');
+    tbody.innerHTML = filtrados.map(f => {
+      const nivel = f.nivel_acesso || 'funcionario';
+      let nivelBadge = '<span class="text-slate-600 bg-slate-100 px-2 py-0.5 rounded text-xs font-semibold">Funcionário</span>';
+      if (nivel.toLowerCase() === 'master') {
+        nivelBadge = '<span class="text-purple-800 bg-purple-100 px-2 py-0.5 rounded text-xs font-bold border border-purple-200">Master</span>';
+      } else if (nivel.toLowerCase() === 'administrador') {
+        nivelBadge = '<span class="text-blue-800 bg-blue-100 px-2 py-0.5 rounded text-xs font-bold border border-blue-200">Administrador</span>';
       }
 
-      lucide.createIcons();
+      return `
+        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+          <td class="p-3 font-bold text-slate-800 flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center text-[10px] font-bold">
+              ${f.foto_url ? `<img src="${f.foto_url}" class="w-full h-full object-cover">` : (f.nome ? f.nome.charAt(0).toUpperCase() : 'U')}
+            </div>
+            ${f.nome}
+          </td>
+          <td class="p-3 font-mono text-xs font-bold text-slate-600">${f.matricula || '---'}</td>
+          <td class="p-3 text-slate-600">${f.local_nome || '---'}</td>
+          <td class="p-3">${nivelBadge}</td>
+          <td class="p-3 text-right">
+            <button onclick="editGestaoItem('${f.id}')" title="Editar" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition">
+              <i data-lucide="edit-3" class="w-4 h-4"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+  } else if (currentGestaoSubTab === 'ferramentas') {
+    thead.innerHTML = `
+      <tr>
+        <th class="p-3 bg-slate-100">Código / Ferramenta</th>
+        <th class="p-3 bg-slate-100">Categoria</th>
+        <th class="p-3 bg-slate-100">Local Padrão</th>
+        <th class="p-3 bg-slate-100">Status</th>
+        <th class="p-3 bg-slate-100 text-right">Ação</th>
+      </tr>
+    `;
+
+    const filtrados = cacheFerramentasList.filter(fer => 
+      (fer.nome || '').toLowerCase().includes(term) ||
+      (fer.id || '').toLowerCase().includes(term) ||
+      (fer.categoria || '').toLowerCase().includes(term)
+    );
+
+    if (filtrados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhuma ferramenta encontrada.</td></tr>';
+      return;
     }
+
+    tbody.innerHTML = filtrados.map(fer => `
+      <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+        <td class="p-3 font-bold text-slate-800">
+          <span class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs mr-1 border border-blue-100 font-mono">${fer.id}</span>
+          ${fer.nome}
+        </td>
+        <td class="p-3 text-slate-600">${fer.categoria || 'Geral'}</td>
+        <td class="p-3 text-slate-600">${fer.local_padrao || 'Não Especificado'}</td>
+        <td class="p-3 text-xs font-semibold">${fer.status || 'Disponível'}</td>
+        <td class="p-3 text-right">
+          <button onclick="editGestaoItem('${fer.id}')" title="Editar" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition">
+            <i data-lucide="edit-3" class="w-4 h-4"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+  } else if (currentGestaoSubTab === 'locais') {
+    thead.innerHTML = `
+      <tr>
+        <th class="p-3 bg-slate-100">Nome do Local</th>
+        <th class="p-3 bg-slate-100">Descrição</th>
+        <th class="p-3 bg-slate-100 text-right">Ação</th>
+      </tr>
+    `;
+
+    const filtrados = cacheLocaisList.filter(loc => 
+      (loc.nome || '').toLowerCase().includes(term) ||
+      (loc.descricao || '').toLowerCase().includes(term)
+    );
+
+    if (filtrados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">Nenhum local encontrado.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtrados.map(loc => `
+      <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+        <td class="p-3 font-bold text-slate-800">${loc.nome}</td>
+        <td class="p-3 text-slate-600 truncate max-w-xs">${loc.descricao || '---'}</td>
+        <td class="p-3 text-right">
+          <button onclick="editGestaoItem('${loc.id}')" title="Editar" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition">
+            <i data-lucide="edit-3" class="w-4 h-4"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  lucide.createIcons();
+}
 
     // Regra de Proteção de Perfil
     function canEditTargetUser(targetUser) {
@@ -2901,133 +2897,99 @@
       renderGestaoDynamicInputs(item);
     }
 
-    function renderGestaoDynamicInputs(item) {
-      const container = document.getElementById('gestao-dynamic-inputs');
-      const myRole = (currentUserProfile?.nivel_acesso || '').toLowerCase();
+function renderGestaoDynamicInputs(item) {
+  const container = document.getElementById('gestao-dynamic-inputs');
+  const myRole = (currentUserProfile?.nivel_acesso || '').toLowerCase();
 
-      if (currentGestaoSubTab === 'funcionarios') {
-        const locaisOptions = cacheLocaisList.map(l => `<option value="${l.nome}" ${item && item.local === l.nome ? 'selected' : ''}>${l.nome}</option>`).join('');
+  if (currentGestaoSubTab === 'funcionarios') {
+    const locaisOptions = cacheLocaisList.map(l => 
+      `<option value="${l.nome}" data-id="${l.id}" ${item && item.local_nome === l.nome ? 'selected' : ''}>${l.nome}</option>`
+    ).join('');
 
-        container.innerHTML = `
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Nome completo</label>
-            <input type="text" id="g-func-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: João Silva" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">E-mail</label>
-            <input type="email" id="g-func-email" required value="${item ? item.email || '' : ''}" placeholder="joao@senai.br" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Matrícula</label>
-              <input type="text" id="g-func-matricula" required value="${item ? item.matricula || item.id || '' : ''}" placeholder="FUN-001" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono">
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Cargo</label>
-              <input type="text" id="g-func-cargo" value="${item ? item.cargo || '' : ''}" placeholder="Técnico" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-            </div>
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Local</label>
-            <select id="g-func-local" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
-              <option value="">Selecione o local...</option>
-              ${locaisOptions}
-            </select>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Nível de acesso</label>
-              <select id="g-func-nivel" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
-                <option value="Usuário" ${item && (item.nivel_acesso === 'Usuário' || item.nivel_acesso === 'usuario') ? 'selected' : ''}>Usuário</option>
-                <option value="Administrador" ${item && (item.nivel_acesso === 'Administrador' || item.nivel_acesso === 'administrador') ? 'selected' : ''}>Administrador</option>
-                <option value="Master" ${item && (item.nivel_acesso === 'Master' || item.nivel_acesso === 'master') ? 'selected' : ''} ${myRole !== 'master' ? 'disabled' : ''}>Master</option>
-              </select>
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Situação</label>
-              <select id="g-func-situacao" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
-                <option value="Ativo" ${!item || item.situacao === 'Ativo' ? 'selected' : ''}>Ativo</option>
-                <option value="Inativo" ${item && item.situacao === 'Inativo' ? 'selected' : ''}>Inativo</option>
-              </select>
-            </div>
-          </div>
-        `;
+    container.innerHTML = `
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Nome completo</label>
+        <input type="text" id="g-func-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: João Silva" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">E-mail</label>
+        <input type="email" id="g-func-email" required value="${item ? item.email || '' : ''}" placeholder="joao@senai.br" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Matrícula</label>
+          <input type="text" id="g-func-matricula" required value="${item ? item.matricula || '' : ''}" placeholder="FUN-001" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Cargo</label>
+          <input type="text" id="g-func-cargo" value="${item ? item.cargo || '' : ''}" placeholder="Técnico" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Setor</label>
+          <input type="text" id="g-func-setor" value="${item ? item.setor || '' : ''}" placeholder="Elétrica" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Local</label>
+          <select id="g-func-local-nome" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+            <option value="">Selecione...</option>
+            ${locaisOptions}
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Nível de acesso</label>
+        <select id="g-func-nivel" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+          <option value="funcionario" ${item && (item.nivel_acesso === 'funcionario' || item.nivel_acesso === 'Usuário') ? 'selected' : ''}>Funcionário</option>
+          <option value="administrador" ${item && (item.nivel_acesso === 'administrador' || item.nivel_acesso === 'Administrador') ? 'selected' : ''}>Administrador</option>
+          <option value="master" ${item && (item.nivel_acesso === 'master' || item.nivel_acesso === 'Master') ? 'selected' : ''} ${myRole !== 'master' ? 'disabled' : ''}>Master</option>
+        </select>
+      </div>
+    `;
 
-      } else if (currentGestaoSubTab === 'ferramentas') {
-        const locaisOptions = cacheLocaisList.map(l => `<option value="${l.nome}" ${item && getLocalOrigem(item) === l.nome ? 'selected' : ''}>${l.nome}</option>`).join('');
+  } else if (currentGestaoSubTab === 'ferramentas') {
+    const locaisOptions = cacheLocaisList.map(l => 
+      `<option value="${l.nome}" ${item && item.local_padrao === l.nome ? 'selected' : ''}>${l.nome}</option>`
+    ).join('');
 
-        container.innerHTML = `
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Nome da ferramenta</label>
-            <input type="text" id="g-fer-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: Furadeira Bosch" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Patrimônio / Código</label>
-              <input type="text" id="g-fer-id" required ${item ? 'readonly' : ''} value="${item ? item.id || '' : ''}" placeholder="FER-001" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono ${item ? 'bg-slate-100' : ''}">
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Categoria</label>
-              <input type="text" id="g-fer-categoria" value="${item ? item.categoria || '' : ''}" placeholder="Elétrica" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Marca</label>
-              <input type="text" id="g-fer-marca" value="${item ? item.marca || '' : ''}" placeholder="Bosch" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Modelo</label>
-              <input type="text" id="g-fer-modelo" value="${item ? item.modelo || '' : ''}" placeholder="GSB 18V" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-            </div>
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Local de origem (padrão)</label>
-            <select id="g-fer-origem" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
-              <option value="">Selecione o local de origem...</option>
-              ${locaisOptions}
-            </select>
-          </div>
-        `;
+    container.innerHTML = `
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Nome da ferramenta</label>
+        <input type="text" id="g-fer-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: Multímetro Digital" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Patrimônio / Código</label>
+          <input type="text" id="g-fer-id" required ${item ? 'readonly' : ''} value="${item ? item.id || '' : ''}" placeholder="FER-001" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono ${item ? 'bg-slate-100' : ''}">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Categoria</label>
+          <input type="text" id="g-fer-categoria" value="${item ? item.categoria || '' : ''}" placeholder="Medição" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+        </div>
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Local padrão</label>
+        <select id="g-fer-padrao" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+          <option value="">Selecione o local padrão...</option>
+          ${locaisOptions}
+        </select>
+      </div>
+    `;
 
-      } else if (currentGestaoSubTab === 'locais') {
-        const funcsOptions = cacheFuncionariosList.map(f => `<option value="${f.nome}" ${item && item.responsavel === f.nome ? 'selected' : ''}>${f.nome}</option>`).join('');
-
-        container.innerHTML = `
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Nome do local</label>
-            <input type="text" id="g-loc-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: Oficina 1" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Código / ID</label>
-              <input type="text" id="g-loc-codigo" required ${item ? 'readonly' : ''} value="${item ? item.id || item.codigo || '' : ''}" placeholder="LOC-001" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono ${item ? 'bg-slate-100' : ''}">
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Tipo</label>
-              <input type="text" id="g-loc-tipo" value="${item ? item.tipo || '' : ''}" placeholder="Oficina / Laboratório" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Responsável</label>
-              <select id="g-loc-responsavel" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
-                <option value="">Selecione o responsável...</option>
-                ${funcsOptions}
-              </select>
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Unidade</label>
-              <input type="text" id="g-loc-unidade" value="${item ? item.unidade || 'SENAI' : 'SENAI'}" placeholder="SENAI" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-            </div>
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Descrição detalhada</label>
-            <textarea id="g-loc-descricao" rows="2" placeholder="Descrição do local..." class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">${item ? item.descricao || '' : ''}</textarea>
-          </div>
-        `;
-      }
-    }
+  } else if (currentGestaoSubTab === 'locais') {
+    container.innerHTML = `
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Nome do local</label>
+        <input type="text" id="g-loc-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: Laboratório de Elétrica" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Descrição</label>
+        <textarea id="g-loc-descricao" rows="3" placeholder="Descrição da área..." class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">${item ? item.descricao || '' : ''}</textarea>
+      </div>
+    `;
+  }
+}
 
     function previewGestaoImage(event) {
       const file = event.target.files[0];
@@ -3060,100 +3022,103 @@
     }
 
     async function saveGestaoItem(event) {
-      event.preventDefault();
+  event.preventDefault();
 
-      const btnSalvar = document.getElementById('btn-gestao-salvar');
-      const errDiv = document.getElementById('gestao-form-error');
-      errDiv.classList.add('hidden');
+  const btnSalvar = document.getElementById('btn-gestao-salvar');
+  const errDiv = document.getElementById('gestao-form-error');
+  errDiv.classList.add('hidden');
 
-      btnSalvar.disabled = true;
-      btnSalvar.innerText = "Salvando...";
+  btnSalvar.disabled = true;
+  btnSalvar.innerText = "Salvando...";
 
-      try {
-        if (currentGestaoSubTab === 'funcionarios') {
-          if (currentEditingItem && !canEditTargetUser(currentEditingItem)) {
-            throw new Error("Apenas usuários Master podem alterar registros de outro Master.");
-          }
-
-          const payload = {
-            nome: document.getElementById('g-func-nome').value.trim(),
-            email: document.getElementById('g-func-email').value.trim(),
-            matricula: document.getElementById('g-func-matricula').value.trim(),
-            cargo: document.getElementById('g-func-cargo').value.trim(),
-            local: document.getElementById('g-func-local').value,
-            nivel_acesso: document.getElementById('g-func-nivel').value,
-            situacao: document.getElementById('g-func-situacao').value,
-            foto_url: gestaoImageBase64
-          };
-
-          if (currentEditingItem) {
-            const { error } = await supabaseClient.from('funcionarios').update(payload).eq('id', currentEditingItem.id);
-            if (error) throw error;
-          } else {
-            const { error } = await supabaseClient.from('funcionarios').insert([payload]);
-            if (error) throw error;
-          }
-
-          const { data: funcs } = await supabaseClient.from('funcionarios').select('*').order('nome');
-          cacheFuncionariosList = funcs || [];
-
-        } else if (currentGestaoSubTab === 'ferramentas') {
-          const payload = {
-            id: document.getElementById('g-fer-id').value.trim(),
-            nome: document.getElementById('g-fer-nome').value.trim(),
-            categoria: document.getElementById('g-fer-categoria').value.trim(),
-            marca: document.getElementById('g-fer-marca').value.trim(),
-            modelo: document.getElementById('g-fer-modelo').value.trim(),
-            local_origem: document.getElementById('g-fer-origem').value,
-            foto_url: gestaoImageBase64
-          };
-
-          if (currentEditingItem) {
-            const { error } = await supabaseClient.from('ferramentas').update(payload).eq('id', currentEditingItem.id);
-            if (error) throw error;
-          } else {
-            payload.status = 'Disponível';
-            const { error } = await supabaseClient.from('ferramentas').insert([payload]);
-            if (error) throw error;
-          }
-
-          const { data: fers } = await supabaseClient.from('ferramentas').select('*').order('nome');
-          cacheFerramentasList = fers || [];
-
-        } else if (currentGestaoSubTab === 'locais') {
-          const payload = {
-            id: document.getElementById('g-loc-codigo').value.trim(),
-            nome: document.getElementById('g-loc-nome').value.trim(),
-            tipo: document.getElementById('g-loc-tipo').value.trim(),
-            responsavel: document.getElementById('g-loc-responsavel').value,
-            unidade: document.getElementById('g-loc-unidade').value.trim(),
-            descricao: document.getElementById('g-loc-descricao').value.trim(),
-            foto_url: gestaoImageBase64
-          };
-
-          if (currentEditingItem) {
-            const { error } = await supabaseClient.from('locais').update(payload).eq('id', currentEditingItem.id);
-            if (error) throw error;
-          } else {
-            const { error } = await supabaseClient.from('locais').insert([payload]);
-            if (error) throw error;
-          }
-
-          const { data: locs } = await supabaseClient.from('locais').select('*').order('nome');
-          cacheLocaisList = locs || [];
-        }
-
-        filterGestaoList();
-        openGestaoFormNew();
-
-      } catch (err) {
-        errDiv.innerText = "Erro ao salvar alterações: " + err.message;
-        errDiv.classList.remove('hidden');
-      } finally {
-        btnSalvar.disabled = false;
-        btnSalvar.innerText = "Salvar alterações";
+  try {
+    if (currentGestaoSubTab === 'funcionarios') {
+      if (currentEditingItem && !canEditTargetUser(currentEditingItem)) {
+        throw new Error("Apenas usuários Master podem alterar registros de outro Master.");
       }
+
+      const selectLocal = document.getElementById('g-func-local-nome');
+      const selectedOption = selectLocal.options[selectLocal.selectedIndex];
+      const localId = selectedOption ? selectedOption.getAttribute('data-id') : null;
+
+      const payload = {
+        nome: document.getElementById('g-func-nome').value.trim(),
+        email: document.getElementById('g-func-email').value.trim(),
+        matricula: document.getElementById('g-func-matricula').value.trim(),
+        cargo: document.getElementById('g-func-cargo').value.trim(),
+        setor: document.getElementById('g-func-setor').value.trim(),
+        local_nome: selectLocal.value,
+        nivel_acesso: document.getElementById('g-func-nivel').value
+      };
+
+      if (localId) payload.local_id = localId;
+      if (gestaoImageBase64) payload.foto_url = gestaoImageBase64;
+
+      if (currentEditingItem) {
+        const { error } = await supabaseClient.from('funcionarios').update(payload).eq('id', currentEditingItem.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabaseClient.from('funcionarios').insert([payload]);
+        if (error) throw error;
+      }
+
+      const { data: funcs } = await supabaseClient.from('funcionarios').select('*').order('nome');
+      cacheFuncionariosList = funcs || [];
+
+    } else if (currentGestaoSubTab === 'ferramentas') {
+      const payload = {
+        id: document.getElementById('g-fer-id').value.trim(),
+        nome: document.getElementById('g-fer-nome').value.trim(),
+        categoria: document.getElementById('g-fer-categoria').value.trim(),
+        local_padrao: document.getElementById('g-fer-padrao').value
+      };
+
+      if (gestaoImageBase64) payload.foto_url = gestaoImageBase64;
+
+      if (currentEditingItem) {
+        const { error } = await supabaseClient.from('ferramentas').update(payload).eq('id', currentEditingItem.id);
+        if (error) throw error;
+      } else {
+        payload.status = 'Disponível';
+        payload.local_atual = 'Não Especificado';
+        const { error } = await supabaseClient.from('ferramentas').insert([payload]);
+        if (error) throw error;
+      }
+
+      const { data: fers } = await supabaseClient.from('ferramentas').select('*').order('nome');
+      cacheFerramentasList = fers || [];
+
+    } else if (currentGestaoSubTab === 'locais') {
+      const payload = {
+        nome: document.getElementById('g-loc-nome').value.trim(),
+        descricao: document.getElementById('g-loc-descricao').value.trim()
+      };
+
+      if (gestaoImageBase64) payload.foto_url = gestaoImageBase64;
+
+      if (currentEditingItem) {
+        const { error } = await supabaseClient.from('locais').update(payload).eq('id', currentEditingItem.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabaseClient.from('locais').insert([payload]);
+        if (error) throw error;
+      }
+
+      const { data: locs } = await supabaseClient.from('locais').select('*').order('nome');
+      cacheLocaisList = locs || [];
     }
+
+    filterGestaoList();
+    openGestaoFormNew();
+
+  } catch (err) {
+    errDiv.innerText = "Erro ao salvar alterações: " + err.message;
+    errDiv.classList.remove('hidden');
+  } finally {
+    btnSalvar.disabled = false;
+    btnSalvar.innerText = "Salvar alterações";
+  }
+}
 
     // 11. REALTIME SUBSCRIPTION
     function setupRealtimeSubscriptions() {
