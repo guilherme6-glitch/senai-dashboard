@@ -33,12 +33,17 @@
       font-weight: 700;
     }
 
-    /* REGRAS DE IMPRESSÃO FÍSICA */
+    /* REGRAS DE IMPRESSÃO FÍSICA E PDF */
     #print-area-wrapper {
       display: none;
     }
 
     @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
       body {
         background: #ffffff !important;
       }
@@ -59,6 +64,10 @@
       }
       #print-area-wrapper * {
         visibility: visible !important;
+      }
+      .bg-red-600 {
+        background-color: #dc2626 !important;
+        color: #ffffff !important;
       }
       .card-print-cracha {
         width: 50mm !important;
@@ -1423,7 +1432,7 @@
     </main>
   </div>
 
-  <!-- CONTEÚDO OCULTO PARA A IMPRESSORA FÍSICA (POSICIONADO NA RAIZ DO BODY PARA EVITAR PÁGINA EM BRANCO) -->
+  <!-- CONTEÚDO OCULTO PARA A IMPRESSORA FÍSICA -->
   <div id="print-area-wrapper"></div>
 
   <!-- ==================== LÓGICA JAVASCRIPT ==================== -->
@@ -1437,7 +1446,7 @@
       Chart.register(ChartDataLabels);
     }
 
-    // SILHUETAS DE FALLBACK (SVG VETORIAL EMBUTIDO)
+    // SILHUETAS DE FALLBACK
     const SVG_SILHOUETTE_PERSON = `<svg class="w-full h-full text-slate-800" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
     const SVG_SILHOUETTE_TOOL = `<svg class="w-full h-full text-slate-800 p-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.6C.4 7 1 10 3 12c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.4-.4.4-1.1 0-1.3z"/></svg>`;
 
@@ -3628,7 +3637,6 @@
           const func = cacheFuncionariosList.find(f => f.id === id);
           if (!func) continue;
 
-          const primeiroNome = (func.nome || 'Funcionário').trim().split(' ')[0];
           const matricula = func.matricula || func.id_matricula || func.id || '---';
 
           const qrUrl = `https://senai-leitor.vercel.app/?funcionario=${encodeURIComponent(matricula)}`;
@@ -3638,53 +3646,53 @@
             ? `<img src="${func.foto_url}" class="w-full h-full object-cover">`
             : SVG_SILHOUETTE_PERSON;
 
-          // Cartão Frente (50mm x 70mm) - QR Code Expandido + Elevação e Espaço na Borda Inferior
+          // Cartão Frente (50mm x 70mm) - Sem 'truncate' no nome (break-words) + Estilo SENAI impresso
           const cardFrenteHtml = `
             <div class="card-print-cracha bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-2 text-center relative overflow-hidden" style="width: 50mm; height: 70mm; box-sizing: border-box;">
-              <div class="bg-red-600 text-white font-black text-xs py-1 tracking-wider uppercase w-full">
+              <div class="bg-red-600 text-white font-black text-xs py-1 tracking-wider uppercase w-full flex items-center justify-center" style="background-color: #dc2626 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
                 SENAI
               </div>
 
-              <div class="my-0.5">
-                <p class="text-xs font-black text-slate-900 leading-tight truncate max-w-[45mm]">${primeiroNome}</p>
+              <div class="my-0.5 px-1 w-full">
+                <p class="text-[10px] font-black text-slate-900 leading-tight break-words text-center">${func.nome || 'Funcionário'}</p>
               </div>
 
               <div class="w-16 h-20 bg-slate-100 border border-slate-300 overflow-hidden flex items-center justify-center my-0.5 rounded">
                 ${fotoHtml}
               </div>
 
-              <div class="w-20 h-20 flex items-center justify-center mt-0.5 mb-2">
+              <div class="w-20 h-20 flex items-center justify-center mt-0.5 mb-1">
                 <img src="${qrDataUrl}" class="w-full h-full object-contain">
               </div>
             </div>
           `;
 
-          // Cartão Verso (50mm x 70mm) - Informações Distribuídas com Fontes Maiores
+          // Cartão Verso (50mm x 70mm) - Sem 'truncate' e com quebra de linha natural
           const cardVersoHtml = `
             <div class="card-print-cracha bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-2 text-center relative overflow-hidden" style="width: 50mm; height: 70mm; box-sizing: border-box;">
-              <div class="bg-red-600 text-white font-black text-xs py-1 tracking-wider uppercase w-full">
+              <div class="bg-red-600 text-white font-black text-xs py-1 tracking-wider uppercase w-full flex items-center justify-center" style="background-color: #dc2626 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
                 SENAI
               </div>
 
-              <div class="flex-1 flex flex-col justify-between py-2 text-center w-full px-1.5">
+              <div class="flex-1 flex flex-col justify-between py-1.5 text-center w-full px-1.5 overflow-hidden">
                 <div class="border-b border-slate-100 pb-0.5">
-                  <span class="text-blue-600 font-bold uppercase block text-[9px]">Nome</span>
-                  <p class="font-extrabold text-slate-900 text-xs leading-snug truncate">${func.nome || '---'}</p>
+                  <span class="text-blue-600 font-bold uppercase block text-[8px]">Nome</span>
+                  <p class="font-extrabold text-slate-900 text-[10px] leading-tight break-words">${func.nome || '---'}</p>
                 </div>
 
                 <div class="border-b border-slate-100 pb-0.5">
-                  <span class="text-blue-600 font-bold uppercase block text-[9px]">Setor</span>
-                  <p class="font-bold text-slate-800 text-xs leading-snug truncate">${func.setor || func.local_nome || '---'}</p>
+                  <span class="text-blue-600 font-bold uppercase block text-[8px]">Setor</span>
+                  <p class="font-bold text-slate-800 text-[10px] leading-tight break-words">${func.setor || func.local_nome || '---'}</p>
                 </div>
 
                 <div class="border-b border-slate-100 pb-0.5">
                   <span class="text-blue-600 font-bold uppercase block text-[8px]">Cargo</span>
-                  <p class="font-bold text-slate-800 text-xs leading-snug truncate">${func.cargo || '---'}</p>
+                  <p class="font-bold text-slate-800 text-[10px] leading-tight break-words">${func.cargo || '---'}</p>
                 </div>
 
                 <div>
                   <span class="text-blue-600 font-bold uppercase block text-[8px]">Matrícula</span>
-                  <p class="font-black text-slate-900 font-mono text-sm leading-tight truncate">${matricula}</p>
+                  <p class="font-black text-slate-900 font-mono text-xs leading-tight break-words">${matricula}</p>
                 </div>
               </div>
             </div>
@@ -3710,19 +3718,19 @@
 
           const qrDataUrl = await generateQRCodeDataURL(fer.id || fer.nome);
 
-          // Adesivo Ferramenta (25mm x 32mm) - QR Code Expandido
+          // Adesivo Ferramenta (25mm x 32mm) - Sem 'truncate' no nome (break-words) + Banner SENAI garantido na impressão
           const adesivoHtml = `
             <div class="card-print-adesivo bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-1 text-center relative overflow-hidden" style="width: 25mm; height: 32mm; box-sizing: border-box;">
-              <div class="w-full">
-                <p class="text-[9px] font-black text-slate-900 truncate leading-tight">${fer.nome || 'Ferramenta'}</p>
-                <p class="text-[8px] font-bold font-mono text-slate-600 leading-none">${fer.id}</p>
+              <div class="w-full px-0.5 pt-0.5">
+                <p class="text-[8px] font-black text-slate-900 break-words leading-tight">${fer.nome || 'Ferramenta'}</p>
+                <p class="text-[7.5px] font-bold font-mono text-slate-600 leading-tight mt-0.5">${fer.id}</p>
               </div>
 
-              <div class="w-14 h-14 my-0.5 flex items-center justify-center">
+              <div class="w-13 h-13 my-0.5 flex items-center justify-center">
                 <img src="${qrDataUrl}" class="w-full h-full object-contain">
               </div>
 
-              <div class="bg-red-600 text-white font-black text-[7px] py-0.5 w-full tracking-widest uppercase">
+              <div class="bg-red-600 text-white font-black text-[8px] py-0.5 w-full tracking-widest uppercase flex items-center justify-center" style="background-color: #dc2626 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
                 SENAI
               </div>
             </div>
