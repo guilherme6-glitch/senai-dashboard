@@ -39,7 +39,10 @@
     }
 
     @media print {
-      body > *:not(#print-area-wrapper) {
+      body {
+        background: #ffffff !important;
+      }
+      #app-layout, #screen-login, #modal-trocar-senha, #modal-importar {
         display: none !important;
       }
       #print-area-wrapper {
@@ -68,7 +71,7 @@
       }
       .card-print-adesivo {
         width: 25mm !important;
-        height: 30mm !important;
+        height: 32mm !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
         border: 1px solid #cbd5e1 !important;
@@ -1415,13 +1418,13 @@
 
         </div>
 
-        <!-- Conteúdo Oculto Renderizado para Envio à Impressora Física -->
-        <div id="print-area-wrapper"></div>
-
       </section>
 
     </main>
   </div>
+
+  <!-- CONTEÚDO OCULTO PARA A IMPRESSORA FÍSICA (POSICIONADO NA RAIZ DO BODY PARA EVITAR PÁGINA EM BRANCO) -->
+  <div id="print-area-wrapper"></div>
 
   <!-- ==================== LÓGICA JAVASCRIPT ==================== -->
   <script>
@@ -1485,16 +1488,16 @@
       return 'Não Especificado';
     }
 
-    // HELPER GERADOR QR CODE (GARANTE FUNCIONAMENTO OFFLINE/ONLINE)
+    // HELPER GERADOR QR CODE (COM ALTA RESOLUÇÃO)
     async function generateQRCodeDataURL(text) {
       try {
         if (typeof QRCode !== 'undefined' && QRCode.toDataURL) {
-          return await QRCode.toDataURL(text, { margin: 1, width: 140 });
+          return await QRCode.toDataURL(text, { margin: 1, width: 250 });
         }
       } catch (e) {
         console.warn("Erro ao gerar QR Code via JS local, usando fallback API:", e);
       }
-      return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(text)}`;
+      return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(text)}`;
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
@@ -1588,6 +1591,7 @@
         login.classList.remove('hidden');
         app.classList.add('hidden');
       } else {
+        login.classList.hidden = false;
         login.classList.add('hidden');
         app.classList.remove('hidden');
       }
@@ -2341,7 +2345,7 @@
       }
 
       if (!items || items.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400">Nenum registro de histórico encontrado com os filtros selecionados.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400">Nenhum registro de histórico encontrado com os filtros selecionados.</td></tr>';
         return;
       }
 
@@ -3627,7 +3631,6 @@
           const primeiroNome = (func.nome || 'Funcionário').trim().split(' ')[0];
           const matricula = func.matricula || func.id_matricula || func.id || '---';
 
-          // LINK OFICIAL SOLICITADO PARA O LEITOR QR CODE
           const qrUrl = `https://senai-leitor.vercel.app/?funcionario=${encodeURIComponent(matricula)}`;
           const qrDataUrl = await generateQRCodeDataURL(qrUrl);
 
@@ -3635,7 +3638,7 @@
             ? `<img src="${func.foto_url}" class="w-full h-full object-cover">`
             : SVG_SILHOUETTE_PERSON;
 
-          // Cartão Frente (5cm x 7cm)
+          // Cartão Frente (50mm x 70mm) - QR Code Expandido + Elevação e Espaço na Borda Inferior
           const cardFrenteHtml = `
             <div class="card-print-cracha bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-2 text-center relative overflow-hidden" style="width: 50mm; height: 70mm; box-sizing: border-box;">
               <div class="bg-red-600 text-white font-black text-xs py-1 tracking-wider uppercase w-full">
@@ -3646,42 +3649,42 @@
                 <p class="text-xs font-black text-slate-900 leading-tight truncate max-w-[45mm]">${primeiroNome}</p>
               </div>
 
-              <div class="w-16 h-20 bg-slate-100 border border-slate-300 overflow-hidden flex items-center justify-center my-0.5">
+              <div class="w-16 h-20 bg-slate-100 border border-slate-300 overflow-hidden flex items-center justify-center my-0.5 rounded">
                 ${fotoHtml}
               </div>
 
-              <div class="w-16 h-16 flex items-center justify-center mt-0.5">
+              <div class="w-20 h-20 flex items-center justify-center mt-0.5 mb-2">
                 <img src="${qrDataUrl}" class="w-full h-full object-contain">
               </div>
             </div>
           `;
 
-          // Cartão Verso (5cm x 7cm)
+          // Cartão Verso (50mm x 70mm) - Informações Distribuídas com Fontes Maiores
           const cardVersoHtml = `
             <div class="card-print-cracha bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-2 text-center relative overflow-hidden" style="width: 50mm; height: 70mm; box-sizing: border-box;">
-              <div class="bg-red-600 text-white font-black text-xs py-1 tracking-wider uppercase w-full mb-1">
+              <div class="bg-red-600 text-white font-black text-xs py-1 tracking-wider uppercase w-full">
                 SENAI
               </div>
 
-              <div class="flex-1 flex flex-col justify-center space-y-1.5 text-[9px] w-full text-center px-1">
-                <div>
-                  <span class="text-blue-600 font-bold uppercase block text-[8px]">Nome</span>
-                  <p class="font-bold text-slate-900 leading-tight truncate">${func.nome || '---'}</p>
+              <div class="flex-1 flex flex-col justify-between py-2 text-center w-full px-1.5">
+                <div class="border-b border-slate-100 pb-0.5">
+                  <span class="text-blue-600 font-bold uppercase block text-[9px]">Nome</span>
+                  <p class="font-extrabold text-slate-900 text-xs leading-snug truncate">${func.nome || '---'}</p>
                 </div>
 
-                <div>
-                  <span class="text-blue-600 font-bold uppercase block text-[8px]">Setor</span>
-                  <p class="font-bold text-slate-800 leading-tight truncate">${func.setor || func.local_nome || '---'}</p>
+                <div class="border-b border-slate-100 pb-0.5">
+                  <span class="text-blue-600 font-bold uppercase block text-[9px]">Setor</span>
+                  <p class="font-bold text-slate-800 text-xs leading-snug truncate">${func.setor || func.local_nome || '---'}</p>
                 </div>
 
-                <div>
+                <div class="border-b border-slate-100 pb-0.5">
                   <span class="text-blue-600 font-bold uppercase block text-[8px]">Cargo</span>
-                  <p class="font-bold text-slate-800 leading-tight truncate">${func.cargo || '---'}</p>
+                  <p class="font-bold text-slate-800 text-xs leading-snug truncate">${func.cargo || '---'}</p>
                 </div>
 
                 <div>
                   <span class="text-blue-600 font-bold uppercase block text-[8px]">Matrícula</span>
-                  <p class="font-bold text-slate-800 font-mono leading-tight truncate">${matricula}</p>
+                  <p class="font-black text-slate-900 font-mono text-sm leading-tight truncate">${matricula}</p>
                 </div>
               </div>
             </div>
@@ -3707,15 +3710,15 @@
 
           const qrDataUrl = await generateQRCodeDataURL(fer.id || fer.nome);
 
-          // Adesivo Ferramenta (2,5cm x 3cm)
+          // Adesivo Ferramenta (25mm x 32mm) - QR Code Expandido
           const adesivoHtml = `
-            <div class="card-print-adesivo bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-1 text-center relative overflow-hidden" style="width: 25mm; height: 30mm; box-sizing: border-box;">
+            <div class="card-print-adesivo bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-1 text-center relative overflow-hidden" style="width: 25mm; height: 32mm; box-sizing: border-box;">
               <div class="w-full">
-                <p class="text-[8px] font-black text-slate-900 truncate leading-tight">${fer.nome || 'Ferramenta'}</p>
-                <p class="text-[7px] font-bold font-mono text-slate-600 leading-none">${fer.id}</p>
+                <p class="text-[9px] font-black text-slate-900 truncate leading-tight">${fer.nome || 'Ferramenta'}</p>
+                <p class="text-[8px] font-bold font-mono text-slate-600 leading-none">${fer.id}</p>
               </div>
 
-              <div class="w-10 h-10 my-0.5 flex items-center justify-center">
+              <div class="w-14 h-14 my-0.5 flex items-center justify-center">
                 <img src="${qrDataUrl}" class="w-full h-full object-contain">
               </div>
 
@@ -3745,7 +3748,6 @@
       const printWrapper = document.getElementById('print-area-wrapper');
       printWrapper.innerHTML = '';
 
-      // Seleciona e clona exatamente os elementos dos cartões/adesivos gerados
       const cards = document.querySelectorAll('#print-preview-container .card-print-cracha, #print-preview-container .card-print-adesivo');
 
       cards.forEach(card => {
