@@ -14,7 +14,7 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Chart.js & Plugin -->
+  <!-- Chart.js & Plugin de Porcentagens -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
@@ -36,7 +36,49 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans h-screen overflow-hidden">
 
-  <!-- ==================== MODAL OBRIGATÓRIO DE TROCA DE SENHA (1º ACESSO) ==================== -->
+  <!-- ==================== MODAL POP-UP DE IMPORTAÇÃO DE PLANILHA ==================== -->
+  <div id="modal-import-excel" class="hidden fixed inset-0 bg-slate-900 bg-opacity-80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 id="modal-excel-title" class="font-bold text-slate-800 text-lg flex items-center gap-2">
+          <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600"></i>
+          Importar Planilha Excel
+        </h3>
+        <button onclick="closeImportModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <p id="modal-excel-desc" class="text-slate-600">Confira a estrutura necessária para a sua planilha antes de importar:</p>
+        
+        <div id="modal-excel-structure" class="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono text-[11px] space-y-1">
+          <!-- Injetado via JS dinamicamente conforme a sub-aba -->
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Selecione o arquivo (.xlsx, .xls, .csv):</label>
+          <input type="file" id="modal-excel-file-input" accept=".xlsx, .xls, .csv" 
+            class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
+        </div>
+      </div>
+
+      <div id="modal-excel-error" class="hidden p-3 rounded-lg bg-red-100 border border-red-200 text-red-700 text-xs font-semibold"></div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+        <button onclick="closeImportModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+          Cancelar
+        </button>
+        <button onclick="executarImportacaoExcel()" id="btn-confirmar-excel" 
+          class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
+          <i data-lucide="upload" class="w-4 h-4"></i>
+          <span>Confirmar Importação</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL DE TROCA DE SENHA (1º ACESSO) ==================== -->
   <div id="modal-troca-senha" class="hidden fixed inset-0 bg-slate-900 bg-opacity-95 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-200 space-y-5">
       <div class="text-center">
@@ -44,19 +86,19 @@
           <i data-lucide="key-round" class="w-6 h-6"></i>
         </div>
         <h3 class="text-xl font-bold text-slate-800">Primeiro Acesso Detectado</h3>
-        <p class="text-xs text-slate-500 mt-1">Por razões de segurança, altere a senha padrão pré-cadastrada antes de continuar.</p>
+        <p class="text-xs text-slate-500 mt-1">Por motivos de segurança, altere a senha padrão pré-cadastrada antes de continuar.</p>
       </div>
 
       <form id="form-troca-senha" onsubmit="handleTrocaSenhaObrigatoria(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Nova Palavra-passe</label>
+          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Nova Senha</label>
           <input type="password" id="nova-senha-input" required minlength="6" placeholder="Mínimo 6 caracteres"
             class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none text-sm">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Confirmar Nova Palavra-passe</label>
-          <input type="password" id="confirma-senha-input" required minlength="6" placeholder="Repita a palavra-passe"
+          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Confirmar Nova Senha</label>
+          <input type="password" id="confirma-senha-input" required minlength="6" placeholder="Repita a senha"
             class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none text-sm">
         </div>
 
@@ -64,7 +106,7 @@
 
         <button type="submit" id="btn-salvar-nova-senha"
           class="w-full py-3 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl transition shadow-lg flex items-center justify-center gap-2">
-          <span>Atualizar Palavra-passe</span>
+          <span>Atualizar Senha</span>
           <i data-lucide="check-circle-2" class="w-4 h-4"></i>
         </button>
       </form>
@@ -78,7 +120,7 @@
         <div class="bg-blue-900 text-white font-black text-2xl py-3 px-6 rounded-xl inline-block shadow-md tracking-wider mb-3">
           SENAI
         </div>
-        <h2 class="text-xl font-bold text-slate-800">Painel de Controlo</h2>
+        <h2 class="text-xl font-bold text-slate-800">Painel de Controle</h2>
         <p class="text-sm text-slate-500 mt-1">Gestão Inteligente de Ferramentas e Almoxarifado</p>
       </div>
 
@@ -93,7 +135,7 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Palavra-passe</label>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Senha</label>
           <div class="relative">
             <input type="password" id="login-password" required placeholder="••••••••" autocomplete="new-password"
               class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none pl-10 text-sm">
@@ -205,12 +247,21 @@
     <!-- ÁREA DE CONTEÚDO PRINCIPAL -->
     <main class="flex-1 h-full overflow-y-auto p-6 space-y-6">
 
-      <!-- VISÃO GERAL -->
+      <!-- ==================== TELA 01: VISÃO GERAL ==================== -->
       <section id="view-visao-geral" class="tab-content space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 class="text-2xl font-bold text-slate-800">Visão Geral do Almoxarifado</h2>
             <p class="text-xs text-slate-500 mt-0.5">Resumo executivo do inventário e movimentações em tempo real</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-medium bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-emerald-200">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Sincronizado ao Vivo
+            </span>
+            <button onclick="loadVisaoGeralData()" title="Atualizar Dados" class="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 shadow-sm">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            </button>
           </div>
         </div>
 
@@ -244,17 +295,179 @@
             <div class="p-3 bg-rose-50 text-rose-600 rounded-xl border border-rose-100"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
           </div>
         </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-blue-600"></i> Status do Inventário
+            </h3>
+            <div class="relative flex items-center justify-center h-56"><canvas id="chart-status"></canvas></div>
+          </div>
+
+          <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-600"></i> Localização Atual dos Itens Emprestados
+              </h3>
+              <div id="chart-locais-nav" class="hidden flex items-center gap-2">
+                <button onclick="mudarPaginaGraficoLocais(-1)" class="p-1 rounded bg-slate-100 text-slate-600 text-xs"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                <span id="chart-locais-page-info" class="text-xs font-bold text-slate-500">Pág. 1/1</span>
+                <button onclick="mudarPaginaGraficoLocais(1)" class="p-1 rounded bg-slate-100 text-slate-600 text-xs"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+              </div>
+            </div>
+            <div class="relative h-56"><canvas id="chart-locais"></canvas></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+              <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i> Ferramentas Emprestadas
+            </h3>
+            <div class="relative w-full sm:w-64">
+              <input type="text" id="search-emprestadas" oninput="filterEmprestadasTable()" placeholder="Buscar item ou pessoa..."
+                class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-2"></i>
+            </div>
+          </div>
+          <div class="max-h-[350px] overflow-y-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[11px] font-bold sticky top-0 z-10">
+                <tr>
+                  <th class="p-3.5">Código / Ferramenta</th>
+                  <th class="p-3.5">Responsável</th>
+                  <th class="p-3.5">Local de Uso</th>
+                  <th class="p-3.5">Data / Hora Retirada</th>
+                </tr>
+              </thead>
+              <tbody id="table-emprestadas-body" class="divide-y divide-slate-100">
+                <tr><td colspan="4" class="p-6 text-center text-slate-400">Carregando dados do servidor...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
-      <!-- RASTREABILIDADE / INDICADORES / HISTÓRICO / DOSSIÊ / FICHA / LOCAIS -->
-      <section id="view-rastreabilidade" class="tab-content hidden"><h2 class="text-2xl font-bold">Rastreabilidade</h2></section>
-      <section id="view-indicadores" class="tab-content hidden"><h2 class="text-2xl font-bold">Indicadores BI</h2></section>
-      <section id="view-historico" class="tab-content hidden"><h2 class="text-2xl font-bold">Histórico</h2></section>
-      <section id="view-funcionarios" class="tab-content hidden"><h2 class="text-2xl font-bold">Dossiê Funcionário</h2></section>
-      <section id="view-ferramentas" class="tab-content hidden"><h2 class="text-2xl font-bold">Ficha Ferramenta</h2></section>
-      <section id="view-locais" class="tab-content hidden"><h2 class="text-2xl font-bold">Detalhes do Local</h2></section>
+      <!-- ==================== TELA 02: RASTREABILIDADE ==================== -->
+      <section id="view-rastreabilidade" class="tab-content hidden space-y-5 flex flex-col h-full">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800">Rastreabilidade em Tempo Real</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Localização física, responsável e pertencimento do ativo</p>
+        </div>
 
-      <!-- GESTÃO & CADASTROS -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Buscar Nome / Código</label>
+            <input type="text" id="filter-rastreio-texto" oninput="filterRastreabilidadeData()" placeholder="Ex: Multímetro"
+              class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local Padrão</label>
+            <select id="filter-rastreio-origem" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white"><option value="">Todos</option></select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local Atual</label>
+            <select id="filter-rastreio-atual" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white"><option value="">Todos</option></select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Responsável</label>
+            <select id="filter-rastreio-resp" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white"><option value="">Todos</option></select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
+            <select id="filter-rastreio-status" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white">
+              <option value="">Todos</option>
+              <option value="Emprestado">Emprestado</option>
+              <option value="Disponível">Disponível</option>
+              <option value="Manutenção">Manutenção</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="grid-rastreabilidade" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 flex-1 overflow-y-auto pr-1 pb-6 max-h-[calc(100vh-270px)]">
+          <p class="text-slate-400 text-sm col-span-full text-center py-8">Carregando mapa de rastreabilidade...</p>
+        </div>
+      </section>
+
+      <!-- ==================== TELA 03: INDICADORES & BI ==================== -->
+      <section id="view-indicadores" class="tab-content hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold text-slate-800">Indicadores & Inteligência de Dados (BI)</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Análise estratégica avançada do uso do acervo</p>
+          </div>
+          <div class="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 text-xs">
+            <input type="date" id="filter-bi-data-inicio" onchange="filterIndicadoresData()" class="px-2.5 py-1.5 rounded-lg border border-slate-300">
+            <span class="text-slate-400">até</span>
+            <input type="date" id="filter-bi-data-fim" onchange="filterIndicadoresData()" class="px-2.5 py-1.5 rounded-lg border border-slate-300">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><h3 class="font-bold text-slate-800 text-sm mb-4">Top 5 Ferramentas</h3><div class="relative h-60"><canvas id="chart-bi-top-ferramentas"></canvas></div></div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><h3 class="font-bold text-slate-800 text-sm mb-4">Top 5 Locais / Setores</h3><div class="relative h-60"><canvas id="chart-bi-top-locais"></canvas></div></div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><h3 class="font-bold text-slate-800 text-sm mb-4">Top 5 Funcionários</h3><div class="relative h-60"><canvas id="chart-bi-top-funcs"></canvas></div></div>
+        </div>
+      </section>
+
+      <!-- ==================== TELA 04: HISTÓRICO GLOBAL ==================== -->
+      <section id="view-historico" class="tab-content hidden space-y-6">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800">Histórico Global de Movimentações</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Registro auditável de todas as retiradas e devoluções</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="max-h-[550px] overflow-y-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase text-[11px] font-bold sticky top-0">
+                <tr><th class="p-3.5">Data / Hora</th><th class="p-3.5">Ação</th><th class="p-3.5">Ferramenta</th><th class="p-3.5">Funcionário</th><th class="p-3.5">Local</th></tr>
+              </thead>
+              <tbody id="table-historico-body" class="divide-y divide-slate-100">
+                <tr><td colspan="5" class="p-6 text-center text-slate-400">Carregando histórico...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TELA 05: DOSSIÊ FUNCIONÁRIO ==================== -->
+      <section id="view-funcionarios" class="tab-content hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-slate-800">Dossiê do Funcionário</h2>
+          <select id="select-dossier-funcionario" onchange="renderFuncionarioDossier()" class="px-3 py-1.5 text-xs font-bold bg-white rounded-xl border border-slate-300"></select>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-6">
+          <div class="w-24 h-24 rounded-full bg-slate-200 flex items-center justify-center font-bold text-2xl text-slate-600" id="func-dossier-avatar">U</div>
+          <div>
+            <h3 id="func-dossier-nome" class="text-2xl font-black text-slate-900">---</h3>
+            <p id="func-dossier-cargo" class="text-xs text-slate-500">---</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TELA 06: FICHA FERRAMENTA ==================== -->
+      <section id="view-ferramentas" class="tab-content hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-slate-800">Ficha da Ferramenta</h2>
+          <select id="select-ficha-ferramenta" onchange="renderFerramentaFicha()" class="px-3 py-1.5 text-xs font-bold bg-white rounded-xl border border-slate-300"></select>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 id="fer-ficha-nome" class="text-2xl font-black text-slate-900">---</h3>
+        </div>
+      </section>
+
+      <!-- ==================== TELA 07: DETALHES DO LOCAL ==================== -->
+      <section id="view-locais" class="tab-content hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-slate-800">Detalhes do Local</h2>
+          <select id="select-detalhes-local" onchange="renderLocalDetails()" class="px-3 py-1.5 text-xs font-bold bg-white rounded-xl border border-slate-300"></select>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 id="local-detalhes-nome" class="text-2xl font-black text-slate-900">---</h3>
+        </div>
+      </section>
+
+      <!-- ==================== TELA 08: GESTÃO & CADASTROS ==================== -->
       <section id="view-gestao" class="tab-content hidden space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
           <div class="flex items-center gap-3">
@@ -284,18 +497,18 @@
               <h3 id="gestao-list-title" class="font-bold text-slate-800 text-base">Funcionários cadastrados</h3>
               
               <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                <div class="relative flex-1 sm:w-48">
+                <div class="relative flex-1 sm:w-44">
                   <input type="text" id="gestao-search" oninput="filterGestaoList()" placeholder="Buscar..."
                     class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-slate-50">
                   <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5"></i>
                 </div>
 
-                <!-- Botão de Importar Planilha Excel -->
-                <label id="gestao-btn-excel" class="cursor-pointer px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm whitespace-nowrap">
+                <!-- Botão de Importar Planilha Excel com Modal -->
+                <button onclick="openImportModal()" id="gestao-btn-excel" 
+                  class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm whitespace-nowrap">
                   <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
                   <span>Importar Excel</span>
-                  <input type="file" accept=".xlsx, .xls, .csv" onchange="importarExcelFuncionarios(event)" class="hidden">
-                </label>
+                </button>
 
                 <button onclick="openGestaoFormNew()" id="gestao-btn-novo"
                   class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm whitespace-nowrap">
@@ -358,7 +571,7 @@
     </main>
   </div>
 
-  <!-- LÓGICA JAVASCRIPT -->
+  <!-- ==================== LÓGICA JAVASCRIPT ==================== -->
   <script>
     const SUPABASE_URL = "https://gfxctmjgcbgxsrquugrt.supabase.co"; // Substitua pela sua URL
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmeGN0bWpnY2JneHNycXV1Z3J0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjI4NzgsImV4cCI6MjEwODU5ODg3OH0.gvwfxHzgVF72epEMMTdBdRvovmgbtMHquYCFyFa2Li0";            // Substitua pela sua Key   
@@ -368,6 +581,7 @@
     let cacheFuncionariosList = [];
     let cacheFerramentasList = [];
     let cacheLocaisList = [];
+    let cacheEmprestadas = [];
 
     let currentGestaoSubTab = 'funcionarios';
     let currentEditingItem = null;
@@ -378,7 +592,6 @@
       await checkAuthSession();
     });
 
-    // 1. AUTENTICAÇÃO E SESSÃO
     async function checkAuthSession() {
       const { data: { session } } = await supabaseClient.auth.getSession();
 
@@ -400,7 +613,6 @@
         return;
       }
 
-      // Validação do Nível "Sem Acesso"
       const nivel = (perfil.nivel_acesso || '').toLowerCase();
       if (nivel === 'sem_acesso' || nivel === 'sem acesso' || nivel === 'nenhum') {
         alert("Acesso Negado: O seu perfil está registrado como 'Sem Acesso' ao Painel.");
@@ -411,7 +623,6 @@
 
       currentUserProfile = perfil;
 
-      // Verifica Troca Obrigatória de Senha (1º Acesso)
       if (perfil.trocar_senha === true) {
         document.getElementById('modal-troca-senha').classList.remove('hidden');
         return;
@@ -428,7 +639,6 @@
       const errDiv = document.getElementById('login-error');
       const btn = document.getElementById('btn-login');
 
-      // Validação rígida do e-mail @senai.br
       if (!email.endsWith('@senai.br')) {
         errDiv.innerText = "Apenas e-mails corporativos do domínio @senai.br são permitidos.";
         errDiv.classList.remove('hidden');
@@ -462,21 +672,19 @@
       const btn = document.getElementById('btn-salvar-nova-senha');
 
       if (novaSenha !== confirmaSenha) {
-        errDiv.innerText = "As palavras-passe não coincidem.";
+        errDiv.innerText = "As senhas não coincidem.";
         errDiv.classList.remove('hidden');
         return;
       }
 
       errDiv.classList.add('hidden');
       btn.disabled = true;
-      btn.innerText = "A atualizar...";
+      btn.innerText = "Atualizando...";
 
       try {
-        // Actualiza palavra-passe no Supabase Auth
         const { error: authErr } = await supabaseClient.auth.updateUser({ password: novaSenha });
         if (authErr) throw authErr;
 
-        // Desmarca flag de troca de senha obrigatória
         const { error: dbErr } = await supabaseClient
           .from('funcionarios')
           .update({ trocar_senha: false })
@@ -490,11 +698,11 @@
         setupDashboardView();
 
       } catch (err) {
-        errDiv.innerText = "Erro ao atualizar palavra-passe: " + err.message;
+        errDiv.innerText = "Erro ao atualizar senha: " + err.message;
         errDiv.classList.remove('hidden');
       } finally {
         btn.disabled = false;
-        btn.innerText = "Atualizar Palavra-passe";
+        btn.innerText = "Atualizar Senha";
       }
     }
 
@@ -545,10 +753,25 @@
       if (targetView) targetView.classList.remove('hidden');
       if (targetBtn) targetBtn.classList.add('active-tab');
 
+      if (tabName === 'visao-geral') loadVisaoGeralData();
       if (tabName === 'gestao') loadGestaoData();
     }
 
-    // 2. GESTÃO & CADASTROS
+    async function loadVisaoGeralData() {
+      try {
+        const { data: ferramentas } = await supabaseClient.from('ferramentas').select('*');
+        if (!ferramentas) return;
+
+        document.getElementById('kpi-total').innerText = ferramentas.length;
+        document.getElementById('kpi-emprestadas').innerText = ferramentas.filter(f => f.status === 'Emprestado').length;
+        document.getElementById('kpi-disponiveis').innerText = ferramentas.filter(f => f.status === 'Disponível').length;
+        document.getElementById('kpi-manutencao').innerText = ferramentas.filter(f => f.status === 'Manutenção').length;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // GESTÃO & CADASTROS
     async function loadGestaoData() {
       if (cacheLocaisList.length === 0) {
         const { data: locs } = await supabaseClient.from('locais').select('*').order('nome');
@@ -575,20 +798,16 @@
 
       const listTitle = document.getElementById('gestao-list-title');
       const btnNovoLabel = document.getElementById('gestao-btn-novo-label');
-      const btnExcel = document.getElementById('gestao-btn-excel');
 
       if (subTab === 'funcionarios') {
         listTitle.innerText = "Funcionários cadastrados";
         btnNovoLabel.innerText = "+ Novo funcionário";
-        btnExcel.classList.remove('hidden');
       } else if (subTab === 'ferramentas') {
         listTitle.innerText = "Ferramentas cadastradas";
         btnNovoLabel.innerText = "+ Nova ferramenta";
-        btnExcel.classList.add('hidden');
       } else if (subTab === 'locais') {
         listTitle.innerText = "Locais cadastrados";
         btnNovoLabel.innerText = "+ Novo local";
-        btnExcel.classList.add('hidden');
       }
 
       filterGestaoList();
@@ -860,17 +1079,16 @@
       errDiv.classList.add('hidden');
 
       btnSalvar.disabled = true;
-      btnSalvar.innerText = "A guardar...";
+      btnSalvar.innerText = "Salvando...";
 
       try {
         if (currentGestaoSubTab === 'funcionarios') {
           if (currentEditingItem && !canEditTargetUser(currentEditingItem)) {
-            throw new Error("Apenas utilizadores Master podem alterar registos de outro Master.");
+            throw new Error("Apenas usuários Master podem alterar registros de outro Master.");
           }
 
           const emailInput = document.getElementById('g-func-email').value.trim().toLowerCase();
           
-          // Validação Rígida do E-mail @senai.br
           if (!emailInput.endsWith('@senai.br')) {
             throw new Error("O e-mail deve obrigatoriamente pertencer ao domínio @senai.br");
           }
@@ -880,7 +1098,6 @@
           const localId = selectedOption ? selectedOption.getAttribute('data-id') : null;
 
           const payload = {
-            id: currentEditingItem ? currentEditingItem.id : crypto.randomUUID(), // Resolve o erro de ID nulo
             nome: document.getElementById('g-func-nome').value.trim(),
             email: emailInput,
             matricula: document.getElementById('g-func-matricula').value.trim(),
@@ -929,7 +1146,6 @@
 
         } else if (currentGestaoSubTab === 'locais') {
           const payload = {
-            id: currentEditingItem ? currentEditingItem.id : crypto.randomUUID(),
             nome: document.getElementById('g-loc-nome').value.trim(),
             descricao: document.getElementById('g-loc-descricao').value.trim()
           };
@@ -951,7 +1167,7 @@
         openGestaoFormNew();
 
       } catch (err) {
-        errDiv.innerText = "Erro ao guardar alterações: " + err.message;
+        errDiv.innerText = "Erro ao salvar alterações: " + err.message;
         errDiv.classList.remove('hidden');
       } finally {
         btnSalvar.disabled = false;
@@ -959,10 +1175,74 @@
       }
     }
 
-    // 3. IMPORTAÇÃO DE PLANILHA EXCEL DE FUNCIONÁRIOS
-    async function importarExcelFuncionarios(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+    // MODAL DE IMPORTAÇÃO DE EXCEL
+    function openImportModal() {
+      const modal = document.getElementById('modal-import-excel');
+      const title = document.getElementById('modal-excel-title');
+      const desc = document.getElementById('modal-excel-desc');
+      const struct = document.getElementById('modal-excel-structure');
+      const errDiv = document.getElementById('modal-excel-error');
+      const fileInput = document.getElementById('modal-excel-file-input');
+
+      fileInput.value = '';
+      errDiv.classList.add('hidden');
+
+      if (currentGestaoSubTab === 'funcionarios') {
+        title.innerHTML = '<i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600"></i> Importar Funcionários';
+        desc.innerText = 'A sua planilha deve conter os cabeçalhos na 1ª linha exatamente como indicado abaixo:';
+        struct.innerHTML = `
+          <div class="font-bold text-slate-700 mb-1">Estrutura das Colunas:</div>
+          <div>• <span class="text-blue-600 font-bold">Nome</span> (obrigatório)</div>
+          <div>• <span class="text-blue-600 font-bold">Email</span> (obrigatório, terminado em @senai.br)</div>
+          <div>• <span class="text-blue-600 font-bold">Matricula</span></div>
+          <div>• <span class="text-blue-600 font-bold">Cargo</span></div>
+          <div>• <span class="text-blue-600 font-bold">Setor</span></div>
+          <div>• <span class="text-blue-600 font-bold">Local</span> (Nome do local/oficina)</div>
+          <div>• <span class="text-blue-600 font-bold">Nivel</span> (funcionario, sem_acesso, administrador, master)</div>
+        `;
+      } else if (currentGestaoSubTab === 'ferramentas') {
+        title.innerHTML = '<i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600"></i> Importar Ferramentas';
+        desc.innerText = 'A sua planilha deve conter os cabeçalhos na 1ª linha exatamente como indicado abaixo:';
+        struct.innerHTML = `
+          <div class="font-bold text-slate-700 mb-1">Estrutura das Colunas:</div>
+          <div>• <span class="text-blue-600 font-bold">Codigo</span> ou <span class="text-blue-600 font-bold">ID</span> (ex: FER-001, obrigatório)</div>
+          <div>• <span class="text-blue-600 font-bold">Nome</span> (obrigatório)</div>
+          <div>• <span class="text-blue-600 font-bold">Categoria</span></div>
+          <div>• <span class="text-blue-600 font-bold">Local_Padrao</span> (Nome do local de origem)</div>
+        `;
+      } else if (currentGestaoSubTab === 'locais') {
+        title.innerHTML = '<i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600"></i> Importar Locais';
+        desc.innerText = 'A sua planilha deve conter os cabeçalhos na 1ª linha exatamente como indicado abaixo:';
+        struct.innerHTML = `
+          <div class="font-bold text-slate-700 mb-1">Estrutura das Colunas:</div>
+          <div>• <span class="text-blue-600 font-bold">Nome</span> (obrigatório, ex: Laboratório de Elétrica)</div>
+          <div>• <span class="text-blue-600 font-bold">Descricao</span></div>
+        `;
+      }
+
+      modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeImportModal() {
+      document.getElementById('modal-import-excel').classList.add('hidden');
+    }
+
+    async function executarImportacaoExcel() {
+      const fileInput = document.getElementById('modal-excel-file-input');
+      const errDiv = document.getElementById('modal-excel-error');
+      const btn = document.getElementById('btn-confirmar-excel');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        errDiv.innerText = "Por favor, selecione um arquivo Excel (.xlsx ou .csv) antes de confirmar.";
+        errDiv.classList.remove('hidden');
+        return;
+      }
+
+      errDiv.classList.add('hidden');
+      btn.disabled = true;
+      btn.innerText = "Processando...";
 
       const reader = new FileReader();
       reader.onload = async function(e) {
@@ -973,52 +1253,104 @@
           const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
 
           if (!rows || rows.length === 0) {
-            alert("A planilha está vazia.");
-            return;
+            throw new Error("A planilha selecionada está vazia.");
           }
 
           let cadastrados = 0;
           let erros = 0;
 
-          for (const row of rows) {
-            const nome = row.Nome || row.nome || row.NOME;
-            const email = (row.Email || row.email || row.EMAIL || '').toString().trim().toLowerCase();
-            const matricula = (row.Matricula || row.matricula || row.MATRICULA || '').toString().trim();
-            const cargo = row.Cargo || row.cargo || '';
-            const setor = row.Setor || row.setor || '';
-            const localNome = row.Local || row.local || '';
-            const nivel = (row.Nivel || row.nivel || 'funcionario').toString().toLowerCase();
+          if (currentGestaoSubTab === 'funcionarios') {
+            for (const row of rows) {
+              const nome = row.Nome || row.nome || row.NOME;
+              const email = (row.Email || row.email || row.EMAIL || '').toString().trim().toLowerCase();
+              const matricula = (row.Matricula || row.matricula || row.MATRICULA || '').toString().trim();
+              const cargo = row.Cargo || row.cargo || '';
+              const setor = row.Setor || row.setor || '';
+              const localNome = row.Local || row.local || row.Local_Nome || '';
+              const nivel = (row.Nivel || row.nivel || 'funcionario').toString().toLowerCase();
 
-            if (!nome || !email || !email.endsWith('@senai.br')) {
-              erros++;
-              continue;
+              if (!nome || !email || !email.endsWith('@senai.br')) {
+                erros++;
+                continue;
+              }
+
+              const payload = {
+                nome: nome,
+                email: email,
+                matricula: matricula,
+                cargo: cargo,
+                setor: setor,
+                local_nome: localNome,
+                nivel_acesso: nivel,
+                trocar_senha: true
+              };
+
+              const { error } = await supabaseClient.from('funcionarios').insert([payload]);
+              if (error) erros++; else cadastrados++;
             }
+            const { data: funcs } = await supabaseClient.from('funcionarios').select('*').order('nome');
+            cacheFuncionariosList = funcs || [];
 
-            const payload = {
-              id: crypto.randomUUID(),
-              nome: nome,
-              email: email,
-              matricula: matricula,
-              cargo: cargo,
-              setor: setor,
-              local_nome: localNome,
-              nivel_acesso: nivel,
-              trocar_senha: true
-            };
+          } else if (currentGestaoSubTab === 'ferramentas') {
+            for (const row of rows) {
+              const id = (row.Codigo || row.codigo || row.ID || row.id || row.Patrimonio || '').toString().trim();
+              const nome = row.Nome || row.nome || row.NOME;
+              const categoria = row.Categoria || row.categoria || '';
+              const localPadrao = row.Local_Padrao || row.local_padrao || row.Local || row.local || 'Não Especificado';
 
-            const { error } = await supabaseClient.from('funcionarios').insert([payload]);
-            if (error) erros++;
-            else cadastrados++;
+              if (!id || !nome) {
+                erros++;
+                continue;
+              }
+
+              const payload = {
+                id: id,
+                nome: nome,
+                categoria: categoria,
+                local_padrao: localPadrao,
+                local_atual: 'Não Especificado',
+                status: 'Disponível'
+              };
+
+              const { error } = await supabaseClient.from('ferramentas').insert([payload]);
+              if (error) erros++; else cadastrados++;
+            }
+            const { data: fers } = await supabaseClient.from('ferramentas').select('*').order('nome');
+            cacheFerramentasList = fers || [];
+
+          } else if (currentGestaoSubTab === 'locais') {
+            for (const row of rows) {
+              const nome = row.Nome || row.nome || row.NOME;
+              const descricao = row.Descricao || row.descricao || '';
+
+              if (!nome) {
+                erros++;
+                continue;
+              }
+
+              const payload = {
+                nome: nome,
+                descricao: descricao
+              };
+
+              const { error } = await supabaseClient.from('locais').insert([payload]);
+              if (error) erros++; else cadastrados++;
+            }
+            const { data: locs } = await supabaseClient.from('locais').select('*').order('nome');
+            cacheLocaisList = locs || [];
           }
 
-          alert(`Importação concluída!\nCadastrados com sucesso: ${cadastrados}\nFalhas/E-mails inválidos: ${erros}`);
-
-          const { data: funcs } = await supabaseClient.from('funcionarios').select('*').order('nome');
-          cacheFuncionariosList = funcs || [];
+          alert(`Importação concluída!\nRegistros salvos com sucesso: ${cadastrados}\nRegistros com erro/invalidos: ${erros}`);
+          closeImportModal();
           filterGestaoList();
 
         } catch (err) {
-          alert("Erro ao ler o arquivo Excel: " + err.message);
+          errDiv.innerText = "Erro ao processar arquivo: " + err.message;
+          errDiv.classList.remove('hidden');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="upload" class="w-4 h-4"></i><span>Confirmar Importação</span>';
+          lucide.createIcons();
         }
       };
 
