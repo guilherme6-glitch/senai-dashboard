@@ -33,35 +33,47 @@
       font-weight: 700;
     }
 
-    /* ESTILOS DE IMPRESSÃO (PÁGINA E DIMENSÕES FÍSICAS REAIS) */
+    /* REGRAS DE IMPRESSÃO FÍSICA */
+    #print-area-wrapper {
+      display: none;
+    }
+
     @media print {
-      body * {
-        visibility: hidden !important;
-      }
-      #print-area-wrapper, #print-area-wrapper * {
-        visibility: visible !important;
+      body > *:not(#print-area-wrapper) {
+        display: none !important;
       }
       #print-area-wrapper {
-        position: absolute !important;
-        left: 0 !important;
-        top: 0 !important;
-        width: 100% !important;
-        padding: 10mm !important;
-        background: #ffffff !important;
         display: flex !important;
         flex-wrap: wrap !important;
-        gap: 6mm !important;
-        justify-content: flex-start !important;
+        gap: 5mm !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        background: #ffffff !important;
+        padding: 5mm !important;
+        visibility: visible !important;
+      }
+      #print-area-wrapper * {
+        visibility: visible !important;
       }
       .card-print-cracha {
         width: 50mm !important;
         height: 70mm !important;
         page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        border: 1px solid #cbd5e1 !important;
+        box-sizing: border-box !important;
+        background: #ffffff !important;
       }
       .card-print-adesivo {
         width: 25mm !important;
         height: 30mm !important;
         page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        border: 1px solid #cbd5e1 !important;
+        box-sizing: border-box !important;
+        background: #ffffff !important;
       }
     }
   </style>
@@ -1391,7 +1403,7 @@
             <!-- Painel de Pré-Visualização em Tela -->
             <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 min-h-[460px] max-h-[520px] overflow-y-auto">
               <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4 flex items-center gap-1.5">
-                <i data-lucide="eye" class="w-4 h-4 text-blue-600"></i> Prévia de impressão
+                <i data-lucide="eye" class="w-4 h-4 text-blue-600"></i> PRÉVIA DE IMPRESSÃO
               </h4>
 
               <div id="print-preview-container" class="flex flex-wrap gap-6 justify-center">
@@ -1404,7 +1416,7 @@
         </div>
 
         <!-- Conteúdo Oculto Renderizado para Envio à Impressora Física -->
-        <div id="print-area-wrapper" class="hidden"></div>
+        <div id="print-area-wrapper"></div>
 
       </section>
 
@@ -1421,6 +1433,10 @@
     if (typeof ChartDataLabels !== 'undefined') {
       Chart.register(ChartDataLabels);
     }
+
+    // SILHUETAS DE FALLBACK (SVG VETORIAL EMBUTIDO)
+    const SVG_SILHOUETTE_PERSON = `<svg class="w-full h-full text-slate-800" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
+    const SVG_SILHOUETTE_TOOL = `<svg class="w-full h-full text-slate-800 p-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.6C.4 7 1 10 3 12c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.4-.4.4-1.1 0-1.3z"/></svg>`;
 
     // Estados Globais
     let currentUserProfile = null;
@@ -1467,6 +1483,18 @@
         return item.local_atual.trim();
       }
       return 'Não Especificado';
+    }
+
+    // HELPER GERADOR QR CODE (GARANTE FUNCIONAMENTO OFFLINE/ONLINE)
+    async function generateQRCodeDataURL(text) {
+      try {
+        if (typeof QRCode !== 'undefined' && QRCode.toDataURL) {
+          return await QRCode.toDataURL(text, { margin: 1, width: 140 });
+        }
+      } catch (e) {
+        console.warn("Erro ao gerar QR Code via JS local, usando fallback API:", e);
+      }
+      return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(text)}`;
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
@@ -2313,7 +2341,7 @@
       }
 
       if (!items || items.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400">Nenhum registro de histórico encontrado com os filtros selecionados.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400">Nenum registro de histórico encontrado com os filtros selecionados.</td></tr>';
         return;
       }
 
@@ -3467,10 +3495,10 @@
         cacheFerramentasList = fers || [];
       }
 
-      switchImpressaoSubTab(currentImpressaoSubTab);
+      await switchImpressaoSubTab(currentImpressaoSubTab);
     }
 
-    function switchImpressaoSubTab(subTab) {
+    async function switchImpressaoSubTab(subTab) {
       currentImpressaoSubTab = subTab;
       selectedImpressaoIds.clear();
 
@@ -3496,10 +3524,10 @@
         col2Title.innerText = "Código / Patrimônio";
       }
 
-      renderImpressaoList();
+      await renderImpressaoList();
     }
 
-    function renderImpressaoList() {
+    async function renderImpressaoList() {
       const term = (document.getElementById('imp-search').value || '').toLowerCase();
       const tbody = document.getElementById('imp-table-body');
       const checkAll = document.getElementById('imp-check-all');
@@ -3517,7 +3545,7 @@
       if (filtrados.length === 0) {
         tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">Nenhum registro encontrado.</td></tr>';
         checkAll.checked = false;
-        renderImpressaoPreview();
+        await renderImpressaoPreview();
         return;
       }
 
@@ -3540,19 +3568,19 @@
         `;
       }).join('');
 
-      renderImpressaoPreview();
+      await renderImpressaoPreview();
     }
 
-    function toggleSelectImpressaoItem(id, isChecked) {
+    async function toggleSelectImpressaoItem(id, isChecked) {
       if (isChecked) {
         selectedImpressaoIds.add(id);
       } else {
         selectedImpressaoIds.delete(id);
       }
-      renderImpressaoList();
+      await renderImpressaoList();
     }
 
-    function toggleSelectAllImpressao(isChecked) {
+    async function toggleSelectAllImpressao(isChecked) {
       const term = (document.getElementById('imp-search').value || '').toLowerCase();
       let currentData = currentImpressaoSubTab === 'funcionarios' ? cacheFuncionariosList : cacheFerramentasList;
 
@@ -3569,12 +3597,12 @@
         else selectedImpressaoIds.delete(i.id);
       });
 
-      renderImpressaoList();
+      await renderImpressaoList();
     }
 
-    function limparSelecaoImpressao() {
+    async function limparSelecaoImpressao() {
       selectedImpressaoIds.clear();
-      renderImpressaoList();
+      await renderImpressaoList();
     }
 
     async function renderImpressaoPreview() {
@@ -3596,28 +3624,33 @@
           const func = cacheFuncionariosList.find(f => f.id === id);
           if (!func) continue;
 
-          const primeiroNome = (func.nome || 'Funcionário').split(' ')[0];
-          const matricula = func.matricula || func.id || '---';
+          const primeiroNome = (func.nome || 'Funcionário').trim().split(' ')[0];
+          const matricula = func.matricula || func.id_matricula || func.id || '---';
 
-          // Geração do DataURL do QR Code
-          const qrDataUrl = await QRCode.toDataURL(matricula, { margin: 1, width: 120 });
+          // LINK OFICIAL SOLICITADO PARA O LEITOR QR CODE
+          const qrUrl = `https://senai-leitor.vercel.app/?funcionario=${encodeURIComponent(matricula)}`;
+          const qrDataUrl = await generateQRCodeDataURL(qrUrl);
+
+          const fotoHtml = func.foto_url 
+            ? `<img src="${func.foto_url}" class="w-full h-full object-cover">`
+            : SVG_SILHOUETTE_PERSON;
 
           // Cartão Frente (5cm x 7cm)
           const cardFrenteHtml = `
-            <div class="card-print-cracha bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-3 text-center relative overflow-hidden" style="width: 50mm; height: 70mm;">
-              <div class="bg-red-600 text-white font-black text-xs px-3 py-1 tracking-wider uppercase shadow-xs w-full">
+            <div class="card-print-cracha bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-2 text-center relative overflow-hidden" style="width: 50mm; height: 70mm; box-sizing: border-box;">
+              <div class="bg-red-600 text-white font-black text-xs py-1 tracking-wider uppercase w-full">
                 SENAI
               </div>
 
-              <div class="my-1">
-                <p class="text-sm font-black text-slate-800 leading-tight">${primeiroNome}</p>
+              <div class="my-0.5">
+                <p class="text-xs font-black text-slate-900 leading-tight truncate max-w-[45mm]">${primeiroNome}</p>
               </div>
 
-              <div class="w-16 h-20 rounded bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center my-1">
-                ${func.foto_url ? `<img src="${func.foto_url}" class="w-full h-full object-cover">` : `<i data-lucide="user" class="w-8 h-8 text-slate-300"></i>`}
+              <div class="w-16 h-20 bg-slate-100 border border-slate-300 overflow-hidden flex items-center justify-center my-0.5">
+                ${fotoHtml}
               </div>
 
-              <div class="w-16 h-16 flex items-center justify-center mt-1">
+              <div class="w-16 h-16 flex items-center justify-center mt-0.5">
                 <img src="${qrDataUrl}" class="w-full h-full object-contain">
               </div>
             </div>
@@ -3625,37 +3658,37 @@
 
           // Cartão Verso (5cm x 7cm)
           const cardVersoHtml = `
-            <div class="card-print-cracha bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-3 text-center relative overflow-hidden" style="width: 50mm; height: 70mm;">
-              <div class="bg-red-600 text-white font-black text-xs px-3 py-1 tracking-wider uppercase shadow-xs w-full mb-2">
+            <div class="card-print-cracha bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-2 text-center relative overflow-hidden" style="width: 50mm; height: 70mm; box-sizing: border-box;">
+              <div class="bg-red-600 text-white font-black text-xs py-1 tracking-wider uppercase w-full mb-1">
                 SENAI
               </div>
 
-              <div class="flex-1 flex flex-col justify-center space-y-2 text-[10px] w-full text-center">
+              <div class="flex-1 flex flex-col justify-center space-y-1.5 text-[9px] w-full text-center px-1">
                 <div>
-                  <span class="text-blue-600 font-bold uppercase block">Nome</span>
-                  <p class="font-bold text-slate-900 leading-tight">${func.nome || '---'}</p>
+                  <span class="text-blue-600 font-bold uppercase block text-[8px]">Nome</span>
+                  <p class="font-bold text-slate-900 leading-tight truncate">${func.nome || '---'}</p>
                 </div>
 
                 <div>
-                  <span class="text-blue-600 font-bold uppercase block">Setor</span>
-                  <p class="font-bold text-slate-800 leading-tight">${func.setor || func.local_nome || '---'}</p>
+                  <span class="text-blue-600 font-bold uppercase block text-[8px]">Setor</span>
+                  <p class="font-bold text-slate-800 leading-tight truncate">${func.setor || func.local_nome || '---'}</p>
                 </div>
 
                 <div>
-                  <span class="text-blue-600 font-bold uppercase block">Cargo</span>
-                  <p class="font-bold text-slate-800 leading-tight">${func.cargo || '---'}</p>
+                  <span class="text-blue-600 font-bold uppercase block text-[8px]">Cargo</span>
+                  <p class="font-bold text-slate-800 leading-tight truncate">${func.cargo || '---'}</p>
                 </div>
 
                 <div>
-                  <span class="text-blue-600 font-bold uppercase block">Matrícula</span>
-                  <p class="font-bold text-slate-800 font-mono leading-tight">${matricula}</p>
+                  <span class="text-blue-600 font-bold uppercase block text-[8px]">Matrícula</span>
+                  <p class="font-bold text-slate-800 font-mono leading-tight truncate">${matricula}</p>
                 </div>
               </div>
             </div>
           `;
 
           previewContainer.innerHTML += `
-            <div class="flex flex-col sm:flex-row gap-2 items-center bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex flex-col sm:flex-row gap-3 items-center bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
               <div class="space-y-1 text-center">
                 <span class="text-[9px] font-bold uppercase text-slate-400">Frente</span>
                 ${cardFrenteHtml}
@@ -3672,17 +3705,17 @@
           const fer = cacheFerramentasList.find(f => f.id === id);
           if (!fer) continue;
 
-          const qrDataUrl = await QRCode.toDataURL(fer.id || fer.nome, { margin: 1, width: 100 });
+          const qrDataUrl = await generateQRCodeDataURL(fer.id || fer.nome);
 
           // Adesivo Ferramenta (2,5cm x 3cm)
           const adesivoHtml = `
-            <div class="card-print-adesivo bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-1.5 text-center relative overflow-hidden" style="width: 25mm; height: 30mm;">
+            <div class="card-print-adesivo bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-1 text-center relative overflow-hidden" style="width: 25mm; height: 30mm; box-sizing: border-box;">
               <div class="w-full">
-                <p class="text-[9px] font-black text-slate-900 truncate leading-none">${fer.nome || 'Ferramenta'}</p>
-                <p class="text-[8px] font-bold font-mono text-slate-500 leading-tight">${fer.id}</p>
+                <p class="text-[8px] font-black text-slate-900 truncate leading-tight">${fer.nome || 'Ferramenta'}</p>
+                <p class="text-[7px] font-bold font-mono text-slate-600 leading-none">${fer.id}</p>
               </div>
 
-              <div class="w-12 h-12 my-0.5">
+              <div class="w-10 h-10 my-0.5 flex items-center justify-center">
                 <img src="${qrDataUrl}" class="w-full h-full object-contain">
               </div>
 
@@ -3712,9 +3745,13 @@
       const printWrapper = document.getElementById('print-area-wrapper');
       printWrapper.innerHTML = '';
 
-      // Copia exatamente o conteúdo da prévia para a div oculta de impressão
-      const previewContent = document.getElementById('print-preview-container').innerHTML;
-      printWrapper.innerHTML = previewContent;
+      // Seleciona e clona exatamente os elementos dos cartões/adesivos gerados
+      const cards = document.querySelectorAll('#print-preview-container .card-print-cracha, #print-preview-container .card-print-adesivo');
+
+      cards.forEach(card => {
+        const clone = card.cloneNode(true);
+        printWrapper.appendChild(clone);
+      });
 
       window.print();
     }
