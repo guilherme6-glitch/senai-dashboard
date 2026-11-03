@@ -14,12 +14,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Chart.js & Plugin de Rótulos -->
+  <!-- Chart.js & Plugin de Porcentagens/Labels -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-
-  <!-- SheetJS para Leitura de Planilhas Excel -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
     .active-tab {
@@ -36,91 +33,14 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans h-screen overflow-hidden">
 
-  <!-- ==================== MODAL POP-UP DE IMPORTAÇÃO DE PLANILHA ==================== -->
-  <div id="modal-import-excel" class="hidden fixed inset-0 bg-slate-900 bg-opacity-80 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 id="modal-excel-title" class="font-bold text-slate-800 text-lg flex items-center gap-2">
-          <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600"></i>
-          Importar Planilha Excel
-        </h3>
-        <button onclick="closeImportModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <div class="space-y-3 text-xs">
-        <p id="modal-excel-desc" class="text-slate-600">Confira a estrutura das colunas na 1ª linha da sua planilha:</p>
-        
-        <div id="modal-excel-structure" class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono text-[11px] space-y-1">
-          <!-- Injetado via JS -->
-        </div>
-
-        <div class="pt-2">
-          <label class="block font-bold text-slate-700 uppercase mb-1">Selecione o arquivo (.xlsx, .xls, .csv):</label>
-          <input type="file" id="modal-excel-file-input" accept=".xlsx, .xls, .csv" 
-            class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
-        </div>
-      </div>
-
-      <div id="modal-excel-error" class="hidden p-3 rounded-lg bg-red-100 border border-red-200 text-red-700 text-xs font-semibold"></div>
-
-      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-        <button onclick="closeImportModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
-          Cancelar
-        </button>
-        <button onclick="executarImportacaoExcel()" id="btn-confirmar-excel" 
-          class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
-          <i data-lucide="upload" class="w-4 h-4"></i>
-          <span>Confirmar Importação</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== MODAL DE TROCA DE SENHA OBRIGATÓRIA (1º ACESSO) ==================== -->
-  <div id="modal-troca-senha" class="hidden fixed inset-0 bg-slate-900 bg-opacity-95 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-200 space-y-5">
-      <div class="text-center">
-        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3">
-          <i data-lucide="key-round" class="w-6 h-6"></i>
-        </div>
-        <h3 class="text-xl font-bold text-slate-800">Primeiro Acesso Detectado</h3>
-        <p class="text-xs text-slate-500 mt-1">Por segurança, altere a senha padrão pré-cadastrada (<strong>senha@123</strong>) antes de continuar.</p>
-      </div>
-
-      <form id="form-troca-senha" onsubmit="handleTrocaSenhaObrigatoria(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Nova Senha</label>
-          <input type="password" id="nova-senha-input" required minlength="6" placeholder="Mínimo 6 caracteres"
-            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none text-sm">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Confirmar Nova Senha</label>
-          <input type="password" id="confirma-senha-input" required minlength="6" placeholder="Repita a nova senha"
-            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none text-sm">
-        </div>
-
-        <div id="troca-senha-error" class="hidden p-3 rounded-lg bg-red-100 border border-red-200 text-red-700 text-xs font-semibold"></div>
-
-        <button type="submit" id="btn-salvar-nova-senha"
-          class="w-full py-3 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl transition shadow-lg flex items-center justify-center gap-2">
-          <span>Atualizar Senha</span>
-          <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- ==================== TELA DE LOGIN ==================== -->
-  <div id="screen-login" class="fixed inset-0 bg-slate-900 bg-opacity-95 z-40 flex items-center justify-center p-4">
+  <!-- ==================== 1. TELA DE LOGIN ==================== -->
+  <div id="screen-login" class="fixed inset-0 bg-slate-900 bg-opacity-95 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-200">
       <div class="text-center mb-8">
         <div class="bg-blue-900 text-white font-black text-2xl py-3 px-6 rounded-xl inline-block shadow-md tracking-wider mb-3">
           SENAI
         </div>
-        <h2 class="text-xl font-bold text-slate-800">Painel de Controle</h2>
+        <h2 class="text-xl font-bold text-slate-800">Painel de Controlo</h2>
         <p class="text-sm text-slate-500 mt-1">Gestão Inteligente de Ferramentas e Almoxarifado</p>
       </div>
 
@@ -128,14 +48,14 @@
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">E-mail (@senai.br)</label>
           <div class="relative">
-            <input type="email" id="login-email" required placeholder="seu.nome@senai.br" autocomplete="off"
+            <input type="email" id="login-email" required placeholder="seu.email@senai.br" autocomplete="off"
               class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none pl-10 text-sm">
             <i data-lucide="mail" class="w-5 h-5 text-slate-400 absolute left-3 top-3.5"></i>
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Senha</label>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Palavra-passe</label>
           <div class="relative">
             <input type="password" id="login-password" required placeholder="••••••••" autocomplete="new-password"
               class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none pl-10 text-sm">
@@ -154,10 +74,63 @@
     </div>
   </div>
 
-  <!-- ==================== DASHBOARD PRINCIPAL ==================== -->
+  <!-- ==================== MODAL DE TROCA DE SENHA ==================== -->
+  <div id="modal-trocar-senha" class="hidden fixed inset-0 bg-slate-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+          <i data-lucide="key" class="w-4 h-4 text-blue-600"></i> Alterar Palavra-passe
+        </h3>
+        <button onclick="closeModalTrocarSenha()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <form onsubmit="handleTrocaSenha(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nova Palavra-passe</label>
+          <input type="password" id="nova-senha-input" minlength="6" required placeholder="Mínimo 6 caracteres"
+            class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none">
+        </div>
+        <div id="troca-senha-error" class="hidden p-2.5 rounded bg-red-100 text-red-700 text-xs font-semibold"></div>
+        <div id="troca-senha-success" class="hidden p-2.5 rounded bg-emerald-100 text-emerald-700 text-xs font-semibold"></div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModalTrocarSenha()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">Cancelar</button>
+          <button type="submit" id="btn-salvar-senha" class="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg text-xs font-bold">Atualizar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL DE IMPORTAÇÃO CSV/EXCEL ==================== -->
+  <div id="modal-importar" class="hidden fixed inset-0 bg-slate-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+          <i data-lucide="file-up" class="w-4 h-4 text-blue-600"></i> Importar Dados (CSV)
+        </h3>
+        <button onclick="closeModalImportar()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-500">Selecione um arquivo CSV para importar registos em lote para a categoria atual.</p>
+
+      <div class="space-y-3">
+        <input type="file" id="input-csv-file" accept=".csv" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+        <div id="import-msg" class="hidden p-3 rounded text-xs font-semibold"></div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+        <button type="button" onclick="closeModalImportar()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">Cancelar</button>
+        <button type="button" onclick="processarImportacaoCSV()" id="btn-processar-csv" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold">Importar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 2. ESTRUTURA PRINCIPAL DO DASHBOARD ==================== -->
   <div id="app-layout" class="hidden h-screen w-full flex flex-col md:flex-row overflow-hidden">
 
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR / MENU LATERAL -->
     <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 shadow-xl h-full">
       <div class="p-5 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -196,6 +169,7 @@
           <span>Histórico Global</span>
         </button>
 
+        <!-- Seção Gestão Especializada -->
         <div id="nav-group-admin" class="hidden pt-4 mt-4 border-t border-slate-800 space-y-1">
           <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Gestão Especializada</p>
 
@@ -222,9 +196,16 @@
             <i data-lucide="file-edit" class="w-4 h-4"></i>
             <span>Cadastro e gerenciamento</span>
           </button>
+
+          <button onclick="switchTab('impressao')" id="btn-tab-impressao"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-left">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>Central de Impressão</span>
+          </button>
         </div>
       </nav>
 
+      <!-- Rodapé Sidebar / Perfil -->
       <div class="p-4 border-t border-slate-800 bg-slate-950 flex items-center justify-between flex-shrink-0">
         <div class="flex items-center gap-3 overflow-hidden">
           <div id="user-avatar" class="w-9 h-9 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-sm">
@@ -238,9 +219,14 @@
           </div>
         </div>
 
-        <button onclick="handleLogout()" title="Sair do Sistema" class="text-slate-400 hover:text-red-400 transition p-1.5 rounded-lg hover:bg-slate-800">
-          <i data-lucide="log-out" class="w-5 h-5"></i>
-        </button>
+        <div class="flex items-center gap-1">
+          <button onclick="openModalTrocarSenha()" title="Alterar Senha" class="text-slate-400 hover:text-blue-400 transition p-1.5 rounded-lg hover:bg-slate-800">
+            <i data-lucide="key" class="w-4 h-4"></i>
+          </button>
+          <button onclick="handleLogout()" title="Sair do Sistema" class="text-slate-400 hover:text-red-400 transition p-1.5 rounded-lg hover:bg-slate-800">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
       </div>
     </aside>
 
@@ -265,83 +251,113 @@
           </div>
         </div>
 
+        <!-- Cards de KPIs -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Cadastrado</p>
               <h3 id="kpi-total" class="text-3xl font-black text-slate-900 mt-1">0</h3>
             </div>
-            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100"><i data-lucide="wrench" class="w-6 h-6"></i></div>
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
+              <i data-lucide="wrench" class="w-6 h-6"></i>
+            </div>
           </div>
+
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Emprestadas Agora</p>
               <h3 id="kpi-emprestadas" class="text-3xl font-black text-amber-600 mt-1">0</h3>
             </div>
-            <div class="p-3 bg-amber-50 text-amber-600 rounded-xl border border-amber-100"><i data-lucide="arrow-up-right" class="w-6 h-6"></i></div>
+            <div class="p-3 bg-amber-50 text-amber-600 rounded-xl border border-amber-100">
+              <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
+            </div>
           </div>
+
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Disponíveis no Banco</p>
               <h3 id="kpi-disponiveis" class="text-3xl font-black text-emerald-600 mt-1">0</h3>
             </div>
-            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100"><i data-lucide="check-circle-2" class="w-6 h-6"></i></div>
+            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
+              <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+            </div>
           </div>
+
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Em Manutenção</p>
               <h3 id="kpi-manutencao" class="text-3xl font-black text-rose-600 mt-1">0</h3>
             </div>
-            <div class="p-3 bg-rose-50 text-rose-600 rounded-xl border border-rose-100"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
+            <div class="p-3 bg-rose-50 text-rose-600 rounded-xl border border-rose-100">
+              <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
           </div>
         </div>
 
+        <!-- Seção de Gráficos Analíticos -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
-              <i data-lucide="pie-chart" class="w-4 h-4 text-blue-600"></i> Status do Inventário
+              <i data-lucide="pie-chart" class="w-4 h-4 text-blue-600"></i>
+              Status do Inventário
             </h3>
-            <div class="relative flex items-center justify-center h-56"><canvas id="chart-status"></canvas></div>
+            <div class="relative flex items-center justify-center h-56">
+              <canvas id="chart-status"></canvas>
+            </div>
           </div>
 
           <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
               <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-600"></i> Localização Atual dos Itens Emprestados
+                <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-600"></i>
+                Localização Atual dos Itens Emprestados
               </h3>
+
               <div id="chart-locais-nav" class="hidden flex items-center gap-2">
-                <button onclick="mudarPaginaGraficoLocais(-1)" class="p-1 rounded bg-slate-100 text-slate-600 text-xs"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                <button onclick="mudarPaginaGraficoLocais(-1)" title="Página Anterior" class="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs">
+                  <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
                 <span id="chart-locais-page-info" class="text-xs font-bold text-slate-500">Pág. 1/1</span>
-                <button onclick="mudarPaginaGraficoLocais(1)" class="p-1 rounded bg-slate-100 text-slate-600 text-xs"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                <button onclick="mudarPaginaGraficoLocais(1)" title="Próxima Página" class="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs">
+                  <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
               </div>
             </div>
-            <div class="relative h-56"><canvas id="chart-locais"></canvas></div>
+
+            <div class="relative h-56">
+              <canvas id="chart-locais"></canvas>
+            </div>
           </div>
         </div>
 
+        <!-- Tabela Ferramentas Emprestadas -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-              <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i> Ferramentas Emprestadas
-            </h3>
+            <div class="flex items-center gap-2">
+              <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i>
+              <h3 class="font-bold text-slate-800 text-base">Ferramentas Emprestadas</h3>
+            </div>
             <div class="relative w-full sm:w-64">
               <input type="text" id="search-emprestadas" oninput="filterEmprestadasTable()" placeholder="Buscar item ou pessoa..."
                 class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
               <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-2"></i>
             </div>
           </div>
+
           <div class="max-h-[350px] overflow-y-auto">
             <table class="w-full text-left border-collapse text-sm">
-              <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[11px] font-bold sticky top-0 z-10">
+              <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10 shadow-sm">
                 <tr>
-                  <th class="p-3.5">Código / Ferramenta</th>
-                  <th class="p-3.5">Responsável</th>
-                  <th class="p-3.5">Local de Uso</th>
-                  <th class="p-3.5">Data / Hora Retirada</th>
+                  <th class="p-3.5 bg-slate-50">Código / Ferramenta</th>
+                  <th class="p-3.5 bg-slate-50">Responsável</th>
+                  <th class="p-3.5 bg-slate-50">Local de Uso</th>
+                  <th class="p-3.5 bg-slate-50">Data / Hora Retirada</th>
                 </tr>
               </thead>
               <tbody id="table-emprestadas-body" class="divide-y divide-slate-100">
-                <tr><td colspan="4" class="p-6 text-center text-slate-400">Carregando dados do servidor...</td></tr>
+                <tr>
+                  <td colspan="4" class="p-6 text-center text-slate-400">Carregando dados do servidor...</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -352,78 +368,239 @@
       <section id="view-rastreabilidade" class="tab-content hidden space-y-5 flex flex-col h-full">
         <div>
           <h2 class="text-2xl font-bold text-slate-800">Rastreabilidade em Tempo Real</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Localização física, responsável e pertencimento do ativo</p>
+          <p class="text-xs text-slate-500 mt-0.5">Localização física, responsável e verificação de pertencimento do ativo</p>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <!-- Filtros Combinados -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 flex-shrink-0">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Buscar Nome / Código</label>
-            <input type="text" id="filter-rastreio-texto" oninput="filterRastreabilidadeData()" placeholder="Ex: Multímetro"
-              class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            <div class="relative">
+              <input type="text" id="filter-rastreio-texto" oninput="filterRastreabilidadeData()" placeholder="Ex: Multímetro ou MST-01"
+                class="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5"></i>
+            </div>
           </div>
+
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local Padrão</label>
-            <select id="filter-rastreio-origem" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white"><option value="">Todos</option></select>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local Pertencente (Origem)</label>
+            <select id="filter-rastreio-origem" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todas as Origens</option>
+            </select>
           </div>
+
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local Atual</label>
-            <select id="filter-rastreio-atual" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white"><option value="">Todos</option></select>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local Atual (Onde Está)</label>
+            <select id="filter-rastreio-atual" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todos os Locais Atuais</option>
+            </select>
           </div>
+
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Responsável</label>
-            <select id="filter-rastreio-resp" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white"><option value="">Todos</option></select>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Responsável / Usuário</label>
+            <select id="filter-rastreio-resp" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todos os Responsáveis</option>
+            </select>
           </div>
+
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
-            <select id="filter-rastreio-status" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white">
-              <option value="">Todos</option>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status do Equipamento</label>
+            <select id="filter-rastreio-status" onchange="filterRastreabilidadeData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todos os Status</option>
               <option value="Emprestado">Emprestado</option>
-              <option value="Disponível">Disponível</option>
-              <option value="Manutenção">Manutenção</option>
+              <option value="Disponível">Disponível (No Banco)</option>
+              <option value="Manutenção">Em Manutenção</option>
             </select>
           </div>
         </div>
 
-        <div id="grid-rastreabilidade" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 flex-1 overflow-y-auto pr-1 pb-6 max-h-[calc(100vh-270px)]">
+        <!-- Grid de Cards da Rastreabilidade -->
+        <div id="grid-rastreabilidade" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 flex-1 overflow-y-auto pr-1 pb-6 items-start max-h-[calc(100vh-270px)]">
           <p class="text-slate-400 text-sm col-span-full text-center py-8">Carregando mapa de rastreabilidade...</p>
         </div>
       </section>
 
       <!-- ==================== TELA 03: INDICADORES & BI ==================== -->
       <section id="view-indicadores" class="tab-content hidden space-y-6">
+        
+        <!-- Cabeçalho do BI -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 class="text-2xl font-bold text-slate-800">Indicadores & Inteligência de Dados (BI)</h2>
-            <p class="text-xs text-slate-500 mt-0.5">Análise estratégica avançada do uso do acervo</p>
+            <p class="text-xs text-slate-500 mt-0.5">Análise estratégica avançada do uso do acervo, gargalos e padrões de acesso</p>
           </div>
-          <div class="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 text-xs">
-            <input type="date" id="filter-bi-data-inicio" onchange="filterIndicadoresData()" class="px-2.5 py-1.5 rounded-lg border border-slate-300">
-            <span class="text-slate-400">até</span>
-            <input type="date" id="filter-bi-data-fim" onchange="filterIndicadoresData()" class="px-2.5 py-1.5 rounded-lg border border-slate-300">
+
+          <div class="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 text-xs flex-wrap">
+            <span class="font-bold text-slate-600 uppercase flex items-center gap-1.5 mr-1">
+              <i data-lucide="calendar" class="w-4 h-4 text-blue-600"></i> Período:
+            </span>
+            <input type="date" id="filter-bi-data-inicio" onchange="filterIndicadoresData()"
+              class="px-2.5 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium text-slate-700">
+            <span class="text-slate-400 font-semibold">até</span>
+            <input type="date" id="filter-bi-data-fim" onchange="filterIndicadoresData()"
+              class="px-2.5 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium text-slate-700">
           </div>
         </div>
 
+        <!-- Painel Multi-Filtros do BI -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ferramenta</label>
+            <select id="filter-bi-ferramenta" onchange="filterIndicadoresData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todas as Ferramentas</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local / Setor</label>
+            <select id="filter-bi-local" onchange="filterIndicadoresData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todos os Locais</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Funcionário</label>
+            <select id="filter-bi-funcionario" onchange="filterIndicadoresData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todos os Funcionários</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Tipo de Ação</label>
+            <select id="filter-bi-acao" onchange="filterIndicadoresData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todas as Ações</option>
+              <option value="Retirada">Apenas Retiradas</option>
+              <option value="Devolução">Apenas Devoluções</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Grade de Ranking Comparativo -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><h3 class="font-bold text-slate-800 text-sm mb-4">Top 5 Ferramentas</h3><div class="relative h-60"><canvas id="chart-bi-top-ferramentas"></canvas></div></div>
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><h3 class="font-bold text-slate-800 text-sm mb-4">Top 5 Locais / Setores</h3><div class="relative h-60"><canvas id="chart-bi-top-locais"></canvas></div></div>
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><h3 class="font-bold text-slate-800 text-sm mb-4">Top 5 Funcionários</h3><div class="relative h-60"><canvas id="chart-bi-top-funcs"></canvas></div></div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+              <i data-lucide="award" class="w-4 h-4 text-amber-500"></i> Top 5 Ferramentas
+            </h3>
+            <div class="relative h-60"><canvas id="chart-bi-top-ferramentas"></canvas></div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+              <i data-lucide="building-2" class="w-4 h-4 text-indigo-600"></i> Top 5 Locais / Setores
+            </h3>
+            <div class="relative h-60"><canvas id="chart-bi-top-locais"></canvas></div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+              <i data-lucide="users" class="w-4 h-4 text-emerald-600"></i> Top 5 Funcionários
+            </h3>
+            <div class="relative h-60"><canvas id="chart-bi-top-funcs"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Série Temporal de Movimentações -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <h3 id="bi-tempo-title" class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i data-lucide="trending-up" class="w-4 h-4 text-blue-600"></i> Volume de Movimentações no Período
+            </h3>
+            <span id="bi-tempo-subtitle" class="text-[11px] text-slate-400">Evolução temporal das movimentações</span>
+          </div>
+          <div class="relative h-64"><canvas id="chart-bi-tempo"></canvas></div>
         </div>
       </section>
 
       <!-- ==================== TELA 04: HISTÓRICO GLOBAL ==================== -->
       <section id="view-historico" class="tab-content hidden space-y-6">
-        <div>
-          <h2 class="text-2xl font-bold text-slate-800">Histórico Global de Movimentações</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Registro auditável de todas as retiradas e devoluções</p>
+        
+        <!-- Cabeçalho do Histórico -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold text-slate-800">Histórico Global de Movimentações</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Registro auditável e completo de todas as retiradas e devoluções</p>
+          </div>
+
+          <div class="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 text-xs flex-wrap">
+            <span class="font-bold text-slate-600 uppercase flex items-center gap-1.5 mr-1">
+              <i data-lucide="calendar" class="w-4 h-4 text-blue-600"></i> Período:
+            </span>
+            <input type="date" id="filter-hist-data-inicio" onchange="filterHistoricoData()"
+              class="px-2.5 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium text-slate-700">
+            <span class="text-slate-400 font-semibold">até</span>
+            <input type="date" id="filter-hist-data-fim" onchange="filterHistoricoData()"
+              class="px-2.5 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium text-slate-700">
+          </div>
         </div>
+
+        <!-- Multi-Filtros do Histórico -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Buscar Texto / ID</label>
+            <div class="relative">
+              <input type="text" id="filter-hist-texto" oninput="filterHistoricoData()" placeholder="Buscar ferramenta ou pessoa..."
+                class="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5"></i>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ferramenta</label>
+            <select id="filter-hist-ferramenta" onchange="filterHistoricoData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todas as Ferramentas</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local / Setor</label>
+            <select id="filter-hist-local" onchange="filterHistoricoData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todos os Locais</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Funcionário</label>
+            <select id="filter-hist-funcionario" onchange="filterHistoricoData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todos os Funcionários</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Tipo de Ação</label>
+            <select id="filter-hist-acao" onchange="filterHistoricoData()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Todas as Ações</option>
+              <option value="Retirada">Apenas Retiradas</option>
+              <option value="Devolução">Apenas Devoluções</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tabela Histórico Global -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <span id="hist-count-badge" class="text-xs font-bold text-slate-600 bg-slate-200 px-3 py-1 rounded-full uppercase tracking-wider">
+              0 Registros Encontrados
+            </span>
+            <button onclick="loadHistoricoData()" class="p-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg transition flex items-center gap-1 font-semibold">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Atualizar Tabela
+            </button>
+          </div>
+
           <div class="max-h-[550px] overflow-y-auto">
             <table class="w-full text-left border-collapse text-sm">
-              <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase text-[11px] font-bold sticky top-0">
-                <tr><th class="p-3.5">Data / Hora</th><th class="p-3.5">Ação</th><th class="p-3.5">Ferramenta</th><th class="p-3.5">Funcionário</th><th class="p-3.5">Local</th></tr>
+              <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10 shadow-sm">
+                <tr>
+                  <th class="p-3.5 bg-slate-100">Data / Hora</th>
+                  <th class="p-3.5 bg-slate-100">Ação</th>
+                  <th class="p-3.5 bg-slate-100">Ferramenta</th>
+                  <th class="p-3.5 bg-slate-100">Funcionário</th>
+                  <th class="p-3.5 bg-slate-100">Local de Uso</th>
+                </tr>
               </thead>
               <tbody id="table-historico-body" class="divide-y divide-slate-100">
-                <tr><td colspan="5" class="p-6 text-center text-slate-400">Carregando histórico...</td></tr>
+                <tr>
+                  <td colspan="5" class="p-6 text-center text-slate-400">Carregando histórico...</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -432,51 +609,556 @@
 
       <!-- ==================== TELA 05: DOSSIÊ FUNCIONÁRIO ==================== -->
       <section id="view-funcionarios" class="tab-content hidden space-y-6">
-        <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold text-slate-800">Dossiê do Funcionário</h2>
-          <select id="select-dossier-funcionario" onchange="renderFuncionarioDossier()" class="px-3 py-1.5 text-xs font-bold bg-white rounded-xl border border-slate-300"></select>
-        </div>
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-6">
-          <div class="w-24 h-24 rounded-full bg-slate-200 flex items-center justify-center font-bold text-2xl text-slate-600" id="func-dossier-avatar">U</div>
-          <div>
-            <h3 id="func-dossier-nome" class="text-2xl font-black text-slate-900">---</h3>
-            <p id="func-dossier-cargo" class="text-xs text-slate-500">---</p>
+        
+        <!-- Cabeçalho do Dossiê com Seletor do Funcionário -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <h2 class="text-2xl font-bold text-slate-800">Funcionários</h2>
+            <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-3 py-1 rounded-full flex items-center gap-1">
+              <i data-lucide="lock" class="w-3 h-3 text-slate-500"></i> Master e Administrador
+            </span>
+          </div>
+
+          <!-- Seletor do Funcionário Ativo -->
+          <div class="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2">
+            <label class="text-xs font-bold text-slate-600 uppercase whitespace-nowrap">Funcionário:</label>
+            <select id="select-dossier-funcionario" onchange="onSelectFuncionarioDossierChange()"
+              class="px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 min-w-[220px]">
+              <option value="">Carregando funcionários...</option>
+            </select>
           </div>
         </div>
+
+        <!-- Card de Perfil do Funcionário -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center md:items-start gap-6">
+          
+          <!-- Foto do Funcionário -->
+          <div class="w-32 h-32 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-inner relative">
+            <img id="func-dossier-foto" src="" alt="Foto" class="w-full h-full object-cover hidden">
+            <div id="func-dossier-foto-placeholder" class="text-slate-400 flex flex-col items-center justify-center">
+              <i data-lucide="user" class="w-12 h-12"></i>
+            </div>
+          </div>
+
+          <!-- Informações Cadastrais -->
+          <div class="flex-1 space-y-4 text-center md:text-left w-full">
+            <div>
+              <h3 id="func-dossier-nome" class="text-2xl font-black text-slate-900">---</h3>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 text-xs text-slate-600 pt-2 border-t border-slate-100">
+              <div class="flex items-center justify-between sm:justify-start gap-2">
+                <span class="text-slate-400 font-medium">Matrícula:</span>
+                <span id="func-dossier-matricula" class="font-mono font-bold text-slate-800">---</span>
+              </div>
+
+              <div class="flex items-center justify-between sm:justify-start gap-2">
+                <span class="text-slate-400 font-medium">Local:</span>
+                <span id="func-dossier-local" class="font-bold text-slate-800">---</span>
+              </div>
+
+              <div class="flex items-center justify-between sm:justify-start gap-2">
+                <span class="text-slate-400 font-medium">E-mail:</span>
+                <span id="func-dossier-email" class="font-medium text-slate-800 truncate">---</span>
+              </div>
+
+              <div class="flex items-center justify-between sm:justify-start gap-2">
+                <span class="text-slate-400 font-medium">Nível de acesso:</span>
+                <span id="func-dossier-nivel" class="font-bold text-slate-800 capitalize">---</span>
+              </div>
+
+              <div class="flex items-center justify-between sm:justify-start gap-2">
+                <span class="text-slate-400 font-medium">Cargo:</span>
+                <span id="func-dossier-cargo" class="font-medium text-slate-800">---</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabela Ferramentas em Posse -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-100 flex items-center gap-2">
+            <i data-lucide="wrench" class="w-4 h-4 text-blue-600"></i>
+            <h3 class="font-bold text-slate-800 text-sm">
+              Ferramentas em posse · <span id="func-posse-count" class="text-blue-600">0</span>
+            </h3>
+          </div>
+
+          <div class="max-h-[250px] overflow-y-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10">
+                <tr>
+                  <th class="p-3 bg-slate-50">Ferramenta</th>
+                  <th class="p-3 bg-slate-50">Patrimônio</th>
+                  <th class="p-3 bg-slate-50">Local atual</th>
+                  <th class="p-3 bg-slate-50">Retirada</th>
+                </tr>
+              </thead>
+              <tbody id="table-func-posse-body" class="divide-y divide-slate-100">
+                <tr>
+                  <td colspan="4" class="p-4 text-center text-slate-400">Nenhum funcionário selecionado.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Histórico do Funcionário com Filtros -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800 text-base">Histórico do funcionário</h3>
+
+          <!-- Filtros do Histórico do Funcionário -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Período (Início / Fim)</label>
+              <div class="flex items-center gap-1">
+                <input type="date" id="filter-func-hist-inicio" onchange="filterFuncionarioHistory()"
+                  class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <span class="text-slate-400 text-xs">a</span>
+                <input type="date" id="filter-func-hist-fim" onchange="filterFuncionarioHistory()"
+                  class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ferramenta</label>
+              <select id="filter-func-hist-ferramenta" onchange="filterFuncionarioHistory()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Todas</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local</label>
+              <select id="filter-func-hist-local" onchange="filterFuncionarioHistory()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Todos</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ação</label>
+              <select id="filter-func-hist-acao" onchange="filterFuncionarioHistory()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Todas</option>
+                <option value="Retirada">Retirada</option>
+                <option value="Devolução">Devolução</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tabela de Histórico do Funcionário -->
+          <div class="overflow-hidden border border-slate-200 rounded-xl">
+            <div class="max-h-[350px] overflow-y-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10">
+                  <tr>
+                    <th class="p-3 bg-slate-100">Data e hora</th>
+                    <th class="p-3 bg-slate-100">Ferramenta</th>
+                    <th class="p-3 bg-slate-100">Local</th>
+                    <th class="p-3 bg-slate-100">Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="table-func-hist-body" class="divide-y divide-slate-100">
+                  <tr>
+                    <td colspan="4" class="p-4 text-center text-slate-400">Carregando histórico...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-slate-500 pt-2">
+            <span id="func-hist-count-info">Mostrando 0 registros</span>
+          </div>
+        </div>
+
       </section>
 
       <!-- ==================== TELA 06: FICHA FERRAMENTA ==================== -->
       <section id="view-ferramentas" class="tab-content hidden space-y-6">
-        <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold text-slate-800">Ficha da Ferramenta</h2>
-          <select id="select-ficha-ferramenta" onchange="renderFerramentaFicha()" class="px-3 py-1.5 text-xs font-bold bg-white rounded-xl border border-slate-300"></select>
+        
+        <!-- Cabeçalho da Ficha com Seletor da Ferramenta -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <h2 class="text-2xl font-bold text-slate-800">Ferramentas</h2>
+            <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-3 py-1 rounded-full flex items-center gap-1">
+              <i data-lucide="lock" class="w-3 h-3 text-slate-500"></i> Master e Administrador
+            </span>
+          </div>
+
+          <!-- Seletor da Ferramenta Ativa -->
+          <div class="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2">
+            <label class="text-xs font-bold text-slate-600 uppercase whitespace-nowrap">Ferramenta:</label>
+            <select id="select-ficha-ferramenta" onchange="onSelectFerramentaFichaChange()"
+              class="px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 min-w-[220px]">
+              <option value="">Carregando ferramentas...</option>
+            </select>
+          </div>
         </div>
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 id="fer-ficha-nome" class="text-2xl font-black text-slate-900">---</h3>
+
+        <!-- Card Principal da Ferramenta -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center md:items-start gap-6">
+          
+          <!-- Foto do Equipamento -->
+          <div class="w-48 h-48 rounded-2xl bg-slate-50 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center p-2 relative shadow-inner">
+            <img id="fer-ficha-foto" src="" alt="Ferramenta" class="w-full h-full object-contain hidden">
+            <div id="fer-ficha-foto-placeholder" class="text-slate-300 flex flex-col items-center justify-center">
+              <i data-lucide="wrench" class="w-16 h-16"></i>
+            </div>
+          </div>
+
+          <!-- Informações Técnicas da Ferramenta -->
+          <div class="flex-1 space-y-4 w-full">
+            <div>
+              <h3 id="fer-ficha-nome" class="text-2xl font-black text-slate-900">---</h3>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 text-xs text-slate-600 pt-2 border-t border-slate-100">
+              <div class="flex items-center justify-between sm:justify-start gap-2">
+                <span class="text-slate-400 font-medium">Patrimônio:</span>
+                <span id="fer-ficha-patrimonio" class="font-mono font-bold text-blue-600">---</span>
+              </div>
+
+              <div class="flex items-center justify-between sm:justify-start gap-2">
+                <span class="text-slate-400 font-medium">Categoria:</span>
+                <span id="fer-ficha-categoria" class="font-medium text-slate-800">---</span>
+              </div>
+
+              <div class="flex items-center justify-between sm:justify-start gap-2">
+                <span class="text-slate-400 font-medium">Marca:</span>
+                <span id="fer-ficha-marca" class="font-medium text-slate-800">---</span>
+              </div>
+
+              <div class="flex items-center justify-between sm:justify-start gap-2">
+                <span class="text-slate-400 font-medium">Modelo:</span>
+                <span id="fer-ficha-modelo" class="font-medium text-slate-800">---</span>
+              </div>
+
+              <div class="flex items-center justify-between sm:justify-start gap-2">
+                <span class="text-slate-400 font-medium">Local de origem:</span>
+                <span id="fer-ficha-origem" class="font-bold text-slate-800">---</span>
+              </div>
+
+              <div class="flex items-center justify-between sm:justify-start gap-2">
+                <span class="text-slate-400 font-medium">Local atual:</span>
+                <span id="fer-ficha-atual" class="font-bold text-slate-800">---</span>
+              </div>
+
+              <div class="flex items-center justify-between sm:justify-start gap-2 col-span-1 sm:col-span-2 lg:col-span-3">
+                <span class="text-slate-400 font-medium">Status:</span>
+                <span id="fer-ficha-status" class="px-2.5 py-0.5 rounded-full font-bold text-[11px] bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  Disponível
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- Card do Funcionário Responsável Atualmente -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+            <i data-lucide="user-check" class="w-4 h-4 text-blue-600"></i> Funcionário responsável atualmente
+          </h3>
+
+          <div id="fer-ficha-resp-box" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center border border-slate-300">
+                <img id="fer-resp-foto" src="" class="w-full h-full object-cover hidden">
+                <i id="fer-resp-icon" data-lucide="user" class="w-6 h-6 text-slate-400"></i>
+              </div>
+              <div>
+                <h4 id="fer-resp-nome" class="font-bold text-slate-800 text-sm">Nenhum responsável</h4>
+                <p id="fer-resp-matricula" class="text-xs text-slate-500 font-mono">Disponível no almoxarifado</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-6 text-xs text-slate-600 w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
+              <div>
+                <span class="text-slate-400 block font-medium">Retirada:</span>
+                <span id="fer-resp-retirada" class="font-mono font-bold text-slate-700">---</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">Local de uso:</span>
+                <span id="fer-resp-local" class="font-bold text-slate-700">---</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Histórico da Ferramenta com Filtros -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800 text-base">Histórico da ferramenta</h3>
+
+          <!-- Filtros -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Período (Início / Fim)</label>
+              <div class="flex items-center gap-1">
+                <input type="date" id="filter-fer-hist-inicio" onchange="filterFerramentaHistory()"
+                  class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <span class="text-slate-400 text-xs">a</span>
+                <input type="date" id="filter-fer-hist-fim" onchange="filterFerramentaHistory()"
+                  class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Funcionário</label>
+              <select id="filter-fer-hist-funcionario" onchange="filterFerramentaHistory()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Todos</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local</label>
+              <select id="filter-fer-hist-local" onchange="filterFerramentaHistory()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Todos</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ação</label>
+              <select id="filter-fer-hist-acao" onchange="filterFerramentaHistory()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Todas</option>
+                <option value="Retirada">Retirada</option>
+                <option value="Devolução">Devolução</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tabela de Histórico da Ferramenta -->
+          <div class="overflow-hidden border border-slate-200 rounded-xl">
+            <div class="max-h-[350px] overflow-y-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10">
+                  <tr>
+                    <th class="p-3 bg-slate-100">Data e hora</th>
+                    <th class="p-3 bg-slate-100">Funcionário</th>
+                    <th class="p-3 bg-slate-100">Local</th>
+                    <th class="p-3 bg-slate-100">Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="table-fer-hist-body" class="divide-y divide-slate-100">
+                  <tr>
+                    <td colspan="4" class="p-4 text-center text-slate-400">Carregando histórico...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-slate-500 pt-2">
+            <span id="fer-hist-count-info">Mostrando 0 registros</span>
+          </div>
+        </div>
+
       </section>
 
       <!-- ==================== TELA 07: DETALHES DO LOCAL ==================== -->
       <section id="view-locais" class="tab-content hidden space-y-6">
-        <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold text-slate-800">Detalhes do Local</h2>
-          <select id="select-detalhes-local" onchange="renderLocalDetails()" class="px-3 py-1.5 text-xs font-bold bg-white rounded-xl border border-slate-300"></select>
+        
+        <!-- Cabeçalho de Locais com Seletor Superior -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <h2 class="text-2xl font-bold text-slate-800">Locais</h2>
+            <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-3 py-1 rounded-full flex items-center gap-1">
+              <i data-lucide="lock" class="w-3 h-3 text-slate-500"></i> Master e Administrador
+            </span>
+          </div>
+
+          <!-- Seletor do Local Ativo -->
+          <div class="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2">
+            <label class="text-xs font-bold text-slate-600 uppercase whitespace-nowrap">Local:</label>
+            <select id="select-detalhes-local" onchange="onSelectLocalDetailsChange()"
+              class="px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 min-w-[220px]">
+              <option value="">Carregando locais...</option>
+            </select>
+          </div>
         </div>
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 id="local-detalhes-nome" class="text-2xl font-black text-slate-900">---</h3>
+
+        <!-- Card Principal do Local (Nome + Descrição) -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center md:items-start gap-6">
+          
+          <!-- Foto do Local -->
+          <div class="w-48 h-36 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-inner">
+            <img id="local-detalhes-foto" src="" alt="Local" class="w-full h-full object-cover hidden">
+            <div id="local-detalhes-foto-placeholder" class="text-slate-400 flex flex-col items-center justify-center p-4 text-center">
+              <i data-lucide="building-2" class="w-12 h-12 mb-1"></i>
+              <span class="text-[10px] font-semibold uppercase">Imagem do Local</span>
+            </div>
+          </div>
+
+          <!-- Informações Cadastrais do Local -->
+          <div class="flex-1 space-y-3 w-full">
+            <div>
+              <h3 id="local-detalhes-nome" class="text-2xl font-black text-slate-900">---</h3>
+              <p id="local-detalhes-descricao" class="text-xs text-slate-500 mt-1">Nenhuma descrição cadastrada para este local.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-3 gap-x-6 text-xs text-slate-600 pt-3 border-t border-slate-100">
+              <div>
+                <span class="text-slate-400 font-medium block">Código / ID:</span>
+                <span id="local-detalhes-codigo" class="font-mono font-bold text-blue-600">---</span>
+              </div>
+
+              <div>
+                <span class="text-slate-400 font-medium block">Tipo:</span>
+                <span id="local-detalhes-tipo" class="font-medium text-slate-800">---</span>
+              </div>
+
+              <div>
+                <span class="text-slate-400 font-medium block">Responsável:</span>
+                <span id="local-detalhes-responsavel" class="font-bold text-slate-800">---</span>
+              </div>
+
+              <div>
+                <span class="text-slate-400 font-medium block">Unidade:</span>
+                <span id="local-detalhes-unidade" class="font-medium text-slate-800">---</span>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- Grade 2 Colunas: Funcionários Vinculados vs Ferramentas do Local -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Tabela 1: Funcionários Vinculados -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i data-lucide="users" class="w-4 h-4 text-blue-600"></i> Funcionários vinculados
+              </h3>
+              <span id="local-funcs-count" class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">0</span>
+            </div>
+
+            <div class="max-h-[280px] overflow-y-auto flex-1">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10">
+                  <tr>
+                    <th class="p-3 bg-slate-100">Funcionário</th>
+                    <th class="p-3 bg-slate-100">Cargo</th>
+                  </tr>
+                </thead>
+                <tbody id="table-local-funcs-body" class="divide-y divide-slate-100">
+                  <tr>
+                    <td colspan="2" class="p-4 text-center text-slate-400">Carregando funcionários...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tabela 2: Ferramentas do Local -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i data-lucide="wrench" class="w-4 h-4 text-amber-500"></i> Ferramentas do local
+              </h3>
+              <span id="local-fers-count" class="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-100">0</span>
+            </div>
+
+            <div class="max-h-[280px] overflow-y-auto flex-1">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10">
+                  <tr>
+                    <th class="p-3 bg-slate-100">Ferramenta</th>
+                    <th class="p-3 bg-slate-100">Local atual</th>
+                    <th class="p-3 bg-slate-100">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="table-local-fers-body" class="divide-y divide-slate-100">
+                  <tr>
+                    <td colspan="3" class="p-4 text-center text-slate-400">Carregando ferramentas...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Histórico do Local com Filtros -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800 text-base">Histórico do local</h3>
+
+          <!-- Filtros -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Período (Início / Fim)</label>
+              <div class="flex items-center gap-1">
+                <input type="date" id="filter-local-hist-inicio" onchange="filterLocalHistory()"
+                  class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <span class="text-slate-400 text-xs">a</span>
+                <input type="date" id="filter-local-hist-fim" onchange="filterLocalHistory()"
+                  class="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Funcionário</label>
+              <select id="filter-local-hist-funcionario" onchange="filterLocalHistory()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Todos</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ferramenta</label>
+              <select id="filter-local-hist-ferramenta" onchange="filterLocalHistory()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Todas</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ação</label>
+              <select id="filter-local-hist-acao" onchange="filterLocalHistory()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Todas</option>
+                <option value="Retirada">Retirada</option>
+                <option value="Devolução">Devolução</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tabela de Histórico do Local -->
+          <div class="overflow-hidden border border-slate-200 rounded-xl">
+            <div class="max-h-[350px] overflow-y-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10">
+                  <tr>
+                    <th class="p-3 bg-slate-100">Data e hora</th>
+                    <th class="p-3 bg-slate-100">Funcionário</th>
+                    <th class="p-3 bg-slate-100">Ferramenta</th>
+                    <th class="p-3 bg-slate-100">Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="table-local-hist-body" class="divide-y divide-slate-100">
+                  <tr>
+                    <td colspan="4" class="p-4 text-center text-slate-400">Carregando histórico do local...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-slate-500 pt-2">
+            <span id="local-hist-count-info">Mostrando 0 registros</span>
+          </div>
+        </div>
+
       </section>
 
       <!-- ==================== TELA 08: GESTÃO & CADASTROS ==================== -->
       <section id="view-gestao" class="tab-content hidden space-y-6">
+        
+        <!-- Cabeçalho -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
-          <div class="flex items-center gap-3">
-            <h2 class="text-2xl font-bold text-slate-800">Cadastro e gerenciamento</h2>
-            <span class="text-xs font-semibold text-red-700 bg-red-100 px-3 py-1 rounded-full border border-red-200">
-              Master e Administrador
-            </span>
+          <div>
+            <div class="flex items-center gap-3">
+              <h2 class="text-2xl font-bold text-slate-800">Cadastro e gerenciamento</h2>
+              <span class="text-xs font-semibold text-red-700 bg-red-100 px-3 py-1 rounded-full border border-red-200">
+                Master e Administrador
+              </span>
+            </div>
           </div>
 
+          <!-- Sub-abas de Navegação -->
           <div class="flex items-center gap-6 text-sm font-semibold text-slate-500">
             <button onclick="switchGestaoSubTab('funcionarios')" id="subtab-gestao-funcionarios" class="subtab-active pb-2 transition">
               Funcionários
@@ -490,23 +1172,26 @@
           </div>
         </div>
 
+        <!-- Grade Principal: Tabela à Esquerda vs Formulário à Direita -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          <!-- Coluna Tabela -->
+          
+          <!-- Coluna Esquerda: Lista/Tabela com Busca, Botão Importar e Novo -->
           <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h3 id="gestao-list-title" class="font-bold text-slate-800 text-base">Funcionários cadastrados</h3>
               
-              <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                <div class="relative flex-1 sm:w-44">
+              <div class="flex items-center gap-2 w-full sm:w-auto">
+                <div class="relative flex-1 sm:w-48">
                   <input type="text" id="gestao-search" oninput="filterGestaoList()" placeholder="Buscar..."
                     class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-slate-50">
                   <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5"></i>
                 </div>
 
-                <button onclick="openImportModal()" id="gestao-btn-excel" 
-                  class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm whitespace-nowrap">
-                  <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                  <span>Importar Excel</span>
+                <button onclick="openModalImportar()" title="Importar arquivo CSV/Excel"
+                  class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1 transition shadow-sm whitespace-nowrap">
+                  <i data-lucide="file-up" class="w-4 h-4"></i>
+                  <span>Importar</span>
                 </button>
 
                 <button onclick="openGestaoFormNew()" id="gestao-btn-novo"
@@ -517,32 +1202,40 @@
               </div>
             </div>
 
+            <!-- Tabela de Itens -->
             <div class="overflow-hidden border border-slate-200 rounded-xl">
               <div class="max-h-[500px] overflow-y-auto">
                 <table class="w-full text-left border-collapse text-sm">
                   <thead id="gestao-table-head" class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10">
                   </thead>
                   <tbody id="gestao-table-body" class="divide-y divide-slate-100">
-                    <tr><td colspan="5" class="p-6 text-center text-slate-400">Carregando registros...</td></tr>
+                    <tr>
+                      <td colspan="5" class="p-6 text-center text-slate-400">Carregando registros...</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
             </div>
+
           </div>
 
-          <!-- Coluna Formulário -->
+          <!-- Coluna Direita: Formulário de Cadastro / Edição -->
           <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+            
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 id="gestao-form-title" class="font-bold text-slate-800 text-base">Editar funcionário</h3>
               <span id="gestao-form-badge" class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">Edição</span>
             </div>
 
             <form id="form-gestao" onsubmit="saveGestaoItem(event)" class="space-y-4">
+              
+              <!-- Área de Foto -->
               <div class="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
                 <div class="w-24 h-24 rounded-full bg-white border border-slate-200 overflow-hidden flex items-center justify-center shadow-sm relative mb-2">
                   <img id="gestao-img-preview" src="" class="w-full h-full object-cover hidden">
                   <i id="gestao-img-icon" data-lucide="user" class="w-10 h-10 text-slate-300"></i>
                 </div>
+
                 <label class="cursor-pointer bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition">
                   <i data-lucide="camera" class="w-3.5 h-3.5"></i>
                   <span>Alterar foto</span>
@@ -550,10 +1243,12 @@
                 </label>
               </div>
 
+              <!-- Inputs Dinâmicos (Preenchidos pelo JS) -->
               <div id="gestao-dynamic-inputs" class="space-y-3 text-xs"></div>
 
               <div id="gestao-form-error" class="hidden p-3 rounded-lg bg-red-100 border border-red-200 text-red-700 text-xs font-semibold"></div>
 
+              <!-- Botões de Ação -->
               <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 <button type="button" onclick="cancelGestaoForm()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
                   Cancelar
@@ -562,39 +1257,84 @@
                   Salvar alterações
                 </button>
               </div>
+
             </form>
+
           </div>
+
         </div>
+
+      </section>
+
+      <!-- DEMAIS TELAS RESERVADAS -->
+      <section id="view-impressao" class="tab-content hidden space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800">Central de Impressão</h2>
       </section>
 
     </main>
   </div>
 
-  <!-- LÓGICA JAVASCRIPT COMPLETA -->
+  <!-- ==================== LÓGICA JAVASCRIPT ==================== -->
   <script>
-    const SUPABASE_URL = "https://gfxctmjgcbgxsrquugrt.supabase.co"; // Substitua pela sua URL
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmeGN0bWpnY2JneHNycXV1Z3J0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjI4NzgsImV4cCI6MjEwODU5ODg3OH0.gvwfxHzgVF72epEMMTdBdRvovmgbtMHquYCFyFa2Li0";            // Substitua pela sua Key        
+    // Configuração Supabase
+    const SUPABASE_URL = "https://gfxctmjgcbgxsrquugrt.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmeGN0bWpnY2JneHNycXV1Z3J0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjI4NzgsImV4cCI6MjEwODU5ODg3OH0.gvwfxHzgVF72epEMMTdBdRvovmgbtMHquYCFyFa2Li0";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    if (typeof ChartDataLabels !== 'undefined') {
+      Chart.register(ChartDataLabels);
+    }
+
+    // Estados Globais
     let currentUserProfile = null;
-    let cacheFuncionariosList = [];
-    let cacheFerramentasList = [];
-    let cacheLocaisList = [];
     let cacheEmprestadas = [];
     let cacheRastreabilidade = [];
+    let cacheHistoricoGlobal = [];
+    let cacheFuncionariosList = [];
+    let cacheSelectedFuncHist = [];
+    let cacheFerramentasList = [];
+    let cacheSelectedFerHist = [];
+    let cacheLocaisList = [];
+    let cacheSelectedLocalHist = [];
 
+    // Estado da Tela de Gestão
     let currentGestaoSubTab = 'funcionarios';
     let currentEditingItem = null;
     let gestaoImageBase64 = null;
 
+    // Paginação do Gráfico de Locais
+    let paginaAtualLocais = 0;
+    const ITENS_POR_PAGINA_GRAFICO = 10;
+    let dadosLocaisGlobal = {};
+
+    // Instâncias de Gráficos BI
     let chartStatusInstance = null;
     let chartLocaisInstance = null;
+    let chartBiTopFerramentasInstance = null;
+    let chartBiTopLocaisInstance = null;
+    let chartBiTopFuncsInstance = null;
+    let chartBiTempoInstance = null;
+
+    // HELPER LOCAL PADRÃO
+    function getLocalOrigem(item) {
+      if (!item) return 'Não Especificado';
+      const valorColuna = item.local_padrao || item.local_origem || item.local_pertencente || item.local;
+      if (valorColuna && typeof valorColuna === 'string' && valorColuna.trim() !== '' && valorColuna !== 'Não Definido') {
+        return valorColuna.trim();
+      }
+      if (item.status === 'Disponível' && item.local_atual && item.local_atual.trim() !== '') {
+        return item.local_atual.trim();
+      }
+      return 'Não Especificado';
+    }
 
     window.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
       await checkAuthSession();
+      setupRealtimeSubscriptions();
     });
 
+    // 1. AUTENTICAÇÃO E SESSÃO
     async function checkAuthSession() {
       const { data: { session } } = await supabaseClient.auth.getSession();
 
@@ -610,45 +1350,41 @@
         .single();
 
       if (error || !perfil) {
-        alert("Perfil de funcionário não encontrado no banco de dados.");
+        alert("Perfil de usuário não encontrado.");
         await supabaseClient.auth.signOut();
         showLoginScreen(true);
         return;
       }
 
-      const nivel = (perfil.nivel_acesso || '').toLowerCase();
-      if (nivel === 'sem_acesso' || nivel === 'sem acesso' || nivel === 'nenhum') {
-        alert("Acesso Negado: O seu perfil está registrado como 'Sem Acesso' ao Painel.");
+      // Validação do Nível 'Sem Acesso'
+      if (perfil.nivel_acesso === 'sem_acesso' || perfil.nivel_acesso === 'Sem Acesso') {
+        alert("Sua conta está sem permissão de acesso ao sistema. Contacte o administrador.");
         await supabaseClient.auth.signOut();
         showLoginScreen(true);
         return;
       }
 
       currentUserProfile = perfil;
-
-      if (perfil.trocar_senha === true) {
-        document.getElementById('modal-troca-senha').classList.remove('hidden');
-        return;
-      }
-
       showLoginScreen(false);
       setupDashboardView();
     }
 
     async function handleLogin(event) {
       event.preventDefault();
-      const email = document.getElementById('login-email').value.trim().toLowerCase();
+      const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
       const errDiv = document.getElementById('login-error');
       const btn = document.getElementById('btn-login');
 
-      if (!email.endsWith('@senai.br')) {
-        errDiv.innerText = "Apenas e-mails corporativos do domínio @senai.br são permitidos.";
+      errDiv.classList.add('hidden');
+
+      // Validação obrigatória do domínio @senai.br
+      if (!email.toLowerCase().endsWith('@senai.br')) {
+        errDiv.innerText = "Apenas e-mails corporativos com o domínio @senai.br são permitidos.";
         errDiv.classList.remove('hidden');
         return;
       }
 
-      errDiv.classList.add('hidden');
       btn.disabled = true;
       btn.innerHTML = '<span>Autenticando...</span>';
 
@@ -667,48 +1403,6 @@
       }
     }
 
-    async function handleTrocaSenhaObrigatoria(event) {
-      event.preventDefault();
-      const novaSenha = document.getElementById('nova-senha-input').value;
-      const confirmaSenha = document.getElementById('confirma-senha-input').value;
-      const errDiv = document.getElementById('troca-senha-error');
-      const btn = document.getElementById('btn-salvar-nova-senha');
-
-      if (novaSenha !== confirmaSenha) {
-        errDiv.innerText = "As senhas não coincidem.";
-        errDiv.classList.remove('hidden');
-        return;
-      }
-
-      errDiv.classList.add('hidden');
-      btn.disabled = true;
-      btn.innerText = "Atualizando...";
-
-      try {
-        const { error: authErr } = await supabaseClient.auth.updateUser({ password: novaSenha });
-        if (authErr) throw authErr;
-
-        const { error: dbErr } = await supabaseClient
-          .from('funcionarios')
-          .update({ trocar_senha: false })
-          .eq('id', currentUserProfile.id);
-
-        if (dbErr) throw dbErr;
-
-        currentUserProfile.trocar_senha = false;
-        document.getElementById('modal-troca-senha').classList.add('hidden');
-        showLoginScreen(false);
-        setupDashboardView();
-
-      } catch (err) {
-        errDiv.innerText = "Erro ao atualizar senha: " + err.message;
-        errDiv.classList.remove('hidden');
-      } finally {
-        btn.disabled = false;
-        btn.innerText = "Atualizar Senha";
-      }
-    }
-
     async function handleLogout() {
       await supabaseClient.auth.signOut();
       currentUserProfile = null;
@@ -718,12 +1412,64 @@
     function showLoginScreen(show) {
       const login = document.getElementById('screen-login');
       const app = document.getElementById('app-layout');
+      const formLogin = document.getElementById('form-login');
+      const errDiv = document.getElementById('login-error');
+
       if (show) {
+        if (formLogin) formLogin.reset();
+        if (errDiv) { errDiv.innerText = ''; errDiv.classList.add('hidden'); }
         login.classList.remove('hidden');
         app.classList.add('hidden');
       } else {
         login.classList.add('hidden');
         app.classList.remove('hidden');
+      }
+    }
+
+    // Modal Troca de Senha
+    function openModalTrocarSenha() {
+      document.getElementById('modal-trocar-senha').classList.remove('hidden');
+      document.getElementById('troca-senha-error').classList.add('hidden');
+      document.getElementById('troca-senha-success').classList.add('hidden');
+      document.getElementById('nova-senha-input').value = '';
+    }
+
+    function closeModalTrocarSenha() {
+      document.getElementById('modal-trocar-senha').classList.add('hidden');
+    }
+
+    async function handleTrocaSenha(event) {
+      event.preventDefault();
+      const newPassword = document.getElementById('nova-senha-input').value;
+      const errDiv = document.getElementById('troca-senha-error');
+      const succDiv = document.getElementById('troca-senha-success');
+      const btn = document.getElementById('btn-salvar-senha');
+
+      errDiv.classList.add('hidden');
+      succDiv.classList.add('hidden');
+
+      if (!newPassword || newPassword.length < 6) {
+        errDiv.innerText = "A nova palavra-passe deve ter pelo menos 6 caracteres.";
+        errDiv.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Atualizando...";
+
+      try {
+        const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+
+        succDiv.innerText = "Palavra-passe alterada com sucesso!";
+        succDiv.classList.remove('hidden');
+        setTimeout(() => closeModalTrocarSenha(), 1500);
+      } catch (err) {
+        errDiv.innerText = "Erro ao alterar palavra-passe: " + err.message;
+        errDiv.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Atualizar";
       }
     }
 
@@ -746,6 +1492,7 @@
       switchTab('visao-geral');
     }
 
+    // 2. NAVEGAÇÃO DE ABAS
     function switchTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-tab'));
@@ -758,14 +1505,19 @@
 
       if (tabName === 'visao-geral') loadVisaoGeralData();
       if (tabName === 'rastreabilidade') loadRastreabilidadeData();
+      if (tabName === 'indicadores') loadIndicadoresData();
+      if (tabName === 'historico') loadHistoricoData();
+      if (tabName === 'funcionarios') loadFuncionariosDossierData();
+      if (tabName === 'ferramentas') loadFerramentasFichaData();
+      if (tabName === 'locais') loadLocaisData();
       if (tabName === 'gestao') loadGestaoData();
     }
 
-    // CARREGAMENTO DA TELA VISÃO GERAL
+    // 3. TELA VISÃO GERAL
     async function loadVisaoGeralData() {
       try {
-        const { data: ferramentas } = await supabaseClient.from('ferramentas').select('*');
-        if (!ferramentas) return;
+        const { data: ferramentas, error } = await supabaseClient.from('ferramentas').select('*');
+        if (error) throw error;
 
         const total = ferramentas.length;
         const emprestadas = ferramentas.filter(f => f.status === 'Emprestado');
@@ -779,10 +1531,19 @@
 
         cacheEmprestadas = emprestadas;
         renderEmprestadasTable(cacheEmprestadas);
+
+        dadosLocaisGlobal = {};
+        emprestadas.forEach(item => {
+          const loc = item.local_atual || 'Não especificado';
+          dadosLocaisGlobal[loc] = (dadosLocaisGlobal[loc] || 0) + 1;
+        });
+
+        paginaAtualLocais = 0;
         renderChartStatus(disponiveis.length, emprestadas.length, manutencao.length);
+        renderChartLocaisPaginado();
 
       } catch (err) {
-        console.error("Erro na Visão Geral:", err);
+        console.error("Erro na Visão Geral:", err.message);
       }
     }
 
@@ -800,66 +1561,1210 @@
             ${f.nome}
           </td>
           <td class="p-3.5 text-slate-700 font-medium">${f.com_quem_esta || '---'}</td>
-          <td class="p-3.5 text-slate-600">${f.local_atual || '---'}</td>
-          <td class="p-3.5 text-xs text-slate-500 font-mono">${f.desde ? new Date(f.desde).toLocaleString('pt-BR') : '---'}</td>
+          <td class="p-3.5 text-slate-600">
+            <span class="inline-flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-md text-xs">
+              <i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i>
+              ${f.local_atual || '---'}
+            </span>
+          </td>
+          <td class="p-3.5 text-xs text-slate-500 font-mono">
+            ${f.desde ? new Date(f.desde).toLocaleString('pt-BR') : '---'}
+          </td>
         </tr>
       `).join('');
+
+      lucide.createIcons();
+    }
+
+    function filterEmprestadasTable() {
+      const term = document.getElementById('search-emprestadas').value.toLowerCase();
+      const filtradas = cacheEmprestadas.filter(f => 
+        f.id.toLowerCase().includes(term) ||
+        f.nome.toLowerCase().includes(term) ||
+        (f.com_quem_esta && f.com_quem_esta.toLowerCase().includes(term)) ||
+        (f.local_atual && f.local_atual.toLowerCase().includes(term))
+      );
+      renderEmprestadasTable(filtradas);
     }
 
     function renderChartStatus(disponiveis, emprestadas, manutencao) {
-      const ctx = document.getElementById('chart-status').getContext('2d');
+      const ctxStatus = document.getElementById('chart-status').getContext('2d');
       if (chartStatusInstance) chartStatusInstance.destroy();
-      chartStatusInstance = new Chart(ctx, {
+
+      chartStatusInstance = new Chart(ctxStatus, {
         type: 'doughnut',
         data: {
           labels: ['Disponíveis', 'Emprestadas', 'Manutenção'],
-          datasets: [{ data: [disponiveis, emprestadas, manutencao], backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'] }]
+          datasets: [{
+            data: [disponiveis, emprestadas, manutencao],
+            backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+            datalabels: {
+              color: '#ffffff',
+              font: { weight: 'bold', size: 12 },
+              formatter: (value, ctx) => {
+                let sum = 0;
+                let dataArr = ctx.chart.data.datasets[0].data;
+                dataArr.forEach(data => { sum += data; });
+                if (sum === 0 || value === 0) return '';
+                return ((value * 100) / sum).toFixed(0) + "%";
+              }
+            }
+          }
+        }
       });
     }
 
-    // CARREGAMENTO DA TELA RASTREABILIDADE
+    function renderChartLocaisPaginado() {
+      const entries = Object.entries(dadosLocaisGlobal);
+      const totalPaginas = Math.ceil(entries.length / ITENS_POR_PAGINA_GRAFICO) || 1;
+
+      if (paginaAtualLocais >= totalPaginas) paginaAtualLocais = totalPaginas - 1;
+      if (paginaAtualLocais < 0) paginaAtualLocais = 0;
+
+      const inicio = paginaAtualLocais * ITENS_POR_PAGINA_GRAFICO;
+      const paginaEntries = entries.slice(inicio, inicio + ITENS_POR_PAGINA_GRAFICO);
+
+      const labels = paginaEntries.map(e => e[0]);
+      const data = paginaEntries.map(e => e[1]);
+
+      const navEl = document.getElementById('chart-locais-nav');
+      if (entries.length > ITENS_POR_PAGINA_GRAFICO) {
+        navEl.classList.remove('hidden');
+        document.getElementById('chart-locais-page-info').innerText = `Pág. ${paginaAtualLocais + 1}/${totalPaginas}`;
+      } else {
+        navEl.classList.add('hidden');
+      }
+
+      const palette = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#6366f1', '#14b8a6', '#f97316', '#a855f7'];
+      const bgColors = labels.map((_, i) => palette[i % palette.length]);
+
+      const ctxLocais = document.getElementById('chart-locais').getContext('2d');
+      if (chartLocaisInstance) chartLocaisInstance.destroy();
+
+      chartLocaisInstance = new Chart(ctxLocais, {
+        type: 'bar',
+        data: {
+          labels: labels.length ? labels : ['Nenhum empréstimo'],
+          datasets: [{
+            label: 'Ferramentas Emprestadas',
+            data: data.length ? data : [0],
+            backgroundColor: bgColors,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+          }
+        }
+      });
+    }
+
+    function mudarPaginaGraficoLocais(dir) {
+      paginaAtualLocais += dir;
+      renderChartLocaisPaginado();
+    }
+
+    // 4. TELA DE RASTREABILIDADE
     async function loadRastreabilidadeData() {
       try {
-        const { data: ferramentas } = await supabaseClient.from('ferramentas').select('*');
-        cacheRastreabilidade = ferramentas || [];
+        const [resFerramentas, resLocais, resFuncs] = await Promise.all([
+          supabaseClient.from('ferramentas').select('*').order('nome'),
+          supabaseClient.from('locais').select('nome').order('nome'),
+          supabaseClient.from('funcionarios').select('nome').order('nome')
+        ]);
+
+        if (resFerramentas.error) throw resFerramentas.error;
+
+        cacheRastreabilidade = resFerramentas.data || [];
+
+        const selectOrigem = document.getElementById('filter-rastreio-origem');
+        const selectAtual = document.getElementById('filter-rastreio-atual');
+        const selectResp = document.getElementById('filter-rastreio-resp');
+
+        const listaLocaisBase = (resLocais.data || []).map(l => l.nome).filter(Boolean);
+        const origensPresentes = cacheRastreabilidade.map(item => getLocalOrigem(item)).filter(o => o !== 'Não Especificado');
+
+        const conjuntoOrigens = Array.from(new Set([...listaLocaisBase, ...origensPresentes])).sort();
+        const conjuntoLocaisAtuais = Array.from(new Set([...listaLocaisBase, ...cacheRastreabilidade.map(i => i.local_atual).filter(Boolean)])).sort();
+
+        selectOrigem.innerHTML = '<option value="">Todas as Origens</option>';
+        conjuntoOrigens.forEach(loc => {
+          selectOrigem.innerHTML += `<option value="${loc}">${loc}</option>`;
+        });
+
+        selectAtual.innerHTML = '<option value="">Todos os Locais Atuais</option>';
+        conjuntoLocaisAtuais.forEach(loc => {
+          selectAtual.innerHTML += `<option value="${loc}">${loc}</option>`;
+        });
+
+        selectResp.innerHTML = '<option value="">Todos os Responsáveis</option>';
+        (resFuncs.data || []).map(f => f.nome).filter(Boolean).sort().forEach(nome => {
+          selectResp.innerHTML += `<option value="${nome}">${nome}</option>`;
+        });
+
         filterRastreabilidadeData();
       } catch (err) {
-        console.error("Erro na Rastreabilidade:", err);
+        console.error("Erro Rastreabilidade:", err.message);
       }
     }
 
     function filterRastreabilidadeData() {
-      const txt = (document.getElementById('filter-rastreio-texto').value || '').toLowerCase();
+      const txt = document.getElementById('filter-rastreio-texto').value.toLowerCase();
+      const origem = document.getElementById('filter-rastreio-origem').value.toLowerCase();
+      const atual = document.getElementById('filter-rastreio-atual').value.toLowerCase();
+      const resp = document.getElementById('filter-rastreio-resp').value.toLowerCase();
+      const status = document.getElementById('filter-rastreio-status').value;
+
+      const filtrados = cacheRastreabilidade.filter(item => {
+        const localOrigemItem = getLocalOrigem(item);
+        const localAtualItem = item.local_atual || 'Banco de Ferramentas';
+        const respItem = item.com_quem_esta || '';
+
+        const matchTxt = item.id.toLowerCase().includes(txt) || item.nome.toLowerCase().includes(txt);
+        const matchOrigem = !origem || localOrigemItem.toLowerCase() === origem;
+        const matchAtual = !atual || localAtualItem.toLowerCase() === atual;
+        const matchResp = !resp || respItem.toLowerCase() === resp;
+        const matchStatus = !status || item.status === status;
+
+        return matchTxt && matchOrigem && matchAtual && matchResp && matchStatus;
+      });
+
+      renderRastreabilidadeGrid(filtrados);
+    }
+
+    function renderRastreabilidadeGrid(items) {
       const grid = document.getElementById('grid-rastreabilidade');
 
-      const filtrados = cacheRastreabilidade.filter(i => 
-        (i.nome || '').toLowerCase().includes(txt) || (i.id || '').toLowerCase().includes(txt)
-      );
-
-      if (filtrados.length === 0) {
-        grid.innerHTML = '<p class="text-slate-400 text-sm col-span-full text-center py-8">Nenhum equipamento encontrado.</p>';
+      if (!items || items.length === 0) {
+        grid.innerHTML = '<p class="text-slate-400 text-sm col-span-full text-center py-8">Nenhum equipamento encontrado com os filtros selecionados.</p>';
         return;
       }
 
-      grid.innerHTML = filtrados.map(item => `
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${item.id}</span>
-            <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100">${item.status || 'Disponível'}</span>
+      grid.innerHTML = items.map(item => {
+        const localOrigemItem = getLocalOrigem(item);
+        const localAtualItem = item.local_atual || 'Banco de Ferramentas';
+        const estaFora = item.status === 'Emprestado' && localOrigemItem !== 'Não Especificado' && localOrigemItem.toLowerCase() !== localAtualItem.toLowerCase();
+
+        let statusBadge = '';
+        if (item.status === 'Emprestado') {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">Emprestado</span>';
+        } else if (item.status === 'Disponível') {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Disponível</span>';
+        } else {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">Manutenção</span>';
+        }
+
+        return `
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition h-fit">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${item.id}</span>
+                <h4 class="font-bold text-slate-800 text-base mt-1.5 leading-snug">${item.nome}</h4>
+              </div>
+              ${statusBadge}
+            </div>
+
+            <div class="space-y-2 text-xs border-t border-slate-100 pt-3">
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="font-medium text-slate-400 flex items-center gap-1"><i data-lucide="home" class="w-3.5 h-3.5 text-blue-500"></i> Local Pertencente:</span>
+                <span class="font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${localOrigemItem}</span>
+              </div>
+
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="font-medium text-slate-400 flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-500"></i> Onde Está Agora:</span>
+                <span class="font-bold ${estaFora ? 'text-amber-700 bg-amber-50 border border-amber-200' : 'text-slate-700'} px-2 py-0.5 rounded">${localAtualItem}</span>
+              </div>
+
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="font-medium text-slate-400 flex items-center gap-1"><i data-lucide="user" class="w-3.5 h-3.5 text-slate-400"></i> Responsável:</span>
+                <span class="font-bold text-slate-700">${item.com_quem_esta || '---'}</span>
+              </div>
+
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="font-medium text-slate-400 flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i> Desde:</span>
+                <span class="font-mono text-slate-500">${item.desde ? new Date(item.desde).toLocaleString('pt-BR') : '---'}</span>
+              </div>
+            </div>
           </div>
-          <h4 class="font-bold text-slate-800 text-base">${item.nome}</h4>
-          <div class="text-xs text-slate-500 space-y-1 pt-2 border-t border-slate-100">
-            <div><strong class="text-slate-700">Local Padrão:</strong> ${item.local_padrao || 'Não Especificado'}</div>
-            <div><strong class="text-slate-700">Onde está:</strong> ${item.local_atual || 'Banco de Ferramentas'}</div>
-            <div><strong class="text-slate-700">Com quem:</strong> ${item.com_quem_esta || '---'}</div>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
+
+      lucide.createIcons();
     }
 
-    // CARREGAMENTO DA TELA GESTÃO & CADASTROS
+    // 5. TELA DE INDICADORES & BI
+    async function loadIndicadoresData() {
+      try {
+        const [resHist, resFerramentas, resLocais, resFuncs] = await Promise.all([
+          supabaseClient.from('historico').select('*').order('created_at', { ascending: true }),
+          supabaseClient.from('ferramentas').select('id, nome'),
+          supabaseClient.from('locais').select('nome'),
+          supabaseClient.from('funcionarios').select('nome')
+        ]);
+
+        if (resHist.error) throw resHist.error;
+
+        cacheHistoricoGlobal = resHist.data || [];
+
+        initBIDateInputs();
+
+        const selectFer = document.getElementById('filter-bi-ferramenta');
+        selectFer.innerHTML = '<option value="">Todas as Ferramentas</option>';
+        (resFerramentas.data || []).forEach(f => {
+          selectFer.innerHTML += `<option value="${f.nome}">${f.nome} (${f.id})</option>`;
+        });
+
+        const selectLoc = document.getElementById('filter-bi-local');
+        selectLoc.innerHTML = '<option value="">Todos os Locais</option>';
+        (resLocais.data || []).forEach(l => {
+          selectLoc.innerHTML += `<option value="${l.nome}">${l.nome}</option>`;
+        });
+
+        const selectFunc = document.getElementById('filter-bi-funcionario');
+        selectFunc.innerHTML = '<option value="">Todos os Funcionários</option>';
+        (resFuncs.data || []).forEach(f => {
+          selectFunc.innerHTML += `<option value="${f.nome}">${f.nome}</option>`;
+        });
+
+        filterIndicadoresData();
+      } catch (err) {
+        console.error("Erro Indicadores BI:", err.message);
+      }
+    }
+
+    function initBIDateInputs() {
+      const dtInicioEl = document.getElementById('filter-bi-data-inicio');
+      const dtFimEl = document.getElementById('filter-bi-data-fim');
+
+      if (!dtFimEl.value) {
+        const hoje = new Date();
+        dtFimEl.value = hoje.toISOString().split('T')[0];
+      }
+      if (!dtInicioEl.value) {
+        const trintaDiasAtras = new Date();
+        trintaDiasAtras.setDate(trintaDiasAtras.getDate() - 29);
+        dtInicioEl.value = trintaDiasAtras.toISOString().split('T')[0];
+      }
+    }
+
+    function filterIndicadoresData() {
+      initBIDateInputs();
+
+      const dtInicioVal = document.getElementById('filter-bi-data-inicio').value;
+      const dtFimVal = document.getElementById('filter-bi-data-fim').value;
+
+      const dtInicio = dtInicioVal ? new Date(dtInicioVal + 'T00:00:00') : null;
+      const dtFim = dtFimVal ? new Date(dtFimVal + 'T23:59:59') : null;
+
+      const ferFiltro = document.getElementById('filter-bi-ferramenta').value.toLowerCase();
+      const locFiltro = document.getElementById('filter-bi-local').value.toLowerCase();
+      const funcFiltro = document.getElementById('filter-bi-funcionario').value.toLowerCase();
+      const acaoFiltro = document.getElementById('filter-bi-acao').value;
+
+      const filtrados = cacheHistoricoGlobal.filter(h => {
+        const dtItem = new Date(h.created_at);
+        const matchData = (!dtInicio || dtItem >= dtInicio) && (!dtFim || dtItem <= dtFim);
+
+        const nomeFer = (h.nome_ferramenta || h.id_ferramenta || '').toLowerCase();
+        const matchFer = !ferFiltro || nomeFer.includes(ferFiltro);
+
+        const localUso = (h.local_uso || '').toLowerCase();
+        const matchLoc = !locFiltro || localUso === locFiltro;
+
+        const nomeFunc = (h.nome_funcionario || '').toLowerCase();
+        const matchFunc = !funcFiltro || nomeFunc === funcFiltro;
+
+        const matchAcao = !acaoFiltro || h.acao === acaoFiltro;
+
+        return matchData && matchFer && matchLoc && matchFunc && matchAcao;
+      });
+
+      processAndRenderBI(filtrados, dtInicioVal, dtFimVal);
+    }
+
+    function processAndRenderBI(historico, dtInicioVal, dtFimVal) {
+      const contagemFerramentas = {};
+      const contagemLocais = {};
+      const contagemFuncs = {};
+
+      historico.forEach(h => {
+        const fer = h.nome_ferramenta || h.id_ferramenta || 'Não especificada';
+        contagemFerramentas[fer] = (contagemFerramentas[fer] || 0) + 1;
+
+        const loc = h.local_uso || 'Não especificado';
+        contagemLocais[loc] = (contagemLocais[loc] || 0) + 1;
+
+        const func = h.nome_funcionario || 'Não especificado';
+        contagemFuncs[func] = (contagemFuncs[func] || 0) + 1;
+      });
+
+      const isHourly = (dtInicioVal && dtFimVal && dtInicioVal === dtFimVal);
+      const volumeMap = {};
+
+      if (isHourly) {
+        for (let i = 0; i < 24; i++) {
+          const hrKey = String(i).padStart(2, '0') + ':00';
+          volumeMap[hrKey] = 0;
+        }
+
+        historico.forEach(h => {
+          if (h.created_at) {
+            const dt = new Date(h.created_at);
+            if (!isNaN(dt)) {
+              const hrKey = String(dt.getHours()).padStart(2, '0') + ':00';
+              if (volumeMap.hasOwnProperty(hrKey)) {
+                volumeMap[hrKey]++;
+              }
+            }
+          }
+        });
+      } else {
+        let curr = dtInicioVal ? new Date(dtInicioVal + 'T00:00:00') : new Date();
+        const end = dtFimVal ? new Date(dtFimVal + 'T00:00:00') : new Date();
+
+        while (curr <= end) {
+          const y = curr.getFullYear();
+          const m = String(curr.getMonth() + 1).padStart(2, '0');
+          const d = String(curr.getDate()).padStart(2, '0');
+          volumeMap[`${y}-${m}-${d}`] = 0;
+          curr.setDate(curr.getDate() + 1);
+        }
+
+        historico.forEach(h => {
+          if (h.created_at) {
+            const dt = new Date(h.created_at);
+            if (!isNaN(dt)) {
+              const y = dt.getFullYear();
+              const m = String(dt.getMonth() + 1).padStart(2, '0');
+              const d = String(dt.getDate()).padStart(2, '0');
+              const key = `${y}-${m}-${d}`;
+              if (volumeMap.hasOwnProperty(key)) {
+                volumeMap[key]++;
+              }
+            }
+          }
+        });
+      }
+
+      const sortedFer = Object.entries(contagemFerramentas).sort((a,b) => b[1] - a[1]);
+      const sortedLoc = Object.entries(contagemLocais).sort((a,b) => b[1] - a[1]);
+      const sortedFunc = Object.entries(contagemFuncs).sort((a,b) => b[1] - a[1]);
+
+      renderRankingsBI(sortedFer.slice(0, 5), sortedLoc.slice(0, 5), sortedFunc.slice(0, 5));
+      renderTimeSerieBI(volumeMap, isHourly, dtInicioVal, dtFimVal);
+    }
+
+    function renderRankingsBI(topFerramentas, topLocais, topFuncs) {
+      const ctxFer = document.getElementById('chart-bi-top-ferramentas').getContext('2d');
+      if (chartBiTopFerramentasInstance) chartBiTopFerramentasInstance.destroy();
+      chartBiTopFerramentasInstance = new Chart(ctxFer, {
+        type: 'bar',
+        data: {
+          labels: topFerramentas.map(i => i[0]),
+          datasets: [{ label: 'Movimentações', data: topFerramentas.map(i => i[1]), backgroundColor: '#f59e0b', borderRadius: 4 }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, datalabels: { display: false } },
+          scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+      });
+
+      const ctxLoc = document.getElementById('chart-bi-top-locais').getContext('2d');
+      if (chartBiTopLocaisInstance) chartBiTopLocaisInstance.destroy();
+      chartBiTopLocaisInstance = new Chart(ctxLoc, {
+        type: 'bar',
+        data: {
+          labels: topLocais.map(i => i[0]),
+          datasets: [{ label: 'Movimentações', data: topLocais.map(i => i[1]), backgroundColor: '#6366f1', borderRadius: 4 }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, datalabels: { display: false } },
+          scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+      });
+
+      const ctxFunc = document.getElementById('chart-bi-top-funcs').getContext('2d');
+      if (chartBiTopFuncsInstance) chartBiTopFuncsInstance.destroy();
+      chartBiTopFuncsInstance = new Chart(ctxFunc, {
+        type: 'bar',
+        data: {
+          labels: topFuncs.map(i => i[0]),
+          datasets: [{ label: 'Movimentações', data: topFuncs.map(i => i[1]), backgroundColor: '#10b981', borderRadius: 4 }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, datalabels: { display: false } },
+          scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+      });
+    }
+
+    function renderTimeSerieBI(volumeMap, isHourly, dtInicioVal, dtFimVal) {
+      const keys = Object.keys(volumeMap).sort();
+      const labels = isHourly 
+        ? keys 
+        : keys.map(d => d.split('-').reverse().slice(0, 2).join('/'));
+
+      const titleEl = document.getElementById('bi-tempo-title');
+      const subEl = document.getElementById('bi-tempo-subtitle');
+
+      if (titleEl) {
+        titleEl.innerHTML = `<i data-lucide="trending-up" class="w-4 h-4 text-blue-600"></i> ${isHourly ? 'Volume por Hora no Dia' : 'Volume Diário de Movimentações'}`;
+        lucide.createIcons();
+      }
+
+      if (subEl) {
+        const dtIniFmt = dtInicioVal ? dtInicioVal.split('-').reverse().join('/') : '';
+        const dtFimFmt = dtFimVal ? dtFimVal.split('-').reverse().join('/') : '';
+        subEl.innerText = isHourly 
+          ? `Visualização horária para o dia ${dtIniFmt}`
+          : `De ${dtIniFmt} até ${dtFimFmt}`;
+      }
+
+      const ctxTempo = document.getElementById('chart-bi-tempo').getContext('2d');
+      if (chartBiTempoInstance) chartBiTempoInstance.destroy();
+
+      chartBiTempoInstance = new Chart(ctxTempo, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: isHourly ? 'Volume por Hora' : 'Volume no Dia',
+            data: keys.map(k => volumeMap[k]),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.12)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.2,
+            pointRadius: 4,
+            pointBackgroundColor: '#1e3a8a'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, datalabels: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+      });
+    }
+
+    // 6. TELA DE HISTÓRICO GLOBAL
+    async function loadHistoricoData() {
+      try {
+        const [resHist, resFerramentas, resLocais, resFuncs] = await Promise.all([
+          supabaseClient.from('historico').select('*').order('created_at', { ascending: false }),
+          supabaseClient.from('ferramentas').select('id, nome'),
+          supabaseClient.from('locais').select('nome'),
+          supabaseClient.from('funcionarios').select('nome')
+        ]);
+
+        if (resHist.error) throw resHist.error;
+
+        cacheHistoricoGlobal = resHist.data || [];
+
+        initHistDateInputs();
+
+        const selectFer = document.getElementById('filter-hist-ferramenta');
+        selectFer.innerHTML = '<option value="">Todas as Ferramentas</option>';
+        (resFerramentas.data || []).forEach(f => {
+          selectFer.innerHTML += `<option value="${f.nome}">${f.nome} (${f.id})</option>`;
+        });
+
+        const selectLoc = document.getElementById('filter-hist-local');
+        selectLoc.innerHTML = '<option value="">Todos os Locais</option>';
+        (resLocais.data || []).forEach(l => {
+          selectLoc.innerHTML += `<option value="${l.nome}">${l.nome}</option>`;
+        });
+
+        const selectFunc = document.getElementById('filter-hist-funcionario');
+        selectFunc.innerHTML = '<option value="">Todos os Funcionários</option>';
+        (resFuncs.data || []).forEach(f => {
+          selectFunc.innerHTML += `<option value="${f.nome}">${f.nome}</option>`;
+        });
+
+        filterHistoricoData();
+      } catch (err) {
+        console.error("Erro no Histórico Global:", err.message);
+      }
+    }
+
+    function initHistDateInputs() {
+      const dtInicioEl = document.getElementById('filter-hist-data-inicio');
+      const dtFimEl = document.getElementById('filter-hist-data-fim');
+
+      if (!dtFimEl.value) {
+        const hoje = new Date();
+        dtFimEl.value = hoje.toISOString().split('T')[0];
+      }
+      if (!dtInicioEl.value) {
+        const trintaDiasAtras = new Date();
+        trintaDiasAtras.setDate(trintaDiasAtras.getDate() - 29);
+        dtInicioEl.value = trintaDiasAtras.toISOString().split('T')[0];
+      }
+    }
+
+    function filterHistoricoData() {
+      initHistDateInputs();
+
+      const dtInicioVal = document.getElementById('filter-hist-data-inicio').value;
+      const dtFimVal = document.getElementById('filter-hist-data-fim').value;
+
+      const dtInicio = dtInicioVal ? new Date(dtInicioVal + 'T00:00:00') : null;
+      const dtFim = dtFimVal ? new Date(dtFimVal + 'T23:59:59') : null;
+
+      const txt = document.getElementById('filter-hist-texto').value.toLowerCase();
+      const ferFiltro = document.getElementById('filter-hist-ferramenta').value.toLowerCase();
+      const locFiltro = document.getElementById('filter-hist-local').value.toLowerCase();
+      const funcFiltro = document.getElementById('filter-hist-funcionario').value.toLowerCase();
+      const acaoFiltro = document.getElementById('filter-hist-acao').value;
+
+      const filtrados = cacheHistoricoGlobal.filter(h => {
+        const dtItem = new Date(h.created_at);
+        const matchData = (!dtInicio || dtItem >= dtInicio) && (!dtFim || dtItem <= dtFim);
+
+        const nomeFer = (h.nome_ferramenta || h.id_ferramenta || '').toLowerCase();
+        const idFer = (h.id_ferramenta || '').toLowerCase();
+        const nomeFunc = (h.nome_funcionario || '').toLowerCase();
+        const localUso = (h.local_uso || '').toLowerCase();
+
+        const matchTxt = !txt || nomeFer.includes(txt) || idFer.includes(txt) || nomeFunc.includes(txt) || localUso.includes(txt);
+        const matchFer = !ferFiltro || nomeFer.includes(ferFiltro);
+        const matchLoc = !locFiltro || localUso === locFiltro;
+        const matchFunc = !funcFiltro || nomeFunc === funcFiltro;
+        const matchAcao = !acaoFiltro || h.acao === acaoFiltro;
+
+        return matchData && matchTxt && matchFer && matchLoc && matchAcao;
+      });
+
+      renderHistoricoTable(filtrados);
+    }
+
+    function renderHistoricoTable(items) {
+      const tbody = document.getElementById('table-historico-body');
+      const badgeCount = document.getElementById('hist-count-badge');
+
+      if (badgeCount) {
+        badgeCount.innerText = `${items.length} ${items.length === 1 ? 'Registro Encontrado' : 'Registros Encontrados'}`;
+      }
+
+      if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400">Nenhum registro de histórico encontrado com os filtros selecionados.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = items.map(h => {
+        const isRetirada = h.acao === 'Retirada';
+        const acaoBadge = isRetirada
+          ? '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">Retirada</span>'
+          : '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Devolução</span>';
+
+        return `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3.5 text-xs text-slate-500 font-mono">
+              ${h.created_at ? new Date(h.created_at).toLocaleString('pt-BR') : '---'}
+            </td>
+            <td class="p-3.5">${acaoBadge}</td>
+            <td class="p-3.5 font-bold text-slate-800">
+              <span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-xs mr-2 border border-blue-100">${h.id_ferramenta || '---'}</span>
+              ${h.nome_ferramenta || 'Não especificada'}
+            </td>
+            <td class="p-3.5 text-slate-700 font-medium">${h.nome_funcionario || '---'}</td>
+            <td class="p-3.5 text-slate-600">
+              <span class="inline-flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-md text-xs">
+                <i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i>
+                ${h.local_uso || '---'}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // 7. TELA DE DOSSIÊ DO FUNCIONÁRIO
+    async function loadFuncionariosDossierData() {
+      try {
+        const { data: funcs, error } = await supabaseClient.from('funcionarios').select('*').order('nome');
+        if (error) throw error;
+
+        cacheFuncionariosList = funcs || [];
+        const selectEl = document.getElementById('select-dossier-funcionario');
+
+        if (cacheFuncionariosList.length === 0) {
+          selectEl.innerHTML = '<option value="">Nenhum funcionário encontrado</option>';
+          return;
+        }
+
+        const currentVal = selectEl.value;
+        selectEl.innerHTML = cacheFuncionariosList.map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
+
+        if (currentVal && cacheFuncionariosList.some(f => f.id === currentVal)) {
+          selectEl.value = currentVal;
+        } else {
+          selectEl.value = cacheFuncionariosList[0].id;
+        }
+
+        await renderFuncionarioDossier();
+      } catch (err) {
+        console.error("Erro no Dossiê Funcionário:", err.message);
+      }
+    }
+
+    async function onSelectFuncionarioDossierChange() {
+      await renderFuncionarioDossier();
+    }
+
+    async function renderFuncionarioDossier() {
+      const selectEl = document.getElementById('select-dossier-funcionario');
+      const funcId = selectEl.value;
+      if (!funcId) return;
+
+      const func = cacheFuncionariosList.find(f => f.id === funcId);
+      if (!func) return;
+
+      document.getElementById('func-dossier-nome').innerText = func.nome || 'Não Informado';
+      document.getElementById('func-dossier-matricula').innerText = func.matricula || func.id_matricula || func.id || '---';
+      document.getElementById('func-dossier-local').innerText = func.local || func.setor || '---';
+      document.getElementById('func-dossier-email').innerText = func.email || '---';
+      document.getElementById('func-dossier-nivel').innerText = func.nivel_acesso || 'Usuário';
+      document.getElementById('func-dossier-cargo').innerText = func.cargo || '---';
+
+      const fotoImg = document.getElementById('func-dossier-foto');
+      const fotoPlaceholder = document.getElementById('func-dossier-foto-placeholder');
+      if (func.foto_url) {
+        fotoImg.src = func.foto_url;
+        fotoImg.classList.remove('hidden');
+        fotoPlaceholder.classList.add('hidden');
+      } else {
+        fotoImg.classList.add('hidden');
+        fotoPlaceholder.classList.remove('hidden');
+      }
+
+      const { data: posse } = await supabaseClient
+        .from('ferramentas')
+        .select('*')
+        .eq('status', 'Emprestado')
+        .ilike('com_quem_esta', func.nome);
+
+      const listaPosse = posse || [];
+      document.getElementById('func-posse-count').innerText = listaPosse.length;
+
+      const tbodyPosse = document.getElementById('table-func-posse-body');
+      if (listaPosse.length === 0) {
+        tbodyPosse.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhuma ferramenta em posse no momento.</td></tr>';
+      } else {
+        tbodyPosse.innerHTML = listaPosse.map(item => `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 font-bold text-slate-800">${item.nome}</td>
+            <td class="p-3 font-mono text-blue-600 font-bold">${item.id}</td>
+            <td class="p-3 text-slate-600">${item.local_atual || '---'}</td>
+            <td class="p-3 text-xs text-slate-500 font-mono">${item.desde ? new Date(item.desde).toLocaleString('pt-BR') : '---'}</td>
+          </tr>
+        `).join('');
+      }
+
+      const { data: hist } = await supabaseClient
+        .from('historico')
+        .select('*')
+        .ilike('nome_funcionario', func.nome)
+        .order('created_at', { ascending: false });
+
+      cacheSelectedFuncHist = hist || [];
+
+      const ferOptions = Array.from(new Set(cacheSelectedFuncHist.map(h => h.nome_ferramenta || h.id_ferramenta).filter(Boolean))).sort();
+      const locOptions = Array.from(new Set(cacheSelectedFuncHist.map(h => h.local_uso).filter(Boolean))).sort();
+
+      const selectFerHist = document.getElementById('filter-func-hist-ferramenta');
+      selectFerHist.innerHTML = '<option value="">Todas</option>';
+      ferOptions.forEach(f => { selectFerHist.innerHTML += `<option value="${f}">${f}</option>`; });
+
+      const selectLocHist = document.getElementById('filter-func-hist-local');
+      selectLocHist.innerHTML = '<option value="">Todos</option>';
+      locOptions.forEach(l => { selectLocHist.innerHTML += `<option value="${l}">${l}</option>`; });
+
+      filterFuncionarioHistory();
+    }
+
+    function filterFuncionarioHistory() {
+      const dtInicioVal = document.getElementById('filter-func-hist-inicio').value;
+      const dtFimVal = document.getElementById('filter-func-hist-fim').value;
+
+      const dtInicio = dtInicioVal ? new Date(dtInicioVal + 'T00:00:00') : null;
+      const dtFim = dtFimVal ? new Date(dtFimVal + 'T23:59:59') : null;
+
+      const ferFiltro = document.getElementById('filter-func-hist-ferramenta').value.toLowerCase();
+      const locFiltro = document.getElementById('filter-func-hist-local').value.toLowerCase();
+      const acaoFiltro = document.getElementById('filter-func-hist-acao').value;
+
+      const filtrados = cacheSelectedFuncHist.filter(h => {
+        const dtItem = new Date(h.created_at);
+        const matchData = (!dtInicio || dtItem >= dtInicio) && (!dtFim || dtItem <= dtFim);
+
+        const nomeFer = (h.nome_ferramenta || h.id_ferramenta || '').toLowerCase();
+        const localUso = (h.local_uso || '').toLowerCase();
+
+        const matchFer = !ferFiltro || nomeFer === ferFiltro;
+        const matchLoc = !locFiltro || localUso === locFiltro;
+        const matchAcao = !acaoFiltro || h.acao === acaoFiltro;
+
+        return matchData && matchFer && matchLoc && matchAcao;
+      });
+
+      const tbody = document.getElementById('table-func-hist-body');
+      const countInfo = document.getElementById('func-hist-count-info');
+
+      if (countInfo) {
+        countInfo.innerText = `Mostrando 1 a ${filtrados.length} de ${filtrados.length} registros`;
+      }
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhum registro encontrado no histórico.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtrados.map(h => {
+        const isRetirada = h.acao === 'Retirada';
+        const acaoBadge = isRetirada
+          ? '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">Retirada</span>'
+          : '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Devolução</span>';
+
+        return `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 text-xs text-slate-500 font-mono">
+              ${h.created_at ? new Date(h.created_at).toLocaleString('pt-BR') : '---'}
+            </td>
+            <td class="p-3 font-bold text-slate-800">
+              <span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-xs mr-2 border border-blue-100">${h.id_ferramenta || '---'}</span>
+              ${h.nome_ferramenta || '---'}
+            </td>
+            <td class="p-3 text-slate-600">${h.local_uso || '---'}</td>
+            <td class="p-3">${acaoBadge}</td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // 8. TELA DE FICHA FERRAMENTA
+    async function loadFerramentasFichaData() {
+      try {
+        const { data: fers, error } = await supabaseClient.from('ferramentas').select('*').order('nome');
+        if (error) throw error;
+
+        cacheFerramentasList = fers || [];
+        const selectEl = document.getElementById('select-ficha-ferramenta');
+
+        if (cacheFerramentasList.length === 0) {
+          selectEl.innerHTML = '<option value="">Nenhuma ferramenta encontrada</option>';
+          return;
+        }
+
+        const currentVal = selectEl.value;
+        selectEl.innerHTML = cacheFerramentasList.map(f => `<option value="${f.id}">${f.nome} (${f.id})</option>`).join('');
+
+        if (currentVal && cacheFerramentasList.some(f => f.id === currentVal)) {
+          selectEl.value = currentVal;
+        } else {
+          selectEl.value = cacheFerramentasList[0].id;
+        }
+
+        await renderFerramentaFicha();
+      } catch (err) {
+        console.error("Erro na Ficha Ferramenta:", err.message);
+      }
+    }
+
+    async function onSelectFerramentaFichaChange() {
+      await renderFerramentaFicha();
+    }
+
+    async function renderFerramentaFicha() {
+      const selectEl = document.getElementById('select-ficha-ferramenta');
+      const ferId = selectEl.value;
+      if (!ferId) return;
+
+      const fer = cacheFerramentasList.find(f => f.id === ferId);
+      if (!fer) return;
+
+      document.getElementById('fer-ficha-nome').innerText = fer.nome || 'Não Informado';
+      document.getElementById('fer-ficha-patrimonio').innerText = fer.id || '---';
+      document.getElementById('fer-ficha-categoria').innerText = fer.categoria || 'Geral';
+      document.getElementById('fer-ficha-marca').innerText = fer.marca || '---';
+      document.getElementById('fer-ficha-modelo').innerText = fer.modelo || '---';
+      document.getElementById('fer-ficha-origem').innerText = getLocalOrigem(fer);
+      document.getElementById('fer-ficha-atual').innerText = fer.local_atual || 'Banco de Ferramentas';
+
+      const statusEl = document.getElementById('fer-ficha-status');
+      if (fer.status === 'Emprestado') {
+        statusEl.innerText = 'Emprestada';
+        statusEl.className = 'px-2.5 py-0.5 rounded-full font-bold text-[11px] bg-amber-100 text-amber-800 border border-amber-200';
+      } else if (fer.status === 'Disponível') {
+        statusEl.innerText = 'Disponível';
+        statusEl.className = 'px-2.5 py-0.5 rounded-full font-bold text-[11px] bg-emerald-100 text-emerald-800 border border-emerald-200';
+      } else {
+        statusEl.innerText = 'Em Manutenção';
+        statusEl.className = 'px-2.5 py-0.5 rounded-full font-bold text-[11px] bg-rose-100 text-rose-800 border border-rose-200';
+      }
+
+      const fotoImg = document.getElementById('fer-ficha-foto');
+      const fotoPlaceholder = document.getElementById('fer-ficha-foto-placeholder');
+      if (fer.foto_url) {
+        fotoImg.src = fer.foto_url;
+        fotoImg.classList.remove('hidden');
+        fotoPlaceholder.classList.add('hidden');
+      } else {
+        fotoImg.classList.add('hidden');
+        fotoPlaceholder.classList.remove('hidden');
+      }
+
+      const respNomeEl = document.getElementById('fer-resp-nome');
+      const respMatEl = document.getElementById('fer-resp-matricula');
+      const respRetiradaEl = document.getElementById('fer-resp-retirada');
+      const respLocalEl = document.getElementById('fer-resp-local');
+      const respFotoImg = document.getElementById('fer-resp-foto');
+      const respFotoIcon = document.getElementById('fer-resp-icon');
+
+      if (fer.status === 'Emprestado' && fer.com_quem_esta) {
+        respNomeEl.innerText = fer.com_quem_esta;
+        respRetiradaEl.innerText = fer.desde ? new Date(fer.desde).toLocaleString('pt-BR') : '---';
+        respLocalEl.innerText = fer.local_atual || '---';
+
+        const { data: funcResp } = await supabaseClient
+          .from('funcionarios')
+          .select('*')
+          .ilike('nome', fer.com_quem_esta)
+          .maybeSingle();
+
+        if (funcResp) {
+          respMatEl.innerText = `Matrícula: ${funcResp.matricula || funcResp.id_matricula || funcResp.id}`;
+          if (funcResp.foto_url) {
+            respFotoImg.src = funcResp.foto_url;
+            respFotoImg.classList.remove('hidden');
+            respFotoIcon.classList.add('hidden');
+          } else {
+            respFotoImg.classList.add('hidden');
+            respFotoIcon.classList.remove('hidden');
+          }
+        } else {
+          respMatEl.innerText = 'Funcionário em trânsito';
+          respFotoImg.classList.add('hidden');
+          respFotoIcon.classList.remove('hidden');
+        }
+      } else {
+        respNomeEl.innerText = 'Nenhum responsável atualmente';
+        respMatEl.innerText = fer.status === 'Manutenção' ? 'Equipamento em manutenção' : 'Disponível no almoxarifado';
+        respRetiradaEl.innerText = '---';
+        respLocalEl.innerText = fer.local_atual || 'Banco de Ferramentas';
+        respFotoImg.classList.add('hidden');
+        respFotoIcon.classList.remove('hidden');
+      }
+
+      const { data: hist } = await supabaseClient
+        .from('historico')
+        .select('*')
+        .or(`id_ferramenta.eq.${fer.id},nome_ferramenta.ilike.${fer.nome}`)
+        .order('created_at', { ascending: false });
+
+      cacheSelectedFerHist = hist || [];
+
+      const funcOptions = Array.from(new Set(cacheSelectedFerHist.map(h => h.nome_funcionario).filter(Boolean))).sort();
+      const locOptions = Array.from(new Set(cacheSelectedFerHist.map(h => h.local_uso).filter(Boolean))).sort();
+
+      const selectFuncHist = document.getElementById('filter-fer-hist-funcionario');
+      selectFuncHist.innerHTML = '<option value="">Todos</option>';
+      funcOptions.forEach(f => { selectFuncHist.innerHTML += `<option value="${f}">${f}</option>`; });
+
+      const selectLocHist = document.getElementById('filter-fer-hist-local');
+      selectLocHist.innerHTML = '<option value="">Todos</option>';
+      locOptions.forEach(l => { selectLocHist.innerHTML += `<option value="${l}">${l}</option>`; });
+
+      filterFerramentaHistory();
+    }
+
+    function filterFerramentaHistory() {
+      const dtInicioVal = document.getElementById('filter-fer-hist-inicio').value;
+      const dtFimVal = document.getElementById('filter-fer-hist-fim').value;
+
+      const dtInicio = dtInicioVal ? new Date(dtInicioVal + 'T00:00:00') : null;
+      const dtFim = dtFimVal ? new Date(dtFimVal + 'T23:59:59') : null;
+
+      const funcFiltro = document.getElementById('filter-fer-hist-funcionario').value.toLowerCase();
+      const locFiltro = document.getElementById('filter-fer-hist-local').value.toLowerCase();
+      const acaoFiltro = document.getElementById('filter-fer-hist-acao').value;
+
+      const filtrados = cacheSelectedFerHist.filter(h => {
+        const dtItem = new Date(h.created_at);
+        const matchData = (!dtInicio || dtItem >= dtInicio) && (!dtFim || dtItem <= dtFim);
+
+        const nomeFunc = (h.nome_funcionario || '').toLowerCase();
+        const localUso = (h.local_uso || '').toLowerCase();
+
+        const matchFunc = !funcFiltro || nomeFunc === funcFiltro;
+        const matchLoc = !locFiltro || localUso === locFiltro;
+        const matchAcao = !acaoFiltro || h.acao === acaoFiltro;
+
+        return matchData && matchFunc && matchLoc && matchAcao;
+      });
+
+      const tbody = document.getElementById('table-fer-hist-body');
+      const countInfo = document.getElementById('fer-hist-count-info');
+
+      if (countInfo) {
+        countInfo.innerText = `Mostrando 1 a ${filtrados.length} de ${filtrados.length} registros`;
+      }
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhum registro encontrado no histórico.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtrados.map(h => {
+        const isRetirada = h.acao === 'Retirada';
+        const acaoBadge = isRetirada
+          ? '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">Retirada</span>'
+          : '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Devolução</span>';
+
+        return `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 text-xs text-slate-500 font-mono">
+              ${h.created_at ? new Date(h.created_at).toLocaleString('pt-BR') : '---'}
+            </td>
+            <td class="p-3 text-slate-700 font-medium">${h.nome_funcionario || '---'}</td>
+            <td class="p-3 text-slate-600">${h.local_uso || '---'}</td>
+            <td class="p-3">${acaoBadge}</td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // 9. TELA DE DETALHES DO LOCAL
+    async function loadLocaisData() {
+      try {
+        const { data: locais, error } = await supabaseClient.from('locais').select('*').order('nome');
+        if (error) throw error;
+
+        cacheLocaisList = locais || [];
+        const selectEl = document.getElementById('select-detalhes-local');
+
+        if (cacheLocaisList.length === 0) {
+          selectEl.innerHTML = '<option value="">Nenhum local cadastrado</option>';
+          return;
+        }
+
+        const currentVal = selectEl.value;
+        selectEl.innerHTML = cacheLocaisList.map(l => `<option value="${l.id}">${l.nome}</option>`).join('');
+
+        if (currentVal && cacheLocaisList.some(l => l.id === currentVal)) {
+          selectEl.value = currentVal;
+        } else {
+          selectEl.value = cacheLocaisList[0].id;
+        }
+
+        await renderLocalDetails();
+      } catch (err) {
+        console.error("Erro ao carregar locais:", err.message);
+      }
+    }
+
+    async function onSelectLocalDetailsChange() {
+      await renderLocalDetails();
+    }
+
+    async function renderLocalDetails() {
+      const selectEl = document.getElementById('select-detalhes-local');
+      const localId = selectEl.value;
+      if (!localId) return;
+
+      const localObj = cacheLocaisList.find(l => l.id === localId);
+      if (!localObj) return;
+
+      const targetNome = (localObj.nome || '').toLowerCase().trim();
+
+      document.getElementById('local-detalhes-nome').innerText = localObj.nome || 'Não Informado';
+      document.getElementById('local-detalhes-descricao').innerText = localObj.descricao || 'Nenhuma descrição detalhada cadastrada.';
+      document.getElementById('local-detalhes-codigo').innerText = localObj.id || localObj.codigo || '---';
+      document.getElementById('local-detalhes-tipo').innerText = localObj.tipo || 'Setor / Oficina';
+      document.getElementById('local-detalhes-responsavel').innerText = localObj.responsavel || localObj.com_quem_esta || '---';
+      document.getElementById('local-detalhes-unidade').innerText = localObj.unidade || 'SENAI';
+
+      const fotoImg = document.getElementById('local-detalhes-foto');
+      const fotoPlaceholder = document.getElementById('local-detalhes-foto-placeholder');
+      if (localObj.foto_url) {
+        fotoImg.src = localObj.foto_url;
+        fotoImg.classList.remove('hidden');
+        fotoPlaceholder.classList.add('hidden');
+      } else {
+        fotoImg.classList.add('hidden');
+        fotoPlaceholder.classList.remove('hidden');
+      }
+
+      const { data: allFuncs } = await supabaseClient.from('funcionarios').select('*').order('nome');
+      const listaFuncs = (allFuncs || []).filter(f => {
+        const loc = (f.local || f.setor || f.oficina || f.local_nome || '').toLowerCase().trim();
+        return loc === targetNome || loc.includes(targetNome) || targetNome.includes(loc);
+      });
+
+      document.getElementById('local-funcs-count').innerText = listaFuncs.length;
+
+      const tbodyFuncs = document.getElementById('table-local-funcs-body');
+      if (listaFuncs.length === 0) {
+        tbodyFuncs.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-slate-400">Nenhum funcionário vinculado a este local.</td></tr>';
+      } else {
+        tbodyFuncs.innerHTML = listaFuncs.map(f => `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 font-bold text-slate-800">${f.nome}</td>
+            <td class="p-3 text-slate-600 font-medium">${f.cargo || '---'}</td>
+          </tr>
+        `).join('');
+      }
+
+      const { data: allFers } = await supabaseClient.from('ferramentas').select('*').order('nome');
+      const listaFers = (allFers || []).filter(item => {
+        const locOrigem = getLocalOrigem(item).toLowerCase().trim();
+        const locAtual = (item.local_atual || '').toLowerCase().trim();
+        return locOrigem === targetNome || locAtual === targetNome || locOrigem.includes(targetNome);
+      });
+
+      document.getElementById('local-fers-count').innerText = listaFers.length;
+
+      const tbodyFers = document.getElementById('table-local-fers-body');
+      if (listaFers.length === 0) {
+        tbodyFers.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">Nenhuma ferramenta pertencente a este local.</td></tr>';
+      } else {
+        tbodyFers.innerHTML = listaFers.map(item => {
+          let badgeStatus = '';
+          if (item.status === 'Emprestado') {
+            badgeStatus = '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">Emprestada</span>';
+          } else if (item.status === 'Disponível') {
+            badgeStatus = '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Disponível</span>';
+          } else {
+            badgeStatus = '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">Manutenção</span>';
+          }
+
+          return `
+            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+              <td class="p-3 font-bold text-slate-800">
+                <span class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-[11px] mr-1 border border-blue-100">${item.id}</span>
+                ${item.nome}
+              </td>
+              <td class="p-3 text-slate-600 font-medium">${item.local_atual || localObj.nome}</td>
+              <td class="p-3">${badgeStatus}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      const { data: allHist } = await supabaseClient.from('historico').select('*').order('created_at', { ascending: false });
+      cacheSelectedLocalHist = (allHist || []).filter(h => {
+        const locUso = (h.local_uso || '').toLowerCase().trim();
+        return locUso === targetNome || locUso.includes(targetNome);
+      });
+
+      const funcOpts = Array.from(new Set(cacheSelectedLocalHist.map(h => h.nome_funcionario).filter(Boolean))).sort();
+      const ferOpts = Array.from(new Set(cacheSelectedLocalHist.map(h => h.nome_ferramenta || h.id_ferramenta).filter(Boolean))).sort();
+
+      const selectFuncHist = document.getElementById('filter-local-hist-funcionario');
+      selectFuncHist.innerHTML = '<option value="">Todos</option>';
+      funcOpts.forEach(f => { selectFuncHist.innerHTML += `<option value="${f}">${f}</option>`; });
+
+      const selectFerHist = document.getElementById('filter-local-hist-ferramenta');
+      selectFerHist.innerHTML = '<option value="">Todas</option>';
+      ferOpts.forEach(f => { selectFerHist.innerHTML += `<option value="${f}">${f}</option>`; });
+
+      filterLocalHistory();
+    }
+
+    function filterLocalHistory() {
+      const dtInicioVal = document.getElementById('filter-local-hist-inicio').value;
+      const dtFimVal = document.getElementById('filter-local-hist-fim').value;
+
+      const dtInicio = dtInicioVal ? new Date(dtInicioVal + 'T00:00:00') : null;
+      const dtFim = dtFimVal ? new Date(dtFimVal + 'T23:59:59') : null;
+
+      const funcFiltro = document.getElementById('filter-local-hist-funcionario').value.toLowerCase();
+      const ferFiltro = document.getElementById('filter-local-hist-ferramenta').value.toLowerCase();
+      const acaoFiltro = document.getElementById('filter-local-hist-acao').value;
+
+      const filtrados = cacheSelectedLocalHist.filter(h => {
+        const dtItem = new Date(h.created_at);
+        const matchData = (!dtInicio || dtItem >= dtInicio) && (!dtFim || dtItem <= dtFim);
+
+        const nomeFunc = (h.nome_funcionario || '').toLowerCase();
+        const nomeFer = (h.nome_ferramenta || h.id_ferramenta || '').toLowerCase();
+
+        const matchFunc = !funcFiltro || nomeFunc === funcFiltro;
+        const matchFer = !ferFiltro || nomeFer === ferFiltro;
+        const matchAcao = !acaoFiltro || h.acao === acaoFiltro;
+
+        return matchData && matchFunc && matchFer && matchAcao;
+      });
+
+      const tbody = document.getElementById('table-local-hist-body');
+      const countInfo = document.getElementById('local-hist-count-info');
+
+      if (countInfo) {
+        countInfo.innerText = `Mostrando 1 a ${filtrados.length} de ${filtrados.length} registros`;
+      }
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhum registro encontrado no histórico do local.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtrados.map(h => {
+        const isRetirada = h.acao === 'Retirada';
+        const acaoBadge = isRetirada
+          ? '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">Retirada</span>'
+          : '<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Devolução</span>';
+
+        return `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 text-xs text-slate-500 font-mono">
+              ${h.created_at ? new Date(h.created_at).toLocaleString('pt-BR') : '---'}
+            </td>
+            <td class="p-3 text-slate-700 font-medium">${h.nome_funcionario || '---'}</td>
+            <td class="p-3 font-bold text-slate-800">
+              <span class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs mr-1 border border-blue-100">${h.id_ferramenta || '---'}</span>
+              ${h.nome_ferramenta || '---'}
+            </td>
+            <td class="p-3">${acaoBadge}</td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // 10. TELA DE GESTÃO & CADASTROS
     async function loadGestaoData() {
       if (cacheLocaisList.length === 0) {
         const { data: locs } = await supabaseClient.from('locais').select('*').order('nome');
@@ -880,9 +2785,15 @@
     function switchGestaoSubTab(subTab) {
       currentGestaoSubTab = subTab;
 
-      document.querySelectorAll('[id^="subtab-gestao-"]').forEach(btn => btn.classList.remove('subtab-active'));
+      document.querySelectorAll('[id^="subtab-gestao-"]').forEach(btn => {
+        btn.classList.remove('subtab-active');
+        btn.classList.add('hover:text-slate-800');
+      });
+
       const activeBtn = document.getElementById(`subtab-gestao-${subTab}`);
-      if (activeBtn) activeBtn.classList.add('subtab-active');
+      if (activeBtn) {
+        activeBtn.classList.add('subtab-active');
+      }
 
       const listTitle = document.getElementById('gestao-list-title');
       const btnNovoLabel = document.getElementById('gestao-btn-novo-label');
@@ -900,99 +2811,6 @@
 
       filterGestaoList();
       openGestaoFormNew();
-    }
-
-    function renderGestaoDynamicInputs(item) {
-      const container = document.getElementById('gestao-dynamic-inputs');
-      const myRole = (currentUserProfile?.nivel_acesso || '').toLowerCase();
-
-      if (currentGestaoSubTab === 'funcionarios') {
-        const locaisOptions = cacheLocaisList.map(l => 
-          `<option value="${l.nome}" data-id="${l.id}" ${item && item.local_nome === l.nome ? 'selected' : ''}>${l.nome}</option>`
-        ).join('');
-
-        container.innerHTML = `
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Nome completo</label>
-            <input type="text" id="g-func-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: João Silva" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">E-mail (@senai.br)</label>
-            <input type="email" id="g-func-email" required value="${item ? item.email || '' : ''}" placeholder="joao@senai.br" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Matrícula</label>
-              <input type="text" id="g-func-matricula" required value="${item ? item.matricula || '' : ''}" placeholder="FUN-001" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono">
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Cargo</label>
-              <input type="text" id="g-func-cargo" value="${item ? item.cargo || '' : ''}" placeholder="Eletricista" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Setor</label>
-              <input type="text" id="g-func-setor" value="${item ? item.setor || '' : ''}" placeholder="Elétrica" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Local</label>
-              <select id="g-func-local-nome" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
-                <option value="">Selecione...</option>
-                ${locaisOptions}
-              </select>
-            </div>
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Nível de acesso</label>
-            <select id="g-func-nivel" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
-              <option value="funcionario" ${item && (item.nivel_acesso === 'funcionario' || item.nivel_acesso === 'Funcionário') ? 'selected' : ''}>Funcionário (Acesso Painel)</option>
-              <option value="sem_acesso" ${item && (item.nivel_acesso === 'sem_acesso' || item.nivel_acesso === 'Sem Acesso') ? 'selected' : ''}>Sem Acesso (Apenas Operacional)</option>
-              <option value="administrador" ${item && (item.nivel_acesso === 'administrador' || item.nivel_acesso === 'Administrador') ? 'selected' : ''}>Administrador</option>
-              <option value="master" ${item && (item.nivel_acesso === 'master' || item.nivel_acesso === 'Master') ? 'selected' : ''} ${myRole !== 'master' ? 'disabled' : ''}>Master</option>
-            </select>
-          </div>
-        `;
-      } else if (currentGestaoSubTab === 'ferramentas') {
-        const locaisOptions = cacheLocaisList.map(l => 
-          `<option value="${l.nome}" ${item && item.local_padrao === l.nome ? 'selected' : ''}>${l.nome}</option>`
-        ).join('');
-
-        container.innerHTML = `
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Nome da ferramenta</label>
-            <input type="text" id="g-fer-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: Multímetro Digital" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Patrimônio / Código</label>
-              <input type="text" id="g-fer-id" required ${item ? 'readonly' : ''} value="${item ? item.id || '' : ''}" placeholder="FER-001" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono ${item ? 'bg-slate-100' : ''}">
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 uppercase mb-1">Categoria</label>
-              <input type="text" id="g-fer-categoria" value="${item ? item.categoria || '' : ''}" placeholder="Medição" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-            </div>
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Local padrão</label>
-            <select id="g-fer-padrao" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
-              <option value="">Selecione o local padrão...</option>
-              ${locaisOptions}
-            </select>
-          </div>
-        `;
-      } else if (currentGestaoSubTab === 'locais') {
-        container.innerHTML = `
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Nome do local</label>
-            <input type="text" id="g-loc-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: Laboratório de Elétrica" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Descrição</label>
-            <textarea id="g-loc-descricao" rows="3" placeholder="Descrição da área..." class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">${item ? item.descricao || '' : ''}</textarea>
-          </div>
-        `;
-      }
     }
 
     function filterGestaoList() {
@@ -1030,7 +2848,7 @@
           } else if (nivel === 'administrador') {
             nivelBadge = '<span class="text-blue-800 bg-blue-100 px-2 py-0.5 rounded text-xs font-bold border border-blue-200">Administrador</span>';
           } else if (nivel === 'sem_acesso' || nivel === 'sem acesso') {
-            nivelBadge = '<span class="text-slate-500 bg-slate-200 px-2 py-0.5 rounded text-xs font-semibold">Sem Acesso</span>';
+            nivelBadge = '<span class="text-red-800 bg-red-100 px-2 py-0.5 rounded text-xs font-bold border border-red-200">Sem Acesso</span>';
           }
 
           return `
@@ -1056,25 +2874,42 @@
       } else if (currentGestaoSubTab === 'ferramentas') {
         thead.innerHTML = `
           <tr>
-            <th class="p-3 bg-slate-100">Código</th>
-            <th class="p-3 bg-slate-100">Nome</th>
+            <th class="p-3 bg-slate-100">Código / Ferramenta</th>
             <th class="p-3 bg-slate-100">Categoria</th>
             <th class="p-3 bg-slate-100">Local Padrão</th>
+            <th class="p-3 bg-slate-100">Status</th>
             <th class="p-3 bg-slate-100 text-right">Ação</th>
           </tr>
         `;
-        const filtrados = cacheFerramentasList.filter(fer => (fer.nome || '').toLowerCase().includes(term));
+
+        const filtrados = cacheFerramentasList.filter(fer => 
+          (fer.nome || '').toLowerCase().includes(term) ||
+          (fer.id || '').toLowerCase().includes(term) ||
+          (fer.categoria || '').toLowerCase().includes(term)
+        );
+
+        if (filtrados.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhuma ferramenta encontrada.</td></tr>';
+          return;
+        }
+
         tbody.innerHTML = filtrados.map(fer => `
           <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-            <td class="p-3 font-mono font-bold text-blue-600">${fer.id}</td>
-            <td class="p-3 font-bold text-slate-800">${fer.nome}</td>
+            <td class="p-3 font-bold text-slate-800">
+              <span class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs mr-1 border border-blue-100 font-mono">${fer.id}</span>
+              ${fer.nome}
+            </td>
             <td class="p-3 text-slate-600">${fer.categoria || 'Geral'}</td>
             <td class="p-3 text-slate-600">${fer.local_padrao || 'Não Especificado'}</td>
+            <td class="p-3 text-xs font-semibold">${fer.status || 'Disponível'}</td>
             <td class="p-3 text-right">
-              <button onclick="editGestaoItem('${fer.id}')" class="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+              <button onclick="editGestaoItem('${fer.id}')" title="Editar" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              </button>
             </td>
           </tr>
         `).join('');
+
       } else if (currentGestaoSubTab === 'locais') {
         thead.innerHTML = `
           <tr>
@@ -1083,17 +2918,30 @@
             <th class="p-3 bg-slate-100 text-right">Ação</th>
           </tr>
         `;
-        const filtrados = cacheLocaisList.filter(loc => (loc.nome || '').toLowerCase().includes(term));
+
+        const filtrados = cacheLocaisList.filter(loc => 
+          (loc.nome || '').toLowerCase().includes(term) ||
+          (loc.descricao || '').toLowerCase().includes(term)
+        );
+
+        if (filtrados.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">Nenhum local encontrado.</td></tr>';
+          return;
+        }
+
         tbody.innerHTML = filtrados.map(loc => `
           <tr class="hover:bg-slate-50 transition border-b border-slate-100">
             <td class="p-3 font-bold text-slate-800">${loc.nome}</td>
-            <td class="p-3 text-slate-600">${loc.descricao || '---'}</td>
+            <td class="p-3 text-slate-600 truncate max-w-xs">${loc.descricao || '---'}</td>
             <td class="p-3 text-right">
-              <button onclick="editGestaoItem('${loc.id}')" class="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+              <button onclick="editGestaoItem('${loc.id}')" title="Editar" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              </button>
             </td>
           </tr>
         `).join('');
       }
+
       lucide.createIcons();
     }
 
@@ -1101,18 +2949,26 @@
       if (!targetUser) return true;
       const myRole = (currentUserProfile?.nivel_acesso || '').toLowerCase();
       const targetRole = (targetUser.nivel_acesso || '').toLowerCase();
-      if (targetRole === 'master' && myRole !== 'master') return false;
+
+      if (targetRole === 'master' && myRole !== 'master') {
+        return false;
+      }
       return true;
     }
 
     function openGestaoFormNew() {
       currentEditingItem = null;
       gestaoImageBase64 = null;
+
       document.getElementById('gestao-form-title').innerText = `Novo ${currentGestaoSubTab === 'funcionarios' ? 'funcionário' : currentGestaoSubTab === 'ferramentas' ? 'ferramenta' : 'local'}`;
       document.getElementById('gestao-form-badge').innerText = 'Novo Cadastro';
+      document.getElementById('gestao-form-badge').className = 'text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100';
+
       resetGestaoImagePreview(null);
       renderGestaoDynamicInputs(null);
-      document.getElementById('gestao-form-error').classList.add('hidden');
+      
+      const errDiv = document.getElementById('gestao-form-error');
+      errDiv.classList.add('hidden');
       document.getElementById('btn-gestao-salvar').disabled = false;
     }
 
@@ -1121,19 +2977,133 @@
       if (currentGestaoSubTab === 'funcionarios') item = cacheFuncionariosList.find(f => f.id === id);
       if (currentGestaoSubTab === 'ferramentas') item = cacheFerramentasList.find(f => f.id === id);
       if (currentGestaoSubTab === 'locais') item = cacheLocaisList.find(l => l.id === id);
+
       if (!item) return;
+
+      const errDiv = document.getElementById('gestao-form-error');
+      const btnSalvar = document.getElementById('btn-gestao-salvar');
+
+      if (currentGestaoSubTab === 'funcionarios' && !canEditTargetUser(item)) {
+        errDiv.innerText = "Acesso negado: Apenas um usuário Master pode alterar os dados de um Master.";
+        errDiv.classList.remove('hidden');
+        btnSalvar.disabled = true;
+      } else {
+        errDiv.classList.add('hidden');
+        btnSalvar.disabled = false;
+      }
 
       currentEditingItem = item;
       gestaoImageBase64 = item.foto_url || null;
+
       document.getElementById('gestao-form-title').innerText = `Editar ${currentGestaoSubTab === 'funcionarios' ? 'funcionário' : currentGestaoSubTab === 'ferramentas' ? 'ferramenta' : 'local'}`;
       document.getElementById('gestao-form-badge').innerText = 'Edição';
+      document.getElementById('gestao-form-badge').className = 'text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100';
+
       resetGestaoImagePreview(item.foto_url);
       renderGestaoDynamicInputs(item);
+    }
+
+    function renderGestaoDynamicInputs(item) {
+      const container = document.getElementById('gestao-dynamic-inputs');
+      const myRole = (currentUserProfile?.nivel_acesso || '').toLowerCase();
+
+      if (currentGestaoSubTab === 'funcionarios') {
+        const locaisOptions = cacheLocaisList.map(l => 
+          `<option value="${l.nome}" data-id="${l.id}" ${item && item.local_nome === l.nome ? 'selected' : ''}>${l.nome}</option>`
+        ).join('');
+
+        const nivelAtual = item ? (item.nivel_acesso || 'funcionario').toLowerCase() : 'funcionario';
+
+        container.innerHTML = `
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Nome completo</label>
+            <input type="text" id="g-func-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: João Silva" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">E-mail (@senai.br)</label>
+            <input type="email" id="g-func-email" required value="${item ? item.email || '' : ''}" placeholder="joao@senai.br" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Matrícula</label>
+              <input type="text" id="g-func-matricula" required value="${item ? item.matricula || '' : ''}" placeholder="FUN-001" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Cargo</label>
+              <input type="text" id="g-func-cargo" value="${item ? item.cargo || '' : ''}" placeholder="Técnico" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Setor</label>
+              <input type="text" id="g-func-setor" value="${item ? item.setor || '' : ''}" placeholder="Elétrica" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Local</label>
+              <select id="g-func-local-nome" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                <option value="">Selecione...</option>
+                ${locaisOptions}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Nível de acesso</label>
+            <select id="g-func-nivel" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="funcionario" ${nivelAtual === 'funcionario' ? 'selected' : ''}>Funcionário</option>
+              <option value="administrador" ${nivelAtual === 'administrador' ? 'selected' : ''}>Administrador</option>
+              <option value="master" ${nivelAtual === 'master' ? 'selected' : ''} ${myRole !== 'master' ? 'disabled' : ''}>Master</option>
+              <option value="sem_acesso" ${nivelAtual === 'sem_acesso' || nivelAtual === 'sem acesso' ? 'selected' : ''}>Sem Acesso</option>
+            </select>
+          </div>
+        `;
+
+      } else if (currentGestaoSubTab === 'ferramentas') {
+        const locaisOptions = cacheLocaisList.map(l => 
+          `<option value="${l.nome}" ${item && item.local_padrao === l.nome ? 'selected' : ''}>${l.nome}</option>`
+        ).join('');
+
+        container.innerHTML = `
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Nome da ferramenta</label>
+            <input type="text" id="g-fer-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: Multímetro Digital" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Patrimônio / Código</label>
+              <input type="text" id="g-fer-id" required ${item ? 'readonly' : ''} value="${item ? item.id || '' : ''}" placeholder="FER-001" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono ${item ? 'bg-slate-100' : ''}">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 uppercase mb-1">Categoria</label>
+              <input type="text" id="g-fer-categoria" value="${item ? item.categoria || '' : ''}" placeholder="Medição" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            </div>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Local padrão</label>
+            <select id="g-fer-padrao" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+              <option value="">Selecione o local padrão...</option>
+              ${locaisOptions}
+            </select>
+          </div>
+        `;
+
+      } else if (currentGestaoSubTab === 'locais') {
+        container.innerHTML = `
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Nome do local</label>
+            <input type="text" id="g-loc-nome" required value="${item ? item.nome || '' : ''}" placeholder="Ex: Laboratório de Elétrica" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Descrição</label>
+            <textarea id="g-loc-descricao" rows="3" placeholder="Descrição da área..." class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">${item ? item.descricao || '' : ''}</textarea>
+          </div>
+        `;
+      }
     }
 
     function previewGestaoImage(event) {
       const file = event.target.files[0];
       if (!file) return;
+
       const reader = new FileReader();
       reader.onload = function(e) {
         gestaoImageBase64 = e.target.result;
@@ -1145,6 +3115,7 @@
     function resetGestaoImagePreview(url) {
       const img = document.getElementById('gestao-img-preview');
       const icon = document.getElementById('gestao-img-icon');
+
       if (url) {
         img.src = url;
         img.classList.remove('hidden');
@@ -1175,47 +3146,25 @@
             throw new Error("Apenas usuários Master podem alterar registros de outro Master.");
           }
 
-          const emailInput = document.getElementById('g-func-email').value.trim().toLowerCase();
-          
-          if (!emailInput.endsWith('@senai.br')) {
-            throw new Error("O e-mail deve obrigatoriamente pertencer ao domínio @senai.br");
+          const email = document.getElementById('g-func-email').value.trim();
+          if (!email.toLowerCase().endsWith('@senai.br')) {
+            throw new Error("O e-mail deve pertencer ao domínio @senai.br");
           }
 
           const selectLocal = document.getElementById('g-func-local-nome');
           const selectedOption = selectLocal.options[selectLocal.selectedIndex];
           const localId = selectedOption ? selectedOption.getAttribute('data-id') : null;
-          const nivelAcesso = document.getElementById('g-func-nivel').value;
-
-          let targetUserId = currentEditingItem ? currentEditingItem.id : null;
-
-          // Se for um novo funcionário com permissão de acesso ao painel, cadastra na autenticação do Supabase com senha@123
-          if (!currentEditingItem && nivelAcesso !== 'sem_acesso') {
-            const { data: authData, error: authErr } = await supabaseClient.auth.signUp({
-              email: emailInput,
-              password: 'senha@123'
-            });
-
-            if (authErr && !authErr.message.includes('already registered')) {
-              throw new Error("Erro ao criar conta de login no Supabase: " + authErr.message);
-            }
-
-            if (authData?.user) {
-              targetUserId = authData.user.id;
-            }
-          }
 
           const payload = {
             nome: document.getElementById('g-func-nome').value.trim(),
-            email: emailInput,
+            email: email,
             matricula: document.getElementById('g-func-matricula').value.trim(),
             cargo: document.getElementById('g-func-cargo').value.trim(),
             setor: document.getElementById('g-func-setor').value.trim(),
             local_nome: selectLocal.value,
-            nivel_acesso: nivelAcesso,
-            trocar_senha: true
+            nivel_acesso: document.getElementById('g-func-nivel').value
           };
 
-          if (targetUserId) payload.id = targetUserId;
           if (localId) payload.local_id = localId;
           if (gestaoImageBase64) payload.foto_url = gestaoImageBase64;
 
@@ -1223,6 +3172,20 @@
             const { error } = await supabaseClient.from('funcionarios').update(payload).eq('id', currentEditingItem.id);
             if (error) throw error;
           } else {
+            // CRIAÇÃO AUTOMÁTICA DA CONTA DE LOGIN SUPABASE AUTH
+            const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+              email: payload.email,
+              password: 'senha@123'
+            });
+
+            if (authError && !authError.message.toLowerCase().includes('already registered')) {
+              throw new Error("Erro ao gerar a conta Auth no Supabase: " + authError.message);
+            }
+
+            if (authData?.user?.id) {
+              payload.id = authData.user.id;
+            }
+
             const { error } = await supabaseClient.from('funcionarios').insert([payload]);
             if (error) throw error;
           }
@@ -1237,6 +3200,7 @@
             categoria: document.getElementById('g-fer-categoria').value.trim(),
             local_padrao: document.getElementById('g-fer-padrao').value
           };
+
           if (gestaoImageBase64) payload.foto_url = gestaoImageBase64;
 
           if (currentEditingItem) {
@@ -1257,6 +3221,7 @@
             nome: document.getElementById('g-loc-nome').value.trim(),
             descricao: document.getElementById('g-loc-descricao').value.trim()
           };
+
           if (gestaoImageBase64) payload.foto_url = gestaoImageBase64;
 
           if (currentEditingItem) {
@@ -1283,194 +3248,102 @@
       }
     }
 
-    // MODAL DE IMPORTAÇÃO DE EXCEL
-    function openImportModal() {
-      const modal = document.getElementById('modal-import-excel');
-      const title = document.getElementById('modal-excel-title');
-      const desc = document.getElementById('modal-excel-desc');
-      const struct = document.getElementById('modal-excel-structure');
-      const errDiv = document.getElementById('modal-excel-error');
-      const fileInput = document.getElementById('modal-excel-file-input');
-
-      fileInput.value = '';
-      errDiv.classList.add('hidden');
-
-      if (currentGestaoSubTab === 'funcionarios') {
-        title.innerHTML = '<i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600"></i> Importar Funcionários';
-        desc.innerText = 'A planilha deve conter os cabeçalhos exatamente assim na 1ª linha:';
-        struct.innerHTML = `
-          <div class="font-bold text-slate-700 mb-1">Estrutura das Colunas:</div>
-          <div>• <span class="text-blue-600 font-bold">Nome</span> (obrigatório)</div>
-          <div>• <span class="text-blue-600 font-bold">Email</span> (obrigatório, terminado em @senai.br)</div>
-          <div>• <span class="text-blue-600 font-bold">Matricula</span></div>
-          <div>• <span class="text-blue-600 font-bold">Cargo</span></div>
-          <div>• <span class="text-blue-600 font-bold">Setor</span></div>
-          <div>• <span class="text-blue-600 font-bold">Local</span> (Nome do local/oficina)</div>
-          <div>• <span class="text-blue-600 font-bold">Nivel</span> (funcionario, sem_acesso, administrador, master)</div>
-        `;
-      } else if (currentGestaoSubTab === 'ferramentas') {
-        title.innerHTML = '<i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600"></i> Importar Ferramentas';
-        desc.innerText = 'A planilha deve conter os cabeçalhos exatamente assim na 1ª linha:';
-        struct.innerHTML = `
-          <div class="font-bold text-slate-700 mb-1">Estrutura das Colunas:</div>
-          <div>• <span class="text-blue-600 font-bold">Codigo</span> ou <span class="text-blue-600 font-bold">ID</span> (ex: FER-001, obrigatório)</div>
-          <div>• <span class="text-blue-600 font-bold">Nome</span> (obrigatório)</div>
-          <div>• <span class="text-blue-600 font-bold">Categoria</span></div>
-          <div>• <span class="text-blue-600 font-bold">Local_Padrao</span> (Nome do local de origem)</div>
-        `;
-      } else if (currentGestaoSubTab === 'locais') {
-        title.innerHTML = '<i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600"></i> Importar Locais';
-        desc.innerText = 'A planilha deve conter os cabeçalhos exatamente assim na 1ª linha:';
-        struct.innerHTML = `
-          <div class="font-bold text-slate-700 mb-1">Estrutura das Colunas:</div>
-          <div>• <span class="text-blue-600 font-bold">Nome</span> (obrigatório)</div>
-          <div>• <span class="text-blue-600 font-bold">Descricao</span></div>
-        `;
-      }
-
-      modal.classList.remove('hidden');
-      lucide.createIcons();
+    // Modal Importação CSV
+    function openModalImportar() {
+      document.getElementById('modal-importar').classList.remove('hidden');
+      const msg = document.getElementById('import-msg');
+      msg.className = 'hidden p-3 rounded text-xs font-semibold';
+      document.getElementById('input-csv-file').value = '';
     }
 
-    function closeImportModal() {
-      document.getElementById('modal-import-excel').classList.add('hidden');
+    function closeModalImportar() {
+      document.getElementById('modal-importar').classList.add('hidden');
     }
 
-    async function executarImportacaoExcel() {
-      const fileInput = document.getElementById('modal-excel-file-input');
-      const errDiv = document.getElementById('modal-excel-error');
-      const btn = document.getElementById('btn-confirmar-excel');
+    async function processarImportacaoCSV() {
+      const fileInput = document.getElementById('input-csv-file');
       const file = fileInput.files[0];
+      const msg = document.getElementById('import-msg');
 
       if (!file) {
-        errDiv.innerText = "Por favor, selecione um arquivo Excel (.xlsx ou .csv) antes de confirmar.";
-        errDiv.classList.remove('hidden');
+        msg.innerText = "Por favor, selecione um arquivo CSV.";
+        msg.className = "p-3 rounded bg-red-100 text-red-700 text-xs font-semibold";
         return;
       }
-
-      errDiv.classList.add('hidden');
-      btn.disabled = true;
-      btn.innerText = "Processando...";
 
       const reader = new FileReader();
       reader.onload = async function(e) {
         try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheet = workbook.SheetNames[0];
-          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+          const text = e.target.result;
+          const lines = text.split('\n').filter(line => line.trim() !== '');
+          if (lines.length < 2) throw new Error("Arquivo CSV vazio ou sem cabeçalho.");
 
-          if (!rows || rows.length === 0) {
-            throw new Error("A planilha selecionada está vazia.");
+          const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+          const records = [];
+
+          for (let i = 1; i < lines.length; i++) {
+            const row = lines[i].split(',').map(cell => cell.trim());
+            if (row.length === headers.length) {
+              const obj = {};
+              headers.forEach((h, index) => obj[h] = row[index]);
+              records.push(obj);
+            }
           }
 
-          let cadastrados = 0;
-          let erros = 0;
-
-          if (currentGestaoSubTab === 'funcionarios') {
-            for (const row of rows) {
-              const nome = row.Nome || row.nome || row.NOME;
-              const email = (row.Email || row.email || row.EMAIL || '').toString().trim().toLowerCase();
-              const matricula = (row.Matricula || row.matricula || row.MATRICULA || '').toString().trim();
-              const cargo = row.Cargo || row.cargo || '';
-              const setor = row.Setor || row.setor || '';
-              const localNome = row.Local || row.local || row.Local_Nome || '';
-              const nivel = (row.Nivel || row.nivel || 'funcionario').toString().toLowerCase();
-
-              if (!nome || !email || !email.endsWith('@senai.br')) {
-                erros++;
-                continue;
-              }
-
-              let authId = null;
-              if (nivel !== 'sem_acesso') {
-                const { data: authData } = await supabaseClient.auth.signUp({
-                  email: email,
-                  password: 'senha@123'
-                });
-                if (authData?.user) authId = authData.user.id;
-              }
-
-              const payload = {
-                nome: nome,
-                email: email,
-                matricula: matricula,
-                cargo: cargo,
-                setor: setor,
-                local_nome: localNome,
-                nivel_acesso: nivel,
-                trocar_senha: true
-              };
-
-              if (authId) payload.id = authId;
-
-              const { error } = await supabaseClient.from('funcionarios').insert([payload]);
-              if (error) erros++; else cadastrados++;
-            }
-            const { data: funcs } = await supabaseClient.from('funcionarios').select('*').order('nome');
-            cacheFuncionariosList = funcs || [];
-
-          } else if (currentGestaoSubTab === 'ferramentas') {
-            for (const row of rows) {
-              const id = (row.Codigo || row.codigo || row.ID || row.id || row.Patrimonio || '').toString().trim();
-              const nome = row.Nome || row.nome || row.NOME;
-              const categoria = row.Categoria || row.categoria || '';
-              const localPadrao = row.Local_Padrao || row.local_padrao || row.Local || row.local || 'Não Especificado';
-
-              if (!id || !nome) {
-                erros++;
-                continue;
-              }
-
-              const payload = {
-                id: id,
-                nome: nome,
-                categoria: categoria,
-                local_padrao: localPadrao,
-                local_atual: 'Não Especificado',
-                status: 'Disponível'
-              };
-
-              const { error } = await supabaseClient.from('ferramentas').insert([payload]);
-              if (error) erros++; else cadastrados++;
-            }
-            const { data: fers } = await supabaseClient.from('ferramentas').select('*').order('nome');
-            cacheFerramentasList = fers || [];
-
+          if (currentGestaoSubTab === 'ferramentas') {
+            const { error } = await supabaseClient.from('ferramentas').insert(records);
+            if (error) throw error;
           } else if (currentGestaoSubTab === 'locais') {
-            for (const row of rows) {
-              const nome = row.Nome || row.nome || row.NOME;
-              const descricao = row.Descricao || row.descricao || '';
-
-              if (!nome) {
-                erros++;
-                continue;
-              }
-
-              const payload = { nome: nome, descricao: descricao };
-
-              const { error } = await supabaseClient.from('locais').insert([payload]);
-              if (error) erros++; else cadastrados++;
-            }
-            const { data: locs } = await supabaseClient.from('locais').select('*').order('nome');
-            cacheLocaisList = locs || [];
+            const { error } = await supabaseClient.from('locais').insert(records);
+            if (error) throw error;
+          } else if (currentGestaoSubTab === 'funcionarios') {
+            const { error } = await supabaseClient.from('funcionarios').insert(records);
+            if (error) throw error;
           }
 
-          alert(`Importação concluída!\nSalvos com sucesso: ${cadastrados}\nRegistros com falha: ${erros}`);
-          closeImportModal();
-          filterGestaoList();
+          msg.innerText = `${records.length} registos importados com sucesso!`;
+          msg.className = "p-3 rounded bg-emerald-100 text-emerald-700 text-xs font-semibold";
+
+          setTimeout(() => {
+            closeModalImportar();
+            loadGestaoData();
+          }, 1500);
 
         } catch (err) {
-          errDiv.innerText = "Erro ao processar planilha: " + err.message;
-          errDiv.classList.remove('hidden');
-        } finally {
-          btn.disabled = false;
-          btn.innerHTML = '<i data-lucide="upload" class="w-4 h-4"></i><span>Confirmar Importação</span>';
-          lucide.createIcons();
+          msg.innerText = "Erro ao processar CSV: " + err.message;
+          msg.className = "p-3 rounded bg-red-100 text-red-700 text-xs font-semibold";
         }
       };
+      reader.readAsText(file);
+    }
 
-      reader.readAsArrayBuffer(file);
+    // 11. REALTIME SUBSCRIPTION
+    function setupRealtimeSubscriptions() {
+      supabaseClient
+        .channel('dashboard-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'ferramentas' }, () => {
+          if (!document.getElementById('view-visao-geral').classList.contains('hidden')) loadVisaoGeralData();
+          if (!document.getElementById('view-rastreabilidade').classList.contains('hidden')) loadRastreabilidadeData();
+          if (!document.getElementById('view-funcionarios').classList.contains('hidden')) renderFuncionarioDossier();
+          if (!document.getElementById('view-ferramentas').classList.contains('hidden')) renderFerramentaFicha();
+          if (!document.getElementById('view-locais').classList.contains('hidden')) renderLocalDetails();
+          if (!document.getElementById('view-gestao').classList.contains('hidden')) loadGestaoData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'historico' }, () => {
+          if (!document.getElementById('view-indicadores').classList.contains('hidden')) loadIndicadoresData();
+          if (!document.getElementById('view-historico').classList.contains('hidden')) loadHistoricoData();
+          if (!document.getElementById('view-funcionarios').classList.contains('hidden')) renderFuncionarioDossier();
+          if (!document.getElementById('view-ferramentas').classList.contains('hidden')) renderFerramentaFicha();
+          if (!document.getElementById('view-locais').classList.contains('hidden')) renderLocalDetails();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'locais' }, () => {
+          if (!document.getElementById('view-locais').classList.contains('hidden')) loadLocaisData();
+          if (!document.getElementById('view-gestao').classList.contains('hidden')) loadGestaoData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'funcionarios' }, () => {
+          if (!document.getElementById('view-gestao').classList.contains('hidden')) loadGestaoData();
+        })
+        .subscribe();
     }
   </script>
 </body>
