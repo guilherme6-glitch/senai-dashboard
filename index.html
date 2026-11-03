@@ -14,11 +14,11 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Chart.js & Plugin de Porcentagens -->
+  <!-- Chart.js & Plugin de Rótulos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
-  <!-- SheetJS para Leitura de Arquivos Excel -->
+  <!-- SheetJS para Leitura de Planilhas Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
@@ -50,13 +50,13 @@
       </div>
 
       <div class="space-y-3 text-xs">
-        <p id="modal-excel-desc" class="text-slate-600">Confira a estrutura necessária para a sua planilha antes de importar:</p>
+        <p id="modal-excel-desc" class="text-slate-600">Confira a estrutura das colunas na 1ª linha da sua planilha:</p>
         
-        <div id="modal-excel-structure" class="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono text-[11px] space-y-1">
-          <!-- Injetado via JS dinamicamente conforme a sub-aba -->
+        <div id="modal-excel-structure" class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono text-[11px] space-y-1">
+          <!-- Injetado via JS -->
         </div>
 
-        <div>
+        <div class="pt-2">
           <label class="block font-bold text-slate-700 uppercase mb-1">Selecione o arquivo (.xlsx, .xls, .csv):</label>
           <input type="file" id="modal-excel-file-input" accept=".xlsx, .xls, .csv" 
             class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
@@ -78,7 +78,7 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL DE TROCA DE SENHA (1º ACESSO) ==================== -->
+  <!-- ==================== MODAL DE TROCA DE SENHA OBRIGATÓRIA (1º ACESSO) ==================== -->
   <div id="modal-troca-senha" class="hidden fixed inset-0 bg-slate-900 bg-opacity-95 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-200 space-y-5">
       <div class="text-center">
@@ -86,7 +86,7 @@
           <i data-lucide="key-round" class="w-6 h-6"></i>
         </div>
         <h3 class="text-xl font-bold text-slate-800">Primeiro Acesso Detectado</h3>
-        <p class="text-xs text-slate-500 mt-1">Por motivos de segurança, altere a senha padrão pré-cadastrada antes de continuar.</p>
+        <p class="text-xs text-slate-500 mt-1">Por segurança, altere a senha padrão pré-cadastrada (<strong>senha@123</strong>) antes de continuar.</p>
       </div>
 
       <form id="form-troca-senha" onsubmit="handleTrocaSenhaObrigatoria(event)" class="space-y-4">
@@ -98,7 +98,7 @@
 
         <div>
           <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Confirmar Nova Senha</label>
-          <input type="password" id="confirma-senha-input" required minlength="6" placeholder="Repita a senha"
+          <input type="password" id="confirma-senha-input" required minlength="6" placeholder="Repita a nova senha"
             class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none text-sm">
         </div>
 
@@ -113,7 +113,7 @@
     </div>
   </div>
 
-  <!-- ==================== 1. TELA DE LOGIN ==================== -->
+  <!-- ==================== TELA DE LOGIN ==================== -->
   <div id="screen-login" class="fixed inset-0 bg-slate-900 bg-opacity-95 z-40 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-200">
       <div class="text-center mb-8">
@@ -154,7 +154,7 @@
     </div>
   </div>
 
-  <!-- ==================== 2. ESTRUTURA PRINCIPAL DO DASHBOARD ==================== -->
+  <!-- ==================== DASHBOARD PRINCIPAL ==================== -->
   <div id="app-layout" class="hidden h-screen w-full flex flex-col md:flex-row overflow-hidden">
 
     <!-- SIDEBAR -->
@@ -503,7 +503,6 @@
                   <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5"></i>
                 </div>
 
-                <!-- Botão de Importar Planilha Excel com Modal -->
                 <button onclick="openImportModal()" id="gestao-btn-excel" 
                   class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm whitespace-nowrap">
                   <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
@@ -571,10 +570,10 @@
     </main>
   </div>
 
-  <!-- ==================== LÓGICA JAVASCRIPT ==================== -->
+  <!-- LÓGICA JAVASCRIPT COMPLETA -->
   <script>
     const SUPABASE_URL = "https://gfxctmjgcbgxsrquugrt.supabase.co"; // Substitua pela sua URL
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmeGN0bWpnY2JneHNycXV1Z3J0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjI4NzgsImV4cCI6MjEwODU5ODg3OH0.gvwfxHzgVF72epEMMTdBdRvovmgbtMHquYCFyFa2Li0";            // Substitua pela sua Key   
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmeGN0bWpnY2JneHNycXV1Z3J0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjI4NzgsImV4cCI6MjEwODU5ODg3OH0.gvwfxHzgVF72epEMMTdBdRvovmgbtMHquYCFyFa2Li0";            // Substitua pela sua Key        
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let currentUserProfile = null;
@@ -582,10 +581,14 @@
     let cacheFerramentasList = [];
     let cacheLocaisList = [];
     let cacheEmprestadas = [];
+    let cacheRastreabilidade = [];
 
     let currentGestaoSubTab = 'funcionarios';
     let currentEditingItem = null;
     let gestaoImageBase64 = null;
+
+    let chartStatusInstance = null;
+    let chartLocaisInstance = null;
 
     window.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
@@ -754,24 +757,109 @@
       if (targetBtn) targetBtn.classList.add('active-tab');
 
       if (tabName === 'visao-geral') loadVisaoGeralData();
+      if (tabName === 'rastreabilidade') loadRastreabilidadeData();
       if (tabName === 'gestao') loadGestaoData();
     }
 
+    // CARREGAMENTO DA TELA VISÃO GERAL
     async function loadVisaoGeralData() {
       try {
         const { data: ferramentas } = await supabaseClient.from('ferramentas').select('*');
         if (!ferramentas) return;
 
-        document.getElementById('kpi-total').innerText = ferramentas.length;
-        document.getElementById('kpi-emprestadas').innerText = ferramentas.filter(f => f.status === 'Emprestado').length;
-        document.getElementById('kpi-disponiveis').innerText = ferramentas.filter(f => f.status === 'Disponível').length;
-        document.getElementById('kpi-manutencao').innerText = ferramentas.filter(f => f.status === 'Manutenção').length;
+        const total = ferramentas.length;
+        const emprestadas = ferramentas.filter(f => f.status === 'Emprestado');
+        const disponiveis = ferramentas.filter(f => f.status === 'Disponível');
+        const manutencao = ferramentas.filter(f => f.status === 'Manutenção');
+
+        document.getElementById('kpi-total').innerText = total;
+        document.getElementById('kpi-emprestadas').innerText = emprestadas.length;
+        document.getElementById('kpi-disponiveis').innerText = disponiveis.length;
+        document.getElementById('kpi-manutencao').innerText = manutencao.length;
+
+        cacheEmprestadas = emprestadas;
+        renderEmprestadasTable(cacheEmprestadas);
+        renderChartStatus(disponiveis.length, emprestadas.length, manutencao.length);
+
       } catch (err) {
-        console.error(err);
+        console.error("Erro na Visão Geral:", err);
       }
     }
 
-    // GESTÃO & CADASTROS
+    function renderEmprestadasTable(lista) {
+      const tbody = document.getElementById('table-emprestadas-body');
+      if (!lista || lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Nenhuma ferramenta emprestada no momento.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = lista.map(f => `
+        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+          <td class="p-3.5 font-bold text-slate-800">
+            <span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-xs mr-2 border border-blue-100">${f.id}</span>
+            ${f.nome}
+          </td>
+          <td class="p-3.5 text-slate-700 font-medium">${f.com_quem_esta || '---'}</td>
+          <td class="p-3.5 text-slate-600">${f.local_atual || '---'}</td>
+          <td class="p-3.5 text-xs text-slate-500 font-mono">${f.desde ? new Date(f.desde).toLocaleString('pt-BR') : '---'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderChartStatus(disponiveis, emprestadas, manutencao) {
+      const ctx = document.getElementById('chart-status').getContext('2d');
+      if (chartStatusInstance) chartStatusInstance.destroy();
+      chartStatusInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Disponíveis', 'Emprestadas', 'Manutenção'],
+          datasets: [{ data: [disponiveis, emprestadas, manutencao], backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    // CARREGAMENTO DA TELA RASTREABILIDADE
+    async function loadRastreabilidadeData() {
+      try {
+        const { data: ferramentas } = await supabaseClient.from('ferramentas').select('*');
+        cacheRastreabilidade = ferramentas || [];
+        filterRastreabilidadeData();
+      } catch (err) {
+        console.error("Erro na Rastreabilidade:", err);
+      }
+    }
+
+    function filterRastreabilidadeData() {
+      const txt = (document.getElementById('filter-rastreio-texto').value || '').toLowerCase();
+      const grid = document.getElementById('grid-rastreabilidade');
+
+      const filtrados = cacheRastreabilidade.filter(i => 
+        (i.nome || '').toLowerCase().includes(txt) || (i.id || '').toLowerCase().includes(txt)
+      );
+
+      if (filtrados.length === 0) {
+        grid.innerHTML = '<p class="text-slate-400 text-sm col-span-full text-center py-8">Nenhum equipamento encontrado.</p>';
+        return;
+      }
+
+      grid.innerHTML = filtrados.map(item => `
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${item.id}</span>
+            <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100">${item.status || 'Disponível'}</span>
+          </div>
+          <h4 class="font-bold text-slate-800 text-base">${item.nome}</h4>
+          <div class="text-xs text-slate-500 space-y-1 pt-2 border-t border-slate-100">
+            <div><strong class="text-slate-700">Local Padrão:</strong> ${item.local_padrao || 'Não Especificado'}</div>
+            <div><strong class="text-slate-700">Onde está:</strong> ${item.local_atual || 'Banco de Ferramentas'}</div>
+            <div><strong class="text-slate-700">Com quem:</strong> ${item.com_quem_esta || '---'}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // CARREGAMENTO DA TELA GESTÃO & CADASTROS
     async function loadGestaoData() {
       if (cacheLocaisList.length === 0) {
         const { data: locs } = await supabaseClient.from('locais').select('*').order('nome');
@@ -1096,6 +1184,25 @@
           const selectLocal = document.getElementById('g-func-local-nome');
           const selectedOption = selectLocal.options[selectLocal.selectedIndex];
           const localId = selectedOption ? selectedOption.getAttribute('data-id') : null;
+          const nivelAcesso = document.getElementById('g-func-nivel').value;
+
+          let targetUserId = currentEditingItem ? currentEditingItem.id : null;
+
+          // Se for um novo funcionário com permissão de acesso ao painel, cadastra na autenticação do Supabase com senha@123
+          if (!currentEditingItem && nivelAcesso !== 'sem_acesso') {
+            const { data: authData, error: authErr } = await supabaseClient.auth.signUp({
+              email: emailInput,
+              password: 'senha@123'
+            });
+
+            if (authErr && !authErr.message.includes('already registered')) {
+              throw new Error("Erro ao criar conta de login no Supabase: " + authErr.message);
+            }
+
+            if (authData?.user) {
+              targetUserId = authData.user.id;
+            }
+          }
 
           const payload = {
             nome: document.getElementById('g-func-nome').value.trim(),
@@ -1104,10 +1211,11 @@
             cargo: document.getElementById('g-func-cargo').value.trim(),
             setor: document.getElementById('g-func-setor').value.trim(),
             local_nome: selectLocal.value,
-            nivel_acesso: document.getElementById('g-func-nivel').value,
+            nivel_acesso: nivelAcesso,
             trocar_senha: true
           };
 
+          if (targetUserId) payload.id = targetUserId;
           if (localId) payload.local_id = localId;
           if (gestaoImageBase64) payload.foto_url = gestaoImageBase64;
 
@@ -1189,7 +1297,7 @@
 
       if (currentGestaoSubTab === 'funcionarios') {
         title.innerHTML = '<i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600"></i> Importar Funcionários';
-        desc.innerText = 'A sua planilha deve conter os cabeçalhos na 1ª linha exatamente como indicado abaixo:';
+        desc.innerText = 'A planilha deve conter os cabeçalhos exatamente assim na 1ª linha:';
         struct.innerHTML = `
           <div class="font-bold text-slate-700 mb-1">Estrutura das Colunas:</div>
           <div>• <span class="text-blue-600 font-bold">Nome</span> (obrigatório)</div>
@@ -1202,7 +1310,7 @@
         `;
       } else if (currentGestaoSubTab === 'ferramentas') {
         title.innerHTML = '<i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600"></i> Importar Ferramentas';
-        desc.innerText = 'A sua planilha deve conter os cabeçalhos na 1ª linha exatamente como indicado abaixo:';
+        desc.innerText = 'A planilha deve conter os cabeçalhos exatamente assim na 1ª linha:';
         struct.innerHTML = `
           <div class="font-bold text-slate-700 mb-1">Estrutura das Colunas:</div>
           <div>• <span class="text-blue-600 font-bold">Codigo</span> ou <span class="text-blue-600 font-bold">ID</span> (ex: FER-001, obrigatório)</div>
@@ -1212,10 +1320,10 @@
         `;
       } else if (currentGestaoSubTab === 'locais') {
         title.innerHTML = '<i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600"></i> Importar Locais';
-        desc.innerText = 'A sua planilha deve conter os cabeçalhos na 1ª linha exatamente como indicado abaixo:';
+        desc.innerText = 'A planilha deve conter os cabeçalhos exatamente assim na 1ª linha:';
         struct.innerHTML = `
           <div class="font-bold text-slate-700 mb-1">Estrutura das Colunas:</div>
-          <div>• <span class="text-blue-600 font-bold">Nome</span> (obrigatório, ex: Laboratório de Elétrica)</div>
+          <div>• <span class="text-blue-600 font-bold">Nome</span> (obrigatório)</div>
           <div>• <span class="text-blue-600 font-bold">Descricao</span></div>
         `;
       }
@@ -1274,6 +1382,15 @@
                 continue;
               }
 
+              let authId = null;
+              if (nivel !== 'sem_acesso') {
+                const { data: authData } = await supabaseClient.auth.signUp({
+                  email: email,
+                  password: 'senha@123'
+                });
+                if (authData?.user) authId = authData.user.id;
+              }
+
               const payload = {
                 nome: nome,
                 email: email,
@@ -1284,6 +1401,8 @@
                 nivel_acesso: nivel,
                 trocar_senha: true
               };
+
+              if (authId) payload.id = authId;
 
               const { error } = await supabaseClient.from('funcionarios').insert([payload]);
               if (error) erros++; else cadastrados++;
@@ -1328,10 +1447,7 @@
                 continue;
               }
 
-              const payload = {
-                nome: nome,
-                descricao: descricao
-              };
+              const payload = { nome: nome, descricao: descricao };
 
               const { error } = await supabaseClient.from('locais').insert([payload]);
               if (error) erros++; else cadastrados++;
@@ -1340,12 +1456,12 @@
             cacheLocaisList = locs || [];
           }
 
-          alert(`Importação concluída!\nRegistros salvos com sucesso: ${cadastrados}\nRegistros com erro/invalidos: ${erros}`);
+          alert(`Importação concluída!\nSalvos com sucesso: ${cadastrados}\nRegistros com falha: ${erros}`);
           closeImportModal();
           filterGestaoList();
 
         } catch (err) {
-          errDiv.innerText = "Erro ao processar arquivo: " + err.message;
+          errDiv.innerText = "Erro ao processar planilha: " + err.message;
           errDiv.classList.remove('hidden');
         } finally {
           btn.disabled = false;
