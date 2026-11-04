@@ -147,10 +147,16 @@
         <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
           <i data-lucide="key" class="w-4 h-4 text-blue-600"></i> Alterar Palavra-passe
         </h3>
-        <button onclick="closeModalTrocarSenha()" class="text-slate-400 hover:text-slate-600">
+        <button id="btn-close-trocar-senha" onclick="closeModalTrocarSenha()" class="text-slate-400 hover:text-slate-600">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
+
+      <!-- Mensagem de Aviso para Primeiro Acesso -->
+      <p id="msg-primeiro-acesso" class="hidden text-xs font-bold text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
+        ⚠️ Este é o seu primeiro acesso ou a sua senha é a padrão. Por razões de segurança, altere a palavra-passe antes de continuar.
+      </p>
+
       <form onsubmit="handleTrocaSenha(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nova Palavra-passe</label>
@@ -160,7 +166,7 @@
         <div id="troca-senha-error" class="hidden p-2.5 rounded bg-red-100 text-red-700 text-xs font-semibold"></div>
         <div id="troca-senha-success" class="hidden p-2.5 rounded bg-emerald-100 text-emerald-700 text-xs font-semibold"></div>
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeModalTrocarSenha()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">Cancelar</button>
+          <button type="button" id="btn-cancelar-trocar-senha" onclick="closeModalTrocarSenha()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">Cancelar</button>
           <button type="submit" id="btn-salvar-senha" class="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg text-xs font-bold">Atualizar</button>
         </div>
       </form>
@@ -1459,6 +1465,7 @@
 
     // Estados Globais
     let currentUserProfile = null;
+    let isFirstAccessObligatory = false;
     let cacheEmprestadas = [];
     let cacheRastreabilidade = [];
     let cacheHistoricoGlobal = [];
@@ -1523,7 +1530,7 @@
     });
 
     // 1. AUTENTICAÇÃO E SESSÃO
-    async function checkAuthSession() {
+    async function checkAuthSession(usedPassword = null) {
       const { data: { session } } = await supabaseClient.auth.getSession();
 
       if (!session) {
@@ -1554,6 +1561,11 @@
       currentUserProfile = perfil;
       showLoginScreen(false);
       setupDashboardView();
+
+      // Checagem de troca obrigatória de palavra-passe
+      if (usedPassword === 'senha@123' || perfil.primeiro_acesso === true) {
+        openModalTrocarSenha(true);
+      }
     }
 
     async function handleLogin(event) {
@@ -1578,7 +1590,7 @@
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        await checkAuthSession();
+        await checkAuthSession(password);
       } catch (err) {
         errDiv.innerText = "Erro ao iniciar sessão: " + err.message;
         errDiv.classList.remove('hidden');
@@ -1614,14 +1626,37 @@
     }
 
     // Modal Troca de Senha
-    function openModalTrocarSenha() {
-      document.getElementById('modal-trocar-senha').classList.remove('hidden');
+    function openModalTrocarSenha(isObligatory = false) {
+      isFirstAccessObligatory = isObligatory;
+      const modal = document.getElementById('modal-trocar-senha');
+      const msgFirst = document.getElementById('msg-primeiro-acesso');
+      const btnClose = document.getElementById('btn-close-trocar-senha');
+      const btnCancel = document.getElementById('btn-cancelar-trocar-senha');
+
       document.getElementById('troca-senha-error').classList.add('hidden');
       document.getElementById('troca-senha-success').classList.add('hidden');
       document.getElementById('nova-senha-input').value = '';
+
+      if (msgFirst) {
+        if (isObligatory) {
+          msgFirst.classList.remove('hidden');
+          if (btnClose) btnClose.classList.add('hidden');
+          if (btnCancel) btnCancel.classList.add('hidden');
+        } else {
+          msgFirst.classList.add('hidden');
+          if (btnClose) btnClose.classList.remove('hidden');
+          if (btnCancel) btnCancel.classList.remove('hidden');
+        }
+      }
+
+      modal.classList.remove('hidden');
     }
 
     function closeModalTrocarSenha() {
+      if (isFirstAccessObligatory) {
+        alert("Você precisa alterar a palavra-passe padrão antes de continuar a utilizar o sistema.");
+        return;
+      }
       document.getElementById('modal-trocar-senha').classList.add('hidden');
     }
 
@@ -1641,6 +1676,12 @@
         return;
       }
 
+      if (newPassword === 'senha@123') {
+        errDiv.innerText = "A nova palavra-passe não pode ser igual à senha padrão 'senha@123'.";
+        errDiv.classList.remove('hidden');
+        return;
+      }
+
       btn.disabled = true;
       btn.innerText = "Atualizando...";
 
@@ -1648,9 +1689,21 @@
         const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
         if (error) throw error;
 
+        if (currentUserProfile?.id) {
+          await supabaseClient
+            .from('funcionarios')
+            .update({ primeiro_acesso: false })
+            .eq('id', currentUserProfile.id);
+        }
+
         succDiv.innerText = "Palavra-passe alterada com sucesso!";
         succDiv.classList.remove('hidden');
-        setTimeout(() => closeModalTrocarSenha(), 1500);
+
+        isFirstAccessObligatory = false;
+        setTimeout(() => {
+          document.getElementById('modal-trocar-senha').classList.add('hidden');
+        }, 1200);
+
       } catch (err) {
         errDiv.innerText = "Erro ao alterar palavra-passe: " + err.message;
         errDiv.classList.remove('hidden');
