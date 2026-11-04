@@ -3527,26 +3527,40 @@ function closeModalImportar() {
     }
 
     // Função para gerar e baixar a planilha estruturada de exemplo
+// Função para gerar e baixar a planilha estruturada de exemplo (Formatada para Excel)
     function downloadModeloCSV() {
       let content = "";
       let filename = "";
 
+      // Utilização do ponto e vírgula (;) para separação automática no Excel em Português
       if (currentGestaoSubTab === 'funcionarios') {
-        content = "nome,email,matricula,cargo,setor,local_nome,nivel_acesso\n" +
-                  "João da Silva,joao.silva@senai.br,FUN-010,Técnico de Laboratório,Eletrónica,Laboratório de Eletrónica e Robótica,funcionario\n" +
-                  "Maria Santos,maria.santos@senai.br,FUN-011,Instrutora de Mecânica,Ensino,Sala de Instrutores e Suporte,administrador";
+        content = "nome;email;matricula;cargo;setor;local_nome;nivel_acesso\n" +
+                  "João da Silva;joao.silva@senai.br;FUN-010;Técnico de Laboratório;Eletrónica;Laboratório de Eletrónica e Robótica;funcionario\n" +
+                  "Maria Santos;maria.santos@senai.br;FUN-011;Instrutora de Mecânica;Ensino;Sala de Instrutores e Suporte;administrador";
         filename = "modelo_importacao_funcionarios.csv";
       } else if (currentGestaoSubTab === 'ferramentas') {
-        content = "id,nome,categoria,local_padrao\n" +
-                  "FER-050,Multímetro Digital,Instrumentos de Medição,Laboratório de Eletrónica e Robótica\n" +
-                  "FER-051,Alicate Universal Isolado,Ferramentas Manuais,Oficina de Soldadura";
+        content = "id;nome;categoria;local_padrao\n" +
+                  "FER-050;Multímetro Digital;Instrumentos de Medição;Laboratório de Eletrónica e Robótica\n" +
+                  "FER-051;Alicate Universal Isolado;Ferramentas Manuais;Oficina de Soldadura";
         filename = "modelo_importacao_ferramentas.csv";
       } else if (currentGestaoSubTab === 'locais') {
-        content = "nome,descricao\n" +
-                  "Laboratório de Protótipos,Área destinada à impressão 3D e prototipagem rápida.\n" +
-                  "Sala de Calibração,Ambiente climatizado para ajuste fino de instrumentos.";
+        content = "nome;descricao\n" +
+                  "Laboratório de Protótipos;Área destinada à impressão 3D e prototipagem rápida.\n" +
+                  "Sala de Calibração;Ambiente climatizado para ajuste fino de instrumentos.";
         filename = "modelo_importacao_locais.csv";
       }
+
+      // Prepara o ficheiro com BOM UTF-8 (\uFEFF) para garantir caracteres e acentos corretos no Excel
+      const blob = new Blob(["\uFEFF" + content], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
 
       // Prepara o arquivo com BOM UTF-8 (\uFEFF) para abrir com acentuação correta no Excel
       const blob = new Blob(["\uFEFF" + content], { type: 'text/csv;charset=utf-8;' });
