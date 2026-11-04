@@ -3504,7 +3504,7 @@
       }
     }
 
-// Modal Importação CSV
+/// Modal Importação CSV
     function openModalImportar() {
       document.getElementById('modal-importar').classList.remove('hidden');
       const msg = document.getElementById('import-msg');
@@ -3522,17 +3522,16 @@
       lucide.createIcons();
     }
 
-function closeModalImportar() {
+    function closeModalImportar() {
       document.getElementById('modal-importar').classList.add('hidden');
     }
 
-    // Função para gerar e baixar a planilha estruturada de exemplo
-// Função para gerar e baixar a planilha estruturada de exemplo (Formatada para Excel)
+    // Função para gerar e baixar a planilha estruturada de exemplo (Formatada para Excel em Português)
     function downloadModeloCSV() {
       let content = "";
       let filename = "";
 
-      // Utilização do ponto e vírgula (;) para separação automática no Excel em Português
+      // Utilização do ponto e vírgula (;) para separação de colunas no Excel
       if (currentGestaoSubTab === 'funcionarios') {
         content = "nome;email;matricula;cargo;setor;local_nome;nivel_acesso\n" +
                   "João da Silva;joao.silva@senai.br;FUN-010;Técnico de Laboratório;Eletrónica;Laboratório de Eletrónica e Robótica;funcionario\n" +
@@ -3550,7 +3549,7 @@ function closeModalImportar() {
         filename = "modelo_importacao_locais.csv";
       }
 
-      // Prepara o ficheiro com BOM UTF-8 (\uFEFF) para garantir caracteres e acentos corretos no Excel
+      // Prepara o arquivo com BOM UTF-8 (\uFEFF) para garantir caracteres e acentos corretos no Excel
       const blob = new Blob(["\uFEFF" + content], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -3562,19 +3561,7 @@ function closeModalImportar() {
       URL.revokeObjectURL(url);
     }
 
-      // Prepara o arquivo com BOM UTF-8 (\uFEFF) para abrir com acentuação correta no Excel
-      const blob = new Blob(["\uFEFF" + content], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-
-async function processarImportacaoCSV() {
+    async function processarImportacaoCSV() {
       const fileInput = document.getElementById('input-csv-file');
       const file = fileInput.files[0];
       const msg = document.getElementById('import-msg');
@@ -3643,7 +3630,7 @@ async function processarImportacaoCSV() {
       };
       reader.readAsText(file, 'UTF-8');
     }
-
+    
     // ==================== 11. TELA DE CENTRAL DE IMPRESSÃO ====================
     async function loadImpressaoData() {
       if (cacheFuncionariosList.length === 0) {
