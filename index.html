@@ -3567,7 +3567,7 @@
       const msg = document.getElementById('import-msg');
 
       if (!file) {
-        msg.innerText = "Por favor, selecione um arquivo CSV.";
+        msg.innerText = "Por favor, selecione um ficheiro CSV.";
         msg.className = "p-3 rounded bg-red-100 text-red-700 text-xs font-semibold";
         return;
       }
@@ -3583,25 +3583,49 @@
           }
 
           const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-          if (lines.length < 2) throw new Error("Arquivo CSV vazio ou sem registros.");
+          if (lines.length < 2) throw new Error("Ficheiro CSV vazio ou sem registos.");
 
-          // Suporta delimitadores vírgula (,) e ponto e vírgula (;)
+          // Identifica o delimitador (ponto e vírgula ou vírgula)
           const delimiter = lines[0].includes(';') ? ';' : ',';
 
-          const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^["']|["']$/g, '').toLowerCase());
+          // Lê o cabeçalho e filtra apenas colunas que possuem nome (ignora colunas vazias do Excel)
+          const rawHeaders = lines[0].split(delimiter).map(h => h.trim().replace(/^["']|["']$/g, '').toLowerCase());
+          const validHeaders = [];
+          const validIndexes = [];
+
+          rawHeaders.forEach((headerName, index) => {
+            if (headerName !== '') {
+              validHeaders.push(headerName);
+              validIndexes.push(index);
+            }
+          });
+
+          if (validHeaders.length === 0) {
+            throw new Error("Cabeçalho do ficheiro CSV é inválido.");
+          }
+
           const records = [];
 
           for (let i = 1; i < lines.length; i++) {
             const row = lines[i].split(delimiter).map(cell => cell.trim().replace(/^["']|["']$/g, ''));
-            if (row.length === headers.length) {
-              const obj = {};
-              headers.forEach((h, index) => obj[h] = row[index]);
+            const obj = {};
+            let hasData = false;
+
+            validIndexes.forEach((colIdx, hIdx) => {
+              const headerName = validHeaders[hIdx];
+              const val = row[colIdx] !== undefined ? row[colIdx] : '';
+              if (val !== '') hasData = true;
+              obj[headerName] = val;
+            });
+
+            // Adiciona apenas se a linha contiver dados
+            if (hasData) {
               records.push(obj);
             }
           }
 
           if (records.length === 0) {
-            throw new Error("Nenhum registro válido foi encontrado na planilha.");
+            throw new Error("Nenhum registo válido foi encontrado na planilha.");
           }
 
           if (currentGestaoSubTab === 'ferramentas') {
