@@ -1545,7 +1545,7 @@
       setupRealtimeSubscriptions();
     });
 
-    // 1. AUTENTICAÇÃO E SESSÃO
+// 1. AUTENTICAÇÃO E SESSÃO (Com suporte a vinculação automática por E-mail)
     async function checkAuthSession(usedPassword = null) {
       const { data: { session } } = await supabaseClient.auth.getSession();
 
@@ -1554,13 +1554,32 @@
         return;
       }
 
-      const { data: perfil, error } = await supabaseClient
+      // 1. Tenta encontrar o perfil pelo ID do Auth
+      let { data: perfil } = await supabaseClient
         .from('funcionarios')
         .select('*')
         .eq('id', session.user.id)
-        .single();
+        .maybeSingle();
 
-      if (error || !perfil) {
+      // 2. Se não encontrou pelo ID, procura pelo E-mail (para funcionários importados via CSV)
+      if (!perfil && session.user.email) {
+        const { data: perfilEmail } = await supabaseClient
+          .from('funcionarios')
+          .select('*')
+          .ilike('email', session.user.email)
+          .maybeSingle();
+
+        if (perfilEmail) {
+          perfil = perfilEmail;
+          // Atualiza o ID na tabela funcionarios para associar ao Auth
+          await supabaseClient
+            .from('funcionarios')
+            .update({ id: session.user.id, primeiro_acesso: true })
+            .eq('email', perfilEmail.email);
+        }
+      }
+
+      if (!perfil) {
         alert("Perfil de usuário não encontrado.");
         await supabaseClient.auth.signOut();
         showLoginScreen(true);
@@ -1578,7 +1597,7 @@
       showLoginScreen(false);
       setupDashboardView();
 
-      // Checagem de troca obrigatória de palavra-passe
+      // Exibe a janela para alteração obrigatória da palavra-passe no primeiro acesso
       if (usedPassword === 'senha@123' || perfil.primeiro_acesso === true) {
         openModalTrocarSenha(true);
       }
@@ -1605,7 +1624,7 @@ async function handleLogin(event) {
       try {
         let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
-        // Se o login falhou, verifica se é um funcionário importado via CSV que ainda não tem conta no Auth
+        // Se o login falhar, verifica se é um funcionário importado via CSV sem registo de Auth
         if (error) {
           const { data: funcImportado } = await supabaseClient
             .from('funcionarios')
@@ -1614,27 +1633,18 @@ async function handleLogin(event) {
             .maybeSingle();
 
           if (funcImportado) {
-            // Cria a conta no Supabase Auth para o funcionário importado
+            // Regista o utilizador no módulo Auth do Supabase
             const { data: authData, error: signUpError } = await supabaseClient.auth.signUp({
               email: email,
               password: password
             });
 
             if (!signUpError && authData?.user) {
-              const newAuthId = authData.user.id;
-
-              // Se o signUp não autenticou automaticamente, realiza o login agora
               let session = authData.session;
               if (!session) {
                 const loginRetry = await supabaseClient.auth.signInWithPassword({ email, password });
                 session = loginRetry.data?.session;
               }
-
-              // Vincula o ID de autenticação ao registo do funcionário
-              await supabaseClient
-                .from('funcionarios')
-                .update({ id: newAuthId, primeiro_acesso: true })
-                .eq('email', funcImportado.email);
 
               if (session) {
                 await checkAuthSession(password);
@@ -1643,7 +1653,6 @@ async function handleLogin(event) {
             }
           }
 
-          // Se não era um funcionário importado ou a criação falhou, lança o erro
           throw error;
         }
 
