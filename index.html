@@ -173,7 +173,7 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL DE IMPORTAÇÃO CSV ==================== -->
+<!-- ==================== MODAL DE IMPORTAÇÃO CSV ==================== -->
   <div id="modal-importar" class="hidden fixed inset-0 bg-slate-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -185,10 +185,26 @@
         </button>
       </div>
 
-      <p class="text-xs text-slate-500">Selecione um arquivo CSV para importar registos em lote para a categoria atual.</p>
+      <p class="text-xs text-slate-500">
+        Importando registros para a categoria: <strong id="import-categoria-label" class="text-blue-900 font-bold uppercase">Funcionários</strong>
+      </p>
 
-      <div class="space-y-3">
-        <input type="file" id="input-csv-file" accept=".csv" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+      <!-- Bloco de Download do Modelo de Planilha -->
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center justify-between gap-3">
+        <div class="text-xs text-blue-900 font-medium leading-tight">
+          <span class="block font-bold">Não tem a planilha estruturada?</span>
+          Baixe o modelo com as colunas e exemplos.
+        </div>
+        <button type="button" onclick="downloadModeloCSV()" 
+          class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 transition shadow-sm whitespace-nowrap">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          <span>Baixar Modelo</span>
+        </button>
+      </div>
+
+      <div class="space-y-2 pt-1">
+        <label class="block text-xs font-bold text-slate-600 uppercase">Selecione o arquivo CSV preenchido</label>
+        <input type="file" id="input-csv-file" accept=".csv" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
         <div id="import-msg" class="hidden p-3 rounded text-xs font-semibold"></div>
       </div>
 
@@ -3488,19 +3504,63 @@
       }
     }
 
-    // Modal Importação CSV
+// Modal Importação CSV
     function openModalImportar() {
       document.getElementById('modal-importar').classList.remove('hidden');
       const msg = document.getElementById('import-msg');
       msg.className = 'hidden p-3 rounded text-xs font-semibold';
       document.getElementById('input-csv-file').value = '';
+
+      // Atualiza o rótulo da categoria ativa no modal
+      const labelCat = document.getElementById('import-categoria-label');
+      if (labelCat) {
+        if (currentGestaoSubTab === 'funcionarios') labelCat.innerText = 'Funcionários';
+        else if (currentGestaoSubTab === 'ferramentas') labelCat.innerText = 'Ferramentas';
+        else if (currentGestaoSubTab === 'locais') labelCat.innerText = 'Locais';
+      }
+
+      lucide.createIcons();
     }
 
-    function closeModalImportar() {
+function closeModalImportar() {
       document.getElementById('modal-importar').classList.add('hidden');
     }
 
-    async function processarImportacaoCSV() {
+    // Função para gerar e baixar a planilha estruturada de exemplo
+    function downloadModeloCSV() {
+      let content = "";
+      let filename = "";
+
+      if (currentGestaoSubTab === 'funcionarios') {
+        content = "nome,email,matricula,cargo,setor,local_nome,nivel_acesso\n" +
+                  "João da Silva,joao.silva@senai.br,FUN-010,Técnico de Laboratório,Eletrónica,Laboratório de Eletrónica e Robótica,funcionario\n" +
+                  "Maria Santos,maria.santos@senai.br,FUN-011,Instrutora de Mecânica,Ensino,Sala de Instrutores e Suporte,administrador";
+        filename = "modelo_importacao_funcionarios.csv";
+      } else if (currentGestaoSubTab === 'ferramentas') {
+        content = "id,nome,categoria,local_padrao\n" +
+                  "FER-050,Multímetro Digital,Instrumentos de Medição,Laboratório de Eletrónica e Robótica\n" +
+                  "FER-051,Alicate Universal Isolado,Ferramentas Manuais,Oficina de Soldadura";
+        filename = "modelo_importacao_ferramentas.csv";
+      } else if (currentGestaoSubTab === 'locais') {
+        content = "nome,descricao\n" +
+                  "Laboratório de Protótipos,Área destinada à impressão 3D e prototipagem rápida.\n" +
+                  "Sala de Calibração,Ambiente climatizado para ajuste fino de instrumentos.";
+        filename = "modelo_importacao_locais.csv";
+      }
+
+      // Prepara o arquivo com BOM UTF-8 (\uFEFF) para abrir com acentuação correta no Excel
+      const blob = new Blob(["\uFEFF" + content], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+async function processarImportacaoCSV() {
       const fileInput = document.getElementById('input-csv-file');
       const file = fileInput.files[0];
       const msg = document.getElementById('import-msg');
@@ -3514,20 +3574,33 @@
       const reader = new FileReader();
       reader.onload = async function(e) {
         try {
-          const text = e.target.result;
-          const lines = text.split('\n').filter(line => line.trim() !== '');
-          if (lines.length < 2) throw new Error("Arquivo CSV vazio ou sem cabeçalho.");
+          let text = e.target.result;
+          
+          // Remove BOM do UTF-8 caso exista
+          if (text.startsWith('\uFEFF')) {
+            text = text.substring(1);
+          }
 
-          const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+          const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+          if (lines.length < 2) throw new Error("Arquivo CSV vazio ou sem registros.");
+
+          // Suporta delimitadores vírgula (,) e ponto e vírgula (;)
+          const delimiter = lines[0].includes(';') ? ';' : ',';
+
+          const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^["']|["']$/g, '').toLowerCase());
           const records = [];
 
           for (let i = 1; i < lines.length; i++) {
-            const row = lines[i].split(',').map(cell => cell.trim());
+            const row = lines[i].split(delimiter).map(cell => cell.trim().replace(/^["']|["']$/g, ''));
             if (row.length === headers.length) {
               const obj = {};
               headers.forEach((h, index) => obj[h] = row[index]);
               records.push(obj);
             }
+          }
+
+          if (records.length === 0) {
+            throw new Error("Nenhum registro válido foi encontrado na planilha.");
           }
 
           if (currentGestaoSubTab === 'ferramentas') {
@@ -3554,7 +3627,7 @@
           msg.className = "p-3 rounded bg-red-100 text-red-700 text-xs font-semibold";
         }
       };
-      reader.readAsText(file);
+      reader.readAsText(file, 'UTF-8');
     }
 
     // ==================== 11. TELA DE CENTRAL DE IMPRESSÃO ====================
