@@ -69,15 +69,16 @@
         background-color: #dc2626 !important;
         color: #ffffff !important;
       }
-      .card-print-cracha {
-        width: 50mm !important;
-        height: 70mm !important;
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-        border: 1px solid #cbd5e1 !important;
-        box-sizing: border-box !important;
-        background: #ffffff !important;
-      }
+.card-print-cracha {
+  width: 50mm !important;
+  height: 70mm !important;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+  border: 1px solid #cbd5e1 !important;
+  box-sizing: border-box !important;
+  background: #ffffff !important;
+  position: relative !important;
+}
       .card-print-adesivo {
   width: 25mm !important;
   height: 32mm !important;
@@ -3652,9 +3653,12 @@
             ? `<img src="${func.foto_url}" class="w-full h-full object-cover">`
             : SVG_SILHOUETTE_PERSON;
 
-          // Cartão Frente (50mm x 70mm) - Sem 'truncate' no nome (break-words) + Estilo SENAI impresso
+         // Cartão Frente (50mm x 70mm) - Com marcação do furo para presilha/colar
           const cardFrenteHtml = `
-            <div class="card-print-cracha bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-2 text-center relative overflow-hidden" style="width: 50mm; height: 70mm; box-sizing: border-box;">
+            <div class="card-print-cracha bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-2 text-center relative overflow-hidden" style="width: 50mm; height: 70mm; box-sizing: border-box; position: relative;">
+              <!-- Marcação do Furo para Presilha / Colar -->
+              <div style="position: absolute; top: 1.8mm; left: 50%; transform: translateX(-50%); width: 13mm; height: 2.2mm; background-color: #ffffff !important; border: 1.5px solid #475569 !important; border-radius: 9999px; z-index: 30;" title="Furo da presilha"></div>
+
               <div class="bg-red-600 text-white font-black text-xs py-1 tracking-wider uppercase w-full flex items-center justify-center" style="background-color: #dc2626 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
                 SENAI
               </div>
@@ -3673,9 +3677,12 @@
             </div>
           `;
 
-          // Cartão Verso (50mm x 70mm) - Sem 'truncate' e com quebra de linha natural
+          // Cartão Verso (50mm x 70mm) - Com marcação do furo para presilha/colar
           const cardVersoHtml = `
-            <div class="card-print-cracha bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-2 text-center relative overflow-hidden" style="width: 50mm; height: 70mm; box-sizing: border-box;">
+            <div class="card-print-cracha bg-white border border-slate-300 shadow-sm flex flex-col justify-between items-center p-2 text-center relative overflow-hidden" style="width: 50mm; height: 70mm; box-sizing: border-box; position: relative;">
+              <!-- Marcação do Furo para Presilha / Colar -->
+              <div style="position: absolute; top: 1.8mm; left: 50%; transform: translateX(-50%); width: 13mm; height: 2.2mm; background-color: #ffffff !important; border: 1.5px solid #475569 !important; border-radius: 9999px; z-index: 30;" title="Furo da presilha"></div>
+
               <div class="bg-red-600 text-white font-black text-xs py-1 tracking-wider uppercase w-full flex items-center justify-center" style="background-color: #dc2626 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
                 SENAI
               </div>
