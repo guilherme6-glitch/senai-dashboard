@@ -1584,7 +1584,7 @@
       }
     }
 
-    async function handleLogin(event) {
+async function handleLogin(event) {
       event.preventDefault();
       const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
@@ -1603,12 +1603,56 @@
       btn.innerHTML = '<span>Autenticando...</span>';
 
       try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+        // Se o login falhou, verifica se é um funcionário importado via CSV que ainda não tem conta no Auth
+        if (error) {
+          const { data: funcImportado } = await supabaseClient
+            .from('funcionarios')
+            .select('*')
+            .ilike('email', email)
+            .maybeSingle();
+
+          if (funcImportado) {
+            // Cria a conta no Supabase Auth para o funcionário importado
+            const { data: authData, error: signUpError } = await supabaseClient.auth.signUp({
+              email: email,
+              password: password
+            });
+
+            if (!signUpError && authData?.user) {
+              const newAuthId = authData.user.id;
+
+              // Se o signUp não autenticou automaticamente, realiza o login agora
+              let session = authData.session;
+              if (!session) {
+                const loginRetry = await supabaseClient.auth.signInWithPassword({ email, password });
+                session = loginRetry.data?.session;
+              }
+
+              // Vincula o ID de autenticação ao registo do funcionário
+              await supabaseClient
+                .from('funcionarios')
+                .update({ id: newAuthId, primeiro_acesso: true })
+                .eq('email', funcImportado.email);
+
+              if (session) {
+                await checkAuthSession(password);
+                return;
+              }
+            }
+          }
+
+          // Se não era um funcionário importado ou a criação falhou, lança o erro
+          throw error;
+        }
 
         await checkAuthSession(password);
       } catch (err) {
-        errDiv.innerText = "Erro ao iniciar sessão: " + err.message;
+        const msg = err.message === 'Invalid login credentials' 
+          ? 'E-mail ou palavra-passe incorretos.' 
+          : err.message;
+        errDiv.innerText = "Erro ao iniciar sessão: " + msg;
         errDiv.classList.remove('hidden');
       } finally {
         btn.disabled = false;
