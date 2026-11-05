@@ -882,52 +882,43 @@
             </div>
           </div>
 
-          <!-- Informações Técnicas da Ferramenta -->
-          <div class="flex-1 space-y-4 w-full">
-            <div>
-              <h3 id="fer-ficha-nome" class="text-2xl font-black text-slate-900">---</h3>
-            </div>
+<!-- Informações Técnicas da Ferramenta -->
+<div class="flex-1 space-y-4 w-full">
+  <div>
+    <h3 id="fer-ficha-nome" class="text-2xl font-black text-slate-900">---</h3>
+  </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 text-xs text-slate-600 pt-2 border-t border-slate-100">
-              <div class="flex items-center justify-between sm:justify-start gap-2">
-                <span class="text-slate-400 font-medium">Patrimônio:</span>
-                <span id="fer-ficha-patrimonio" class="font-mono font-bold text-blue-600">---</span>
-              </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 text-xs text-slate-600 pt-2 border-t border-slate-100">
+    <!-- Linha 1: Identificação, Categoria e Status -->
+    <div class="flex items-center justify-between sm:justify-start gap-2">
+      <span class="text-slate-400 font-medium">Patrimônio:</span>
+      <span id="fer-ficha-patrimonio" class="font-mono font-bold text-blue-600">---</span>
+    </div>
 
-              <div class="flex items-center justify-between sm:justify-start gap-2">
-                <span class="text-slate-400 font-medium">Categoria:</span>
-                <span id="fer-ficha-categoria" class="font-medium text-slate-800">---</span>
-              </div>
+    <div class="flex items-center justify-between sm:justify-start gap-2">
+      <span class="text-slate-400 font-medium">Categoria:</span>
+      <span id="fer-ficha-categoria" class="font-medium text-slate-800">---</span>
+    </div>
 
-              <div class="flex items-center justify-between sm:justify-start gap-2">
-                <span class="text-slate-400 font-medium">Marca:</span>
-                <span id="fer-ficha-marca" class="font-medium text-slate-800">---</span>
-              </div>
+    <div class="flex items-center justify-between sm:justify-start gap-2">
+      <span class="text-slate-400 font-medium">Status:</span>
+      <span id="fer-ficha-status" class="px-2.5 py-0.5 rounded-full font-bold text-[11px] bg-emerald-100 text-emerald-800 border border-emerald-200">
+        Disponível
+      </span>
+    </div>
 
-              <div class="flex items-center justify-between sm:justify-start gap-2">
-                <span class="text-slate-400 font-medium">Modelo:</span>
-                <span id="fer-ficha-modelo" class="font-medium text-slate-800">---</span>
-              </div>
+    <!-- Linha 2: Localização de Origem e Local Atual -->
+    <div class="flex items-center justify-between sm:justify-start gap-2">
+      <span class="text-slate-400 font-medium">Local de origem:</span>
+      <span id="fer-ficha-origem" class="font-bold text-slate-800">---</span>
+    </div>
 
-              <div class="flex items-center justify-between sm:justify-start gap-2">
-                <span class="text-slate-400 font-medium">Local de origem:</span>
-                <span id="fer-ficha-origem" class="font-bold text-slate-800">---</span>
-              </div>
-
-              <div class="flex items-center justify-between sm:justify-start gap-2">
-                <span class="text-slate-400 font-medium">Local atual:</span>
-                <span id="fer-ficha-atual" class="font-bold text-slate-800">---</span>
-              </div>
-
-              <div class="flex items-center justify-between sm:justify-start gap-2 col-span-1 sm:col-span-2 lg:col-span-3">
-                <span class="text-slate-400 font-medium">Status:</span>
-                <span id="fer-ficha-status" class="px-2.5 py-0.5 rounded-full font-bold text-[11px] bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  Disponível
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div class="flex items-center justify-between sm:justify-start gap-2">
+      <span class="text-slate-400 font-medium">Local atual:</span>
+      <span id="fer-ficha-atual" class="font-bold text-slate-800">---</span>
+    </div>
+  </div>
+</div>
 
         <!-- Card do Funcionário Responsável Atualmente -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
