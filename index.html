@@ -3565,12 +3565,14 @@ function renderRastreabilidadeGrid(items) {
           if (currentEditingItem) {
             const { error } = await supabaseClient.from('ferramentas').update(payload).eq('id', currentEditingItem.id);
             if (error) throw error;
-          } else {
-            payload.status = 'Disponível';
-            payload.local_atual = 'Não Especificado';
-            const { error } = await supabaseClient.from('ferramentas').insert([payload]);
-            if (error) throw error;
-          }
+} else {
+  payload.status = 'Disponível';
+  // Define o local_atual com o mesmo valor do local_padrao informado no cadastro
+  payload.local_atual = payload.local_padrao || 'Não Especificado';
+
+  const { error } = await supabaseClient.from('ferramentas').insert([payload]);
+  if (error) throw error;
+}
 
           const { data: fers } = await supabaseClient.from('ferramentas').select('*').order('nome');
           cacheFerramentasList = fers || [];
