@@ -1817,8 +1817,7 @@ async function handleLogin(event) {
     async function loadVisaoGeralData() {
       try {
         const { data: ferramentas, error } = await supabaseClient.from('ferramentas').select('*');
-        if (error) throw error;
-
+        if (error) throw error; 
         const total = ferramentas.length;
         const emprestadas = ferramentas.filter(f => f.status === 'Emprestado');
         const disponiveis = ferramentas.filter(f => f.status === 'Disponível');
@@ -1930,53 +1929,6 @@ async function handleLogin(event) {
                 let dataArr = ctx.chart.data.datasets[0].data;
                 dataArr.forEach(data => { sum += (data || 0); });
                 if (sum === 0 || !value) return '';
-                return ((value * 100) / sum).toFixed(0) + "%";
-              }
-            }
-          }
-        }
-      });
-    }
-    
-    function filterEmprestadasTable() {
-      const term = document.getElementById('search-emprestadas').value.toLowerCase();
-      const filtradas = cacheEmprestadas.filter(f => 
-        f.id.toLowerCase().includes(term) ||
-        f.nome.toLowerCase().includes(term) ||
-        (f.com_quem_esta && f.com_quem_esta.toLowerCase().includes(term)) ||
-        (f.local_atual && f.local_atual.toLowerCase().includes(term))
-      );
-      renderEmprestadasTable(filtradas);
-    }
-
-    function renderChartStatus(disponiveis, emprestadas, manutencao) {
-      const ctxStatus = document.getElementById('chart-status').getContext('2d');
-      if (chartStatusInstance) chartStatusInstance.destroy();
-
-      chartStatusInstance = new Chart(ctxStatus, {
-        type: 'doughnut',
-        data: {
-          labels: ['Disponíveis', 'Emprestadas', 'Manutenção'],
-          datasets: [{
-            data: [disponiveis, emprestadas, manutencao],
-            backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
-            borderWidth: 2,
-            borderColor: '#ffffff'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
-            datalabels: {
-              color: '#ffffff',
-              font: { weight: 'bold', size: 12 },
-              formatter: (value, ctx) => {
-                let sum = 0;
-                let dataArr = ctx.chart.data.datasets[0].data;
-                dataArr.forEach(data => { sum += data; });
-                if (sum === 0 || value === 0) return '';
                 return ((value * 100) / sum).toFixed(0) + "%";
               }
             }
