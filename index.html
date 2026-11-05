@@ -1830,7 +1830,7 @@ async function handleLogin(event) {
           return dateB - dateA;
         });
 
-        // Atualiza os valores dos KPIs na tela
+        // Atualiza os valores dos KPIs
         const elTotal = document.getElementById('kpi-total');
         const elEmprestadas = document.getElementById('kpi-emprestadas');
         const elDisponiveis = document.getElementById('kpi-disponiveis');
@@ -1928,8 +1928,8 @@ async function handleLogin(event) {
               formatter: (value, ctx) => {
                 let sum = 0;
                 let dataArr = ctx.chart.data.datasets[0].data;
-                dataArr.forEach(data => { sum += data; });
-                if (sum === 0 || value === 0) return '';
+                dataArr.forEach(data => { sum += (data || 0); });
+                if (sum === 0 || !value) return '';
                 return ((value * 100) / sum).toFixed(0) + "%";
               }
             }
@@ -1937,6 +1937,7 @@ async function handleLogin(event) {
         }
       });
     }
+    
     function filterEmprestadasTable() {
       const term = document.getElementById('search-emprestadas').value.toLowerCase();
       const filtradas = cacheEmprestadas.filter(f => 
