@@ -2876,7 +2876,7 @@ async function handleLogin(event) {
       lucide.createIcons();
     }
 
-    // 9. TELA DE DETALHES DO LOCAL
+// 9. TELA DE DETALHES DO LOCAL
     async function loadLocaisData() {
       try {
         const { data: locais, error } = await supabaseClient.from('locais').select('*').order('nome');
@@ -2937,10 +2937,12 @@ async function handleLogin(event) {
         fotoPlaceholder.classList.remove('hidden');
       }
 
+      // Busca e filtra funcionários vinculados (pelo ID do local ou nome exato do local)
       const { data: allFuncs } = await supabaseClient.from('funcionarios').select('*').order('nome');
       const listaFuncs = (allFuncs || []).filter(f => {
-        const loc = (f.local || f.setor || f.oficina || f.local_nome || '').toLowerCase().trim();
-        return loc === targetNome || loc.includes(targetNome) || targetNome.includes(loc);
+        const fLocId = f.local_id;
+        const fLocNome = (f.local_nome || f.local || '').toLowerCase().trim();
+        return (fLocId && fLocId === localId) || (fLocNome && fLocNome === targetNome);
       });
 
       document.getElementById('local-funcs-count').innerText = listaFuncs.length;
@@ -2957,11 +2959,12 @@ async function handleLogin(event) {
         `).join('');
       }
 
+      // Busca e filtra ferramentas do local
       const { data: allFers } = await supabaseClient.from('ferramentas').select('*').order('nome');
       const listaFers = (allFers || []).filter(item => {
         const locOrigem = getLocalOrigem(item).toLowerCase().trim();
         const locAtual = (item.local_atual || '').toLowerCase().trim();
-        return locOrigem === targetNome || locAtual === targetNome || locOrigem.includes(targetNome);
+        return locOrigem === targetNome || locAtual === targetNome;
       });
 
       document.getElementById('local-fers-count').innerText = listaFers.length;
@@ -2993,10 +2996,11 @@ async function handleLogin(event) {
         }).join('');
       }
 
+      // Histórico do Local
       const { data: allHist } = await supabaseClient.from('historico').select('*').order('created_at', { ascending: false });
       cacheSelectedLocalHist = (allHist || []).filter(h => {
         const locUso = (h.local_uso || '').toLowerCase().trim();
-        return locUso === targetNome || locUso.includes(targetNome);
+        return locUso === targetNome;
       });
 
       const funcOpts = Array.from(new Set(cacheSelectedLocalHist.map(h => h.nome_funcionario).filter(Boolean))).sort();
